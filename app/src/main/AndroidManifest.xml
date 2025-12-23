@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+  >
+
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32"
+        tools:ignore="ScopedStorage" />
+    <uses-permission
+        android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS"
+        tools:ignore="ProtectedPermissions" />
+
+    <application
+        android:name="com.example.firstapplication.MyApp"
+        android:allowBackup="true"
+        android:icon="@drawable/ic_icon"
+        android:label="@string/app_name"
+        android:roundIcon="@drawable/ic_icon"
+        android:supportsRtl="true"
+        android:requestLegacyExternalStorage = "true"
+        tools:ignore="GoogleAppIndexingWarning"
+        android:theme="@style/Theme.FirstApplication">
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.example.firstapplication.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths_public" />
+        </provider>
+
+    <activity
+            android:name=".ui.MainActivity"
+            android:exported="true"
+        android:launchMode="singleTask"
+            android:configChanges="keyboardHidden|orientation"
+            android:windowSoftInputMode="adjustResize"
+            android:screenOrientation="portrait">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ui.PagActivity"
+            android:configChanges="keyboardHidden|orientation"
+            android:windowSoftInputMode="adjustResize"
+            android:screenOrientation="fullSensor">
+
+        </activity>
+        <activity android:name=".ui.AnimSimpleDemoActivity" android:screenOrientation="portrait"/>
+        <activity
+            android:name=".ui.GameActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden|screenLayout"
+            android:hardwareAccelerated="true"
+            android:exported="false"
+            android:theme="@style/TransparentTheme" />
+<!--        android:taskAffinity="com.example.gameapp.game"-->
+
+<!--        <activity-->
+<!--            android:name="com.example.homelogic.home.HomeActivity"-->
+<!--            android:configChanges="keyboardHidden|orientation"-->
+<!--            android:windowSoftInputMode="adjustResize"-->
+<!--            android:screenOrientation="portrait"/>-->
+        
+    </application>
+
+</manifest>

@@ -1,0 +1,52 @@
+[versions]
+agp = "8.13.0"
+arouterCompiler = "1.5.2}"
+compiler = "4.16.0"
+easyphotos = "3.1.5"
+kotlin = "2.2.0"
+coreKtx = "1.10.1"
+junit = "4.13.2"
+junitVersion = "1.1.5"
+espressoCore = "3.5.1"
+appcompat = "1.6.1"
+kotlinStdlibJdk7 = "1.9.0"
+leakcanaryAndroidNoOp = "1.6.3"
+lphotopicker = "3.2"
+material = "1.10.0"
+aouterversison = "1.5.2"
+renderscripToolkit = "1.0.2"
+subsamplingScaleImageViewAndroidx = "3.10.0"
+vap = "2.0.28"
+webpdecoder = "2.7.4.16.0"
+svga = "2.6.1"
+lottieVersion = "5.2.0"
+flexbox = '3.0.0'
+
+[libraries]
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+arouter-compiler = { module = "com.alibaba:arouter-compiler", version.ref = "aouterversison" }
+glide = { module = "com.github.bumptech.glide:glide", version.ref = "compiler" }
+glidecompiler = { module = "com.github.bumptech.glide:compiler", version.ref = "compiler" }
+easyphotos = { module = "com.github.HuanTanSheng:EasyPhotos", version.ref = "easyphotos" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+kotlin-stdlib-jdk7 = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk7", version.ref = "kotlinStdlibJdk7" }
+leakcanary-android-no-op = { module = "com.squareup.leakcanary:leakcanary-android-no-op", version.ref = "leakcanaryAndroidNoOp" }
+lphotopicker = { module = "io.github.limuyang2:LPhotoPicker", version.ref = "lphotopicker" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+arouter = { group = "com.alibaba", name = "arouter-api", version.ref = "aouterversison" }
+renderscrip-toolkit = { module = "io.github.limuyang2:renderscrip-toolkit", version.ref = "renderscripToolkit" }
+subsampling-scale-image-view-androidx = { module = "com.davemorrissey.labs:subsampling-scale-image-view-androidx", version.ref = "subsamplingScaleImageViewAndroidx" }
+gift-lottie = { group = "com.airbnb.android", name = "lottie", version.ref = "lottieVersion" }
+svga = { group = "com.github.yyued", name = "SVGAPlayer-Android", version.ref = "svga" }
+vap = { module = "io.github.tencent:vap", version.ref = "vap" }
+webpdecoder = { module = "com.github.zjupure:webpdecoder", version.ref = "webpdecoder" }
+android-flexbox = { group = "com.google.android.flexbox", name = "flexbox", version.ref = "flexbox" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+

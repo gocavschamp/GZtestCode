@@ -1,0 +1,50 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+//apply plugin: 'kotlin-android-extensions'
+
+android {
+    compileSdkVersion 36
+
+    defaultConfig {
+        namespace = "com.example.animplayer"
+        minSdkVersion 24
+        targetSdkVersion 36
+        versionCode 1
+        versionName "1.0"
+        // 添加 JVM 目标配置
+        compileOptions {
+            sourceCompatibility JavaVersion.VERSION_1_8
+            targetCompatibility JavaVersion.VERSION_1_8
+        }
+
+        // 配置 Kotlin 编译选项
+        kotlinOptions {
+            jvmTarget = '1.8'
+        }
+    }
+
+//    buildTypes {
+//        release {
+//            minifyEnabled false
+//            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+//        }
+//    }
+
+}
+
+dependencies {
+    implementation(libs.kotlin.stdlib.jdk7) {
+        exclude module: 'annotations'
+    }
+}
+
+// jcenter 上传(这个要在底部)
+// 上传需要执行此任务 IDE -> gradle-> Tasks/publishing/bintrayUpload
+// apply from: file("publish.gradle")
+
+
+// maven central
+// 上传指令./gradlew uploadArchives
+// https://s01.oss.sonatype.org/
+// Staging Repositories -> close -> release
+// apply from: "../publish-mavencentral.gradle"

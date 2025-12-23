@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/transparent">
+
+    <!-- 不透明容器（WebView容器） -->
+    <FrameLayout
+        android:id="@+id/opaque_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/white"
+        android:elevation="8dp"
+        android:clipToOutline="true">
+
+        <!-- WebView容器 -->
+        <FrameLayout
+            android:id="@+id/webview_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <!-- 控制面板 -->
+        <LinearLayout
+            android:id="@+id/control_panel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:layout_margin="16dp"
+            android:orientation="vertical"
+            android:background="@android:color/white"
+            android:elevation="12dp"
+            android:padding="12dp"
+            android:visibility="visible">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="游戏控制"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp">
+
+                <ImageButton
+                    android:id="@+id/btn_close"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@android:drawable/ic_menu_close_clear_cancel"
+                    android:background="?android:attr/selectableItemBackground" />
+
+                <ImageButton
+                    android:id="@+id/btn_minimize"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@android:drawable/ic_menu_send"
+                    android:background="?android:attr/selectableItemBackground" />
+
+                <ImageButton
+                    android:id="@+id/btn_settings"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:src="@android:drawable/ic_menu_preferences"
+                    android:background="?android:attr/selectableItemBackground" />
+
+                <ImageButton
+                    android:id="@+id/btn_refresh"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:src="@android:drawable/ic_menu_rotate"
+                    android:background="?android:attr/selectableItemBackground" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tv_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="状态信息"
+                android:textSize="12sp"
+                android:padding="8dp"
+                android:background="@android:color/darker_gray"
+                android:textColor="@android:color/white"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="窗口大小"
+                android:textSize="14sp"
+                android:layout_marginBottom="4dp" />
+
+<!--            <com.google.android.material.slider.Slider-->
+<!--                android:id="@+id/size_slider"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:valueFrom="0.0"-->
+<!--                android:valueTo="100.0"-->
+<!--                android:value="20.0"-->
+<!--                app:labelBehavior="withinBounds" />-->
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+</FrameLayout>

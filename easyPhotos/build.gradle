@@ -1,0 +1,21 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 36
+
+    defaultConfig {
+        namespace = "com.huantansheng.easyphotos"
+        minSdkVersion 15
+        targetSdkVersion 36
+        versionCode 1
+        versionName "1.0"
+        vectorDrawables.useSupportLibrary = true
+    }
+}
+
+dependencies {
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    implementation libs.subsampling.scale.image.view.androidx
+}
