@@ -164,6 +164,7 @@ class YUVRender (surfaceTexture: SurfaceTexture): IRenderListener {
     override fun renderFrame() {
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
+        ALog.i(TAG, "renderFrame: widthYUV=$widthYUV, heightYUV=$heightYUV, y=${y != null}, u=${u != null}, v=${v != null}, currentShaderProgram=$currentShaderProgram")
         draw()
     }
 
@@ -179,6 +180,7 @@ class YUVRender (surfaceTexture: SurfaceTexture): IRenderListener {
     }
 
     override fun setAnimConfig(config: AnimConfig) {
+        ALog.i(TAG, "setAnimConfig: config.width=${config.width}, config.height=${config.height}, config.videoFormat=${config.videoFormat}")
         vertexArray.setArray(VertexUtil.create(config.width, config.height, PointRect(0, 0, config.width, config.height), vertexArray.array))
         val alpha = TexCoordsUtil.create(config.videoWidth, config.videoHeight, config.alphaPointRect, alphaArray.array)
         val rgb = TexCoordsUtil.create(config.videoWidth, config.videoHeight, config.rgbPointRect, rgbArray.array)
@@ -206,6 +208,7 @@ class YUVRender (surfaceTexture: SurfaceTexture): IRenderListener {
                 ALog.w(TAG, "setAnimConfig: Unknown format, using default YUV shader")
             }
         }
+        ALog.i(TAG, "setAnimConfig: currentShaderProgram=$currentShaderProgram")
     }
 
     override fun getExternalTexture(): Int {
@@ -221,6 +224,7 @@ class YUVRender (surfaceTexture: SurfaceTexture): IRenderListener {
     }
 
     override fun setYUVData(width: Int, height: Int, y: ByteArray?, u: ByteArray?, v: ByteArray?) {
+        ALog.i(TAG, "setYUVData: width=$width, height=$height, y size=${y?.size}, u size=${u?.size}, v size=${v?.size}")
         widthYUV = width
         heightYUV = height
         this.y = ByteBuffer.wrap(y)
@@ -231,14 +235,20 @@ class YUVRender (surfaceTexture: SurfaceTexture): IRenderListener {
         if ((widthYUV / 2) % 4 != 0) {
             this.unpackAlign = if ((widthYUV / 2) % 2 == 0) 2 else 1
         }
+        ALog.i(TAG, "setYUVData: widthYUV=$widthYUV, heightYUV=$heightYUV, unpackAlign=$unpackAlign")
     }
     private fun draw() {
+        ALog.i(TAG, "draw: widthYUV=$widthYUV, heightYUV=$heightYUV, y=${y != null}, u=${u != null}, v=${v != null}, currentShaderProgram=$currentShaderProgram, shaderProgram=$shaderProgram, normalMP4ShaderProgram=$normalMP4ShaderProgram")
         if (widthYUV > 0 && heightYUV > 0 && y != null && u != null && v != null) {
             if (currentShaderProgram == shaderProgram) {
+                ALog.i(TAG, "draw: Calling drawVAP")
                 drawVAP()
             } else {
+                ALog.i(TAG, "draw: Calling drawNormalMP4")
                 drawNormalMP4()
             }
+        } else {
+            ALog.w(TAG, "draw: Conditions not met - widthYUV=$widthYUV, heightYUV=$heightYUV, y=${y != null}, u=${u != null}, v=${v != null}")
         }
     }
     private fun drawNormalMP4() {
@@ -276,12 +286,13 @@ class YUVRender (surfaceTexture: SurfaceTexture): IRenderListener {
         cleanup()
     }
     private fun cleanup() {
-        y?.clear()
-        u?.clear()
-        v?.clear()
-        y = null
-        u = null
-        v = null
+        // 不要清空y、u、v数据，这些数据由硬解码器持续提供
+        // y?.clear()
+        // u?.clear()
+        // v?.clear()
+        // y = null
+        // u = null
+        // v = null
         GLES20.glDisableVertexAttribArray(avPosition)
         GLES20.glDisableVertexAttribArray(rgbPosition)
         GLES20.glDisableVertexAttribArray(alphaPosition)

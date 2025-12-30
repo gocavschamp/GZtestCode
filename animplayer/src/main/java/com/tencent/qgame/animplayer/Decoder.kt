@@ -88,18 +88,25 @@ abstract class Decoder(val player: AnimPlayer) : IAnimListener {
 
     fun prepareRender(needYUV: Boolean): Boolean {
         if (render == null) {
-            ALog.i(TAG, "prepareRender")
-            player.animView.getSurfaceTexture()?.apply {
+            ALog.i(TAG, "prepareRender: needYUV=$needYUV, isSurfaceAvailable=${player.isSurfaceAvailable}")
+            val surfaceTexture = player.animView.getSurfaceTexture()
+            ALog.i(TAG, "prepareRender: surfaceTexture=$surfaceTexture")
+            surfaceTexture?.apply {
                 if (needYUV) {
-                    ALog.i(TAG, "use yuv render")
+                    ALog.i(TAG, "prepareRender: use yuv render")
                     render = YUVRender(this)
+                    ALog.i(TAG, "prepareRender: YUVRender created successfully")
                 } else {
                     render = Render(this).apply {
                         updateViewPort(surfaceWidth, surfaceHeight)
                     }
+                    ALog.i(TAG, "prepareRender: Render created successfully")
                 }
-            }
+            } ?: ALog.e(TAG, "prepareRender: surfaceTexture is null, cannot create render!")
+        } else {
+            ALog.i(TAG, "prepareRender: render already exists")
         }
+        ALog.i(TAG, "prepareRender: result=${render != null}")
         return render != null
     }
 

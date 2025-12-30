@@ -9,6 +9,7 @@ import android.os.Looper
 import com.alibaba.android.arouter.BuildConfig
 import com.alibaba.android.arouter.launcher.ARouter
 import com.example.baseapi.floatview.FloatViewRouter
+import com.tencent.qgame.animplayer.util.ALog
 
 class MyApp : Application() {
     override fun onCreate() {
@@ -17,6 +18,7 @@ class MyApp : Application() {
 //        if (BuildConfig.DEBUG) {
             ARouter.openLog()
             ARouter.openDebug()
+        ALog.isDebug = true
 //        }
             ARouter.init(this)
         FloatViewRouter.initFloatView(this)

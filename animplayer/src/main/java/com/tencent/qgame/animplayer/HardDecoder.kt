@@ -87,13 +87,31 @@ class HardDecoder(player: AnimPlayer) : Decoder(player), SurfaceTexture.OnFrameA
     }
 
     private fun renderData() {
+        ALog.d(TAG, "renderData: called - renderThread.handler=${renderThread.handler != null}, needYUV=$needYUV, render=${render != null}")
         renderThread.handler?.post {
+            ALog.d(TAG, "renderData: executing in render thread - render=${render != null}")
             try {
-                glTexture?.apply {
-                    updateTexImage()
-                    render?.renderFrame()
-                    player.pluginManager.onRendering()
-                    render?.swapBuffers()
+                // YUV模式下，数据直接通过setYUVData传递给渲染器，不需要updateTexImage
+                if (needYUV) {
+                    ALog.i(TAG, "renderData: YUV mode - render=${render != null}")
+                    if (render == null) {
+                        ALog.e(TAG, "renderData: render is null in YUV mode!")
+                    } else {
+                        ALog.i(TAG, "renderData: calling renderFrame...")
+                        render?.renderFrame()
+                        ALog.i(TAG, "renderData: renderFrame completed")
+                        player.pluginManager.onRendering()
+                        ALog.i(TAG, "renderData: calling swapBuffers...")
+                        render?.swapBuffers()
+                        ALog.i(TAG, "renderData: swapBuffers completed")
+                    }
+                } else {
+                    glTexture?.apply {
+                        updateTexImage()
+                        render?.renderFrame()
+                        player.pluginManager.onRendering()
+                        render?.swapBuffers()
+                    } ?: ALog.w(TAG, "renderData: glTexture is null in normal mode")
                 }
             } catch (e: Throwable) {
                 ALog.e(TAG, "render exception=$e", e)
@@ -102,7 +120,7 @@ class HardDecoder(player: AnimPlayer) : Decoder(player), SurfaceTexture.OnFrameA
     }
 
     private fun startPlay(fileContainer: IFileContainer) {
-
+        ALog.i(TAG, "startPlay: START - renderThread.handler=${renderThread.handler != null}, renderThread.thread=${renderThread.thread != null}")
         var extractor: MediaExtractor? = null
         var decoder: MediaCodec? = null
         var format: MediaFormat? = null
@@ -172,6 +190,20 @@ class HardDecoder(player: AnimPlayer) : Decoder(player), SurfaceTexture.OnFrameA
                 needYUV = false
                 ALog.i(TAG, "Video has alpha channel, force use normal render mode")
             }
+            
+            // OPPO设备额外检查：对于非标准尺寸视频（如1440x1280），强制使用YUV模式
+            // 这需要在prepareRender之前执行，以确保创建正确的渲染器类型
+            if (isOppoDevice && !needYUV && !hasAlphaChannel) {
+                // 检查视频尺寸是否为非标准尺寸
+                val isNonStandardSize = (videoWidth == 1440 && videoHeight == 1280) ||
+                                       (videoWidth == 1500) ||
+                                       (videoWidth % 16 != 0)
+                if (isNonStandardSize) {
+                    needYUV = true
+                    ALog.i(TAG, "OPPO device with non-standard video size ($videoWidth x $videoHeight), forcing YUV mode before render creation")
+                }
+            }
+            
             ALog.i(TAG, "Render mode: needYUV=$needYUV, isOppoDevice=$isOppoDevice, videoWidth=$videoWidth")
             try {
                 if (!prepareRender(needYUV)) {
@@ -221,7 +253,7 @@ class HardDecoder(player: AnimPlayer) : Decoder(player), SurfaceTexture.OnFrameA
             // 尝试使用软件解码器作为最后的手段
             var useSoftwareDecoder = false
             var decoderName: String? = null
-            
+
             // 如果是OPPO设备且视频尺寸非标准，优先尝试软件解码器
             if (isOppoDevice && (videoWidth % 16 != 0 || videoWidth == 1500)) {
                 decoderName = findSoftwareDecoder(mime)
@@ -230,7 +262,7 @@ class HardDecoder(player: AnimPlayer) : Decoder(player), SurfaceTexture.OnFrameA
                     useSoftwareDecoder = true
                 }
             }
-            
+
             decoder = if (useSoftwareDecoder && decoderName != null) {
                 MediaCodec.createByCodecName(decoderName)
             } else {
@@ -254,13 +286,15 @@ class HardDecoder(player: AnimPlayer) : Decoder(player), SurfaceTexture.OnFrameA
                 }
                 if (needYUV) {
                     format.setInteger(
-                            MediaFormat.KEY_COLOR_FORMAT,
-                            MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar
+                        MediaFormat.KEY_COLOR_FORMAT,
+                        MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar
                     )
+                    ALog.i(TAG, "Configuring decoder with YUV420Planar format, needYUV=$needYUV")
 
                     if (isOppoDevice) {
                         try {
                             configure(format, null, null, 0)
+                            ALog.i(TAG, "OPPO device: YUV decoder configured successfully")
                         } catch (e: Exception) {
                             ALog.w(TAG, "OPPO YUV configure failed, trying alternative: $e")
                             // 尝试使用其他颜色格式
@@ -269,25 +303,15 @@ class HardDecoder(player: AnimPlayer) : Decoder(player), SurfaceTexture.OnFrameA
                                 MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar
                             )
                             configure(format, null, null, 0)
+                            ALog.i(TAG, "OPPO device: YUV decoder configured with YUV420SemiPlanar")
                         }
                     } else {
                         configure(format, null, null, 0)
+                        ALog.i(TAG, "YUV decoder configured successfully")
                     }
                 } else {
                     surface = Surface(glTexture)
-                    // OPPO设备优化：使用更保守的配置
-                    if (isOppoDevice) {
-                        // 对于非标准尺寸视频，直接使用YUV模式，避免Surface渲染问题
-                        ALog.i(TAG, "OPPO device with non-standard video size ($videoWidth x $videoHeight), forcing YUV mode")
-                        format.setInteger(
-                            MediaFormat.KEY_COLOR_FORMAT,
-                            MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar
-                        )
-                        configure(format, null, null, 0)
-                        needYUV = true
-                    } else {
-                        configure(format, surface, null, 0)
-                    }
+                    configure(format, surface, null, 0)
                 }
                 // OPPO设备优化：延迟启动，避免内存竞争
                 if (isOppoDevice) {
@@ -296,9 +320,10 @@ class HardDecoder(player: AnimPlayer) : Decoder(player), SurfaceTexture.OnFrameA
 
                 try {
                     start()
+                    ALog.i(TAG, "Decoder started successfully, needYUV=$needYUV")
                 } catch (e: Exception) {
                     ALog.e(TAG, "MediaCodec start failed: $e")
-                    
+
                     // 如果硬件解码器失败，尝试软件解码器
                     if (!useSoftwareDecoder) {
                         val softwareDecoderName = findSoftwareDecoder(mime)
@@ -308,7 +333,7 @@ class HardDecoder(player: AnimPlayer) : Decoder(player), SurfaceTexture.OnFrameA
                                 decoder?.stop()
                                 decoder?.release()
                                 decoder = MediaCodec.createByCodecName(softwareDecoderName)
-                                
+
                                 // 重新配置软件解码器
                                 if (needYUV) {
                                     format.setInteger(
@@ -319,10 +344,10 @@ class HardDecoder(player: AnimPlayer) : Decoder(player), SurfaceTexture.OnFrameA
                                 } else {
                                     decoder?.configure(format, surface, null, 0)
                                 }
-                                
+
                                 decoder?.start()
                                 ALog.i(TAG, "Software decoder started successfully")
-                                
+
                                 // 继续解码流程
                                 decodeThread.handler?.post {
                                     try {
@@ -339,7 +364,7 @@ class HardDecoder(player: AnimPlayer) : Decoder(player), SurfaceTexture.OnFrameA
                             }
                         }
                     }
-                    
+
                     // 如果软件解码器也失败，尝试降级到普通MP4模式
                     throw RuntimeException("MediaCodec start failed, need fallback")
                 }
@@ -370,8 +395,8 @@ class HardDecoder(player: AnimPlayer) : Decoder(player), SurfaceTexture.OnFrameA
                 if (!codecInfo.isEncoder && codecInfo.supportedTypes.contains(mimeType)) {
                     val codecName = codecInfo.name.lowercase()
                     // 查找软件解码器（通常包含"sw"、"google"、"omx.google"等关键词）
-                    if (codecName.contains("sw") || 
-                        codecName.contains("google") || 
+                    if (codecName.contains("sw") ||
+                        codecName.contains("google") ||
                         codecName.contains("omx.google") ||
                         codecName.contains("c2.android")) {
                         ALog.i(TAG, "Found software decoder: ${codecInfo.name}")
@@ -591,6 +616,8 @@ class HardDecoder(player: AnimPlayer) : Decoder(player), SurfaceTexture.OnFrameA
                             speedControlUtil.preRender(bufferInfo.presentationTimeUs)
                         }
 
+                        ALog.d(TAG, "decode output: decoderStatus=$decoderStatus, needYUV=$needYUV, doRender=$doRender, frameIndex=$frameIndex, bufferInfo.size=${bufferInfo.size}")
+
                         if (needYUV && doRender) {
                             yuvProcess(decoder, decoderStatus)
                         }
@@ -630,30 +657,46 @@ class HardDecoder(player: AnimPlayer) : Decoder(player), SurfaceTexture.OnFrameA
      * 获取到解码后每一帧的YUV数据，裁剪出正确的尺寸
      */
     private fun yuvProcess(decoder: MediaCodec, outputIndex: Int) {
-        val outputBuffer = decoder.outputBuffers[outputIndex]
+        ALog.d(TAG, "yuvProcess: renderThread.handler=${renderThread.handler != null}, renderThread.thread=${renderThread.thread != null}")
+        val outputBuffer = decoder.getOutputBuffer(outputIndex)
+
         outputBuffer?.let {
-            it.position(0)
-            it.limit(bufferInfo.offset + bufferInfo.size)
-            var yuvData = ByteArray(outputBuffer.remaining())
-            outputBuffer.get(yuvData)
+            try {
+                it.position(0)
+                it.limit(bufferInfo.offset + bufferInfo.size)
 
-            if (yuvData.isNotEmpty()) {
-                var yData = ByteArray(videoWidth * videoHeight)
-                var uData = ByteArray(videoWidth * videoHeight / 4)
-                var vData = ByteArray(videoWidth * videoHeight / 4)
+                var yuvData = ByteArray(outputBuffer.remaining())
+                outputBuffer.get(yuvData)
 
-                if (outputFormat?.getInteger(MediaFormat.KEY_COLOR_FORMAT) == MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar) {
-                    yuvData = yuv420spTop(yuvData)
+                if (yuvData.isNotEmpty()) {
+                    var yData = ByteArray(videoWidth * videoHeight)
+                    var uData = ByteArray(videoWidth * videoHeight / 4)
+                    var vData = ByteArray(videoWidth * videoHeight / 4)
+
+                    val colorFormat = try {
+                        outputFormat?.getInteger(MediaFormat.KEY_COLOR_FORMAT) ?: 0
+                    } catch (e: Exception) {
+                        0
+                    }
+
+                    if (colorFormat == MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar) {
+                        yuvData = yuv420spTop(yuvData)
+                    }
+
+                    yuvCopy(yuvData, 0, alignWidth, alignHeight, yData, videoWidth, videoHeight)
+                    yuvCopy(yuvData, alignWidth * alignHeight, alignWidth / 2, alignHeight / 2, uData, videoWidth / 2, videoHeight / 2)
+                    yuvCopy(yuvData, alignWidth * alignHeight * 5 / 4, alignWidth / 2, alignHeight / 2, vData, videoWidth / 2, videoHeight / 2)
+
+                    render?.setYUVData(videoWidth, videoHeight, yData, uData, vData)
+                    ALog.i(TAG, "yuvProcess: setYUVData called successfully - width=$videoWidth, height=$videoHeight, render=${render != null}")
+                    renderData()
+                } else {
+                    ALog.w(TAG, "yuvProcess: yuvData is empty, bufferInfo.size=${bufferInfo.size}")
                 }
-
-                yuvCopy(yuvData, 0, alignWidth, alignHeight, yData, videoWidth, videoHeight)
-                yuvCopy(yuvData, alignWidth * alignHeight, alignWidth / 2, alignHeight / 2, uData, videoWidth / 2, videoHeight / 2)
-                yuvCopy(yuvData, alignWidth * alignHeight * 5 / 4, alignWidth / 2, alignHeight / 2, vData, videoWidth / 2, videoHeight / 2)
-
-                render?.setYUVData(videoWidth, videoHeight, yData, uData, vData)
-                renderData()
+            } catch (e: Throwable) {
+                ALog.e(TAG, "yuvProcess: Exception occurred - $e", e)
             }
-        }
+        } ?: ALog.w(TAG, "yuvProcess: outputBuffer is null")
     }
 
     private fun yuv420spTop(yuv420sp: ByteArray): ByteArray {
