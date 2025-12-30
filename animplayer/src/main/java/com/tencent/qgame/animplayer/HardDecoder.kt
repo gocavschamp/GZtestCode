@@ -18,6 +18,7 @@ package com.tencent.qgame.animplayer
 import android.graphics.SurfaceTexture
 import android.media.MediaCodec
 import android.media.MediaCodecInfo
+import android.media.MediaCodecList
 import android.media.MediaExtractor
 import android.media.MediaFormat
 import android.os.Build
@@ -160,11 +161,18 @@ class HardDecoder(player: AnimPlayer) : Decoder(player), SurfaceTexture.OnFrameA
                 player.configManager.config?.videoFormat = AnimConfig.FORMAT_NORMAL_MP4_WITH_ALPHA
                 player.configManager.config?.hasAlpha = true
             }
-            needYUV = videoWidth % 16 != 0 && player.enableVersion1
+//            needYUV = videoWidth % 16 != 0 && player.enableVersion1
+            // 检测是否为OPPO设备
+            val isOppoDevice = Build.MANUFACTURER?.lowercase()?.contains("oppo") == true
+
+            // OPPO设备特殊处理：当宽度不能被16整除时，强制使用YUV渲染，无论是否开启兼容模式
+            needYUV = (videoWidth % 16 != 0 && player.enableVersion1) || (isOppoDevice && videoWidth % 16 != 0)
+
             if (hasAlphaChannel) {
                 needYUV = false
                 ALog.i(TAG, "Video has alpha channel, force use normal render mode")
             }
+            ALog.i(TAG, "Render mode: needYUV=$needYUV, isOppoDevice=$isOppoDevice, videoWidth=$videoWidth")
             try {
                 if (!prepareRender(needYUV)) {
                     throw RuntimeException("render create fail")
@@ -207,19 +215,134 @@ class HardDecoder(player: AnimPlayer) : Decoder(player), SurfaceTexture.OnFrameA
         try {
             val mime = format.getString(MediaFormat.KEY_MIME) ?: ""
             ALog.i(TAG, "Video MIME is $mime")
-            decoder = MediaCodec.createDecoderByType(mime).apply {
+            // OPPO手机特殊处理：检测是否为OPPO设备并优化内存配置
+            val isOppoDevice = Build.MANUFACTURER?.lowercase()?.contains("oppo") == true
+
+            // 尝试使用软件解码器作为最后的手段
+            var useSoftwareDecoder = false
+            var decoderName: String? = null
+            
+            // 如果是OPPO设备且视频尺寸非标准，优先尝试软件解码器
+            if (isOppoDevice && (videoWidth % 16 != 0 || videoWidth == 1500)) {
+                decoderName = findSoftwareDecoder(mime)
+                if (decoderName != null) {
+                    ALog.i(TAG, "OPPO device with non-standard video, using software decoder: $decoderName")
+                    useSoftwareDecoder = true
+                }
+            }
+            
+            decoder = if (useSoftwareDecoder && decoderName != null) {
+                MediaCodec.createByCodecName(decoderName)
+            } else {
+                MediaCodec.createDecoderByType(mime)
+            }.apply {
+                // OPPO设备优化：应用更保守的内存配置
+                if (isOppoDevice) {
+                    // 限制最大输入大小，避免内存分配失败
+//                    format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 1024 * 1024)
+                    format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 512 * 1024) // 进一步减小到512KB
+                    // 尝试设置更小的缓冲区数量
+                    try {
+                        format.setInteger("max-width", videoWidth)
+                        format.setInteger("max-height", videoHeight)
+                        // 尝试设置更小的缓冲区数量
+                        format.setInteger("max-buffer-count", 2)
+                    } catch (e: Exception) {
+                        ALog.w(TAG, "Failed to set max dimensions: $e")
+                    }
+                    ALog.i(TAG, "OPPO device detected, applying aggressive memory optimization: max-input-size=512KB")
+                }
                 if (needYUV) {
                     format.setInteger(
                             MediaFormat.KEY_COLOR_FORMAT,
                             MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar
                     )
-                    configure(format, null, null, 0)
+
+                    if (isOppoDevice) {
+                        try {
+                            configure(format, null, null, 0)
+                        } catch (e: Exception) {
+                            ALog.w(TAG, "OPPO YUV configure failed, trying alternative: $e")
+                            // 尝试使用其他颜色格式
+                            format.setInteger(
+                                MediaFormat.KEY_COLOR_FORMAT,
+                                MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar
+                            )
+                            configure(format, null, null, 0)
+                        }
+                    } else {
+                        configure(format, null, null, 0)
+                    }
                 } else {
                     surface = Surface(glTexture)
-                    configure(format, surface, null, 0)
+                    // OPPO设备优化：使用更保守的配置
+                    if (isOppoDevice) {
+                        // 对于非标准尺寸视频，直接使用YUV模式，避免Surface渲染问题
+                        ALog.i(TAG, "OPPO device with non-standard video size ($videoWidth x $videoHeight), forcing YUV mode")
+                        format.setInteger(
+                            MediaFormat.KEY_COLOR_FORMAT,
+                            MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar
+                        )
+                        configure(format, null, null, 0)
+                        needYUV = true
+                    } else {
+                        configure(format, surface, null, 0)
+                    }
+                }
+                // OPPO设备优化：延迟启动，避免内存竞争
+                if (isOppoDevice) {
+                    Thread.sleep(100) // 短暂延迟，让系统有足够时间分配资源
                 }
 
-                start()
+                try {
+                    start()
+                } catch (e: Exception) {
+                    ALog.e(TAG, "MediaCodec start failed: $e")
+                    
+                    // 如果硬件解码器失败，尝试软件解码器
+                    if (!useSoftwareDecoder) {
+                        val softwareDecoderName = findSoftwareDecoder(mime)
+                        if (softwareDecoderName != null) {
+                            ALog.i(TAG, "Hardware decoder failed, trying software decoder: $softwareDecoderName")
+                            try {
+                                decoder?.stop()
+                                decoder?.release()
+                                decoder = MediaCodec.createByCodecName(softwareDecoderName)
+                                
+                                // 重新配置软件解码器
+                                if (needYUV) {
+                                    format.setInteger(
+                                        MediaFormat.KEY_COLOR_FORMAT,
+                                        MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar
+                                    )
+                                    decoder?.configure(format, null, null, 0)
+                                } else {
+                                    decoder?.configure(format, surface, null, 0)
+                                }
+                                
+                                decoder?.start()
+                                ALog.i(TAG, "Software decoder started successfully")
+                                
+                                // 继续解码流程
+                                decodeThread.handler?.post {
+                                    try {
+                                        startDecode(extractor, decoder!!)
+                                    } catch (e: Throwable) {
+                                        ALog.e(TAG, "Software decoder exception e=$e", e)
+                                        onFailed(Constant.REPORT_ERROR_TYPE_DECODE_EXC, "${Constant.ERROR_MSG_DECODE_EXC} e=$e")
+                                        release(decoder, extractor)
+                                    }
+                                }
+                                return
+                            } catch (softwareError: Exception) {
+                                ALog.e(TAG, "Software decoder also failed: $softwareError")
+                            }
+                        }
+                    }
+                    
+                    // 如果软件解码器也失败，尝试降级到普通MP4模式
+                    throw RuntimeException("MediaCodec start failed, need fallback")
+                }
                 decodeThread.handler?.post {
                     try {
                         startDecode(extractor, this)
@@ -237,6 +360,32 @@ class HardDecoder(player: AnimPlayer) : Decoder(player), SurfaceTexture.OnFrameA
             return
         }
     }
+    /**
+     * 查找软件解码器
+     */
+    private fun findSoftwareDecoder(mimeType: String): String? {
+        try {
+            val codecInfos = MediaCodecList(MediaCodecList.REGULAR_CODECS)
+            for (codecInfo in codecInfos.codecInfos) {
+                if (!codecInfo.isEncoder && codecInfo.supportedTypes.contains(mimeType)) {
+                    val codecName = codecInfo.name.lowercase()
+                    // 查找软件解码器（通常包含"sw"、"google"、"omx.google"等关键词）
+                    if (codecName.contains("sw") || 
+                        codecName.contains("google") || 
+                        codecName.contains("omx.google") ||
+                        codecName.contains("c2.android")) {
+                        ALog.i(TAG, "Found software decoder: ${codecInfo.name}")
+                        return codecInfo.name
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            ALog.w(TAG, "Error finding software decoder: $e")
+        }
+        ALog.w(TAG, "No software decoder found for $mimeType")
+        return null
+    }
+
     /**
      * 降级模式：普通 MP4 播放
      */
@@ -286,8 +435,43 @@ class HardDecoder(player: AnimPlayer) : Decoder(player), SurfaceTexture.OnFrameA
 
             decoder = MediaCodec.createDecoderByType(mime).apply {
                 surface = Surface(glTexture)
-                configure(format, surface, null, 0)
-                start()
+                // OPPO设备优化：使用更保守的配置
+                val isOppoDevice = Build.MANUFACTURER?.lowercase()?.contains("oppo") == true
+                if (isOppoDevice) {
+                    // OPPO设备：限制最大输入大小
+//                    format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 1024 * 1024)
+//                    ALog.i(TAG, "OPPO device detected in normal MP4 mode, applying memory optimization")
+                    format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 512 * 1024) // 进一步减小
+                    // 尝试设置更小的缓冲区数量
+                    try {
+                        format.setInteger("max-width", videoWidth)
+                        format.setInteger("max-height", videoHeight)
+                    } catch (e: Exception) {
+                        ALog.w(TAG, "Failed to set max dimensions: $e")
+                    }
+                    ALog.i(TAG, "OPPO device detected in normal MP4 mode, applying aggressive memory optimization: max-input-size=512KB")
+                }
+//                configure(format, surface, null, 0)
+//                start()
+
+                try {
+                    configure(format, surface, null, 0)
+                } catch (e: Exception) {
+                    ALog.e(TAG, "Normal MP4 configure failed: $e")
+                    throw RuntimeException("Normal MP4 configure failed")
+                }
+
+                // OPPO设备优化：延迟启动
+                if (isOppoDevice) {
+                    Thread.sleep(50)
+                }
+
+                try {
+                    start()
+                } catch (e: Exception) {
+                    ALog.e(TAG, "Normal MP4 start failed: $e")
+                    throw RuntimeException("Normal MP4 start failed")
+                }
                 decodeThread.handler?.post {
                     try {
                         startDecode(extractor, this)
@@ -368,9 +552,26 @@ class HardDecoder(player: AnimPlayer) : Decoder(player), SurfaceTexture.OnFrameA
                                 if (stride > 0 && sliceHeight > 0) {
                                     alignWidth = stride
                                     alignHeight = sliceHeight
+                                    ALog.i(TAG, "Updated align size: stride=$stride, sliceHeight=$sliceHeight, alignWidth=$alignWidth, alignHeight=$alignHeight")
+                                } else {
+                                    // 某些设备可能不支持stride和slice-height，使用视频原始尺寸
+                                    alignWidth = videoWidth
+                                    alignHeight = videoHeight
+                                    ALog.i(TAG, "Using video original size as align size: $videoWidth x $videoHeight")
+                                }
+
+                                // 获取颜色格式
+                                try {
+                                    colorFormat = getInteger(MediaFormat.KEY_COLOR_FORMAT)
+                                    ALog.i(TAG, "Output color format: $colorFormat")
+                                } catch (e: Exception) {
+                                    ALog.w(TAG, "Failed to get color format: $e")
                                 }
                             } catch (t: Throwable) {
                                 ALog.e(TAG, "$t", t)
+                                // 发生异常时，使用视频原始尺寸
+                                alignWidth = videoWidth
+                                alignHeight = videoHeight
                             }
                         }
                         ALog.i(TAG, "decoder output format changed: $outputFormat")

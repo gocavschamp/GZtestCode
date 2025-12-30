@@ -59,8 +59,8 @@ class AnimSimpleDemoActivity : Activity(), IAnimListener {
 //        VideoInfo("motan.mp4", "3132824326bb07a1143739863e1e5762"),
 //        VideoInfo("bbq.mp4", "3132824326bb07a1143739863e1e5762"),
 //        VideoInfo("miansha.mp4", "3132824326bb07a1143739863e1e5762"),
-        VideoInfo("paoche.mp4", "3132824326bb07a1143739863e1e5762"),
-//        VideoInfo("quanzhang.mp4", "3132824326bb07a1143739863e1e5762"),
+//        VideoInfo("paoche.mp4", "3132824326bb07a1143739863e1e5762"),
+        VideoInfo("quanzhang.mp4", "3132824326bb07a1143739863e1e5762"),
     )
 //    private val videoInfo = VideoInfo("demo.mp4", "3132824326bb07a1143739863e1e5762")
 //    private val videoInfo = VideoInfo("test1.mp4", "3132824326bb07a1143739863e1e5762")
