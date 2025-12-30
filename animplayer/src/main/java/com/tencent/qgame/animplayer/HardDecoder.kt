@@ -191,13 +191,14 @@ class HardDecoder(player: AnimPlayer) : Decoder(player), SurfaceTexture.OnFrameA
                 ALog.i(TAG, "Video has alpha channel, force use normal render mode")
             }
             
-            // OPPO设备额外检查：对于非标准尺寸视频（如1440x1280），强制使用YUV模式
+            // OPPO设备额外检查：对于非标准尺寸视频，强制使用YUV模式
             // 这需要在prepareRender之前执行，以确保创建正确的渲染器类型
             if (isOppoDevice && !needYUV && !hasAlphaChannel) {
-                // 检查视频尺寸是否为非标准尺寸
-                val isNonStandardSize = (videoWidth == 1440 && videoHeight == 1280) ||
-                                       (videoWidth == 1500) ||
-                                       (videoWidth % 16 != 0)
+                // 检查视频尺寸是否为非标准尺寸（宽度不能被16整除，或宽高比异常）
+                val isNonStandardSize = (videoWidth % 16 != 0) ||
+                                       (videoHeight % 16 != 0) ||
+                                       (videoWidth.toFloat() / videoHeight < 0.5f) ||
+                                       (videoWidth.toFloat() / videoHeight > 2.0f)
                 if (isNonStandardSize) {
                     needYUV = true
                     ALog.i(TAG, "OPPO device with non-standard video size ($videoWidth x $videoHeight), forcing YUV mode before render creation")
@@ -255,7 +256,7 @@ class HardDecoder(player: AnimPlayer) : Decoder(player), SurfaceTexture.OnFrameA
             var decoderName: String? = null
 
             // 如果是OPPO设备且视频尺寸非标准，优先尝试软件解码器
-            if (isOppoDevice && (videoWidth % 16 != 0 || videoWidth == 1500)) {
+            if (isOppoDevice && (videoWidth % 16 != 0 || videoHeight % 16 != 0)) {
                 decoderName = findSoftwareDecoder(mime)
                 if (decoderName != null) {
                     ALog.i(TAG, "OPPO device with non-standard video, using software decoder: $decoderName")
