@@ -15,6 +15,9 @@
  */
 package com.tencent.qgame.animplayer
 
+import android.media.MediaExtractor
+import android.media.MediaFormat
+import com.tencent.qgame.animplayer.file.FileContainer
 import com.tencent.qgame.animplayer.file.IFileContainer
 import com.tencent.qgame.animplayer.inter.IAnimListener
 import com.tencent.qgame.animplayer.mask.MaskConfig
@@ -57,7 +60,8 @@ class AnimPlayer(val animView: IAnimView) {
 
     val configManager = AnimConfigManager(this)
     val pluginManager = AnimPluginManager(this)
-
+    // 添加新属性：是否自动检测VAP格式
+    var autoDetectVapFormat: Boolean = true
     fun onSurfaceTextureDestroyed() {
         isSurfaceAvailable = false
         isStartRunning = false
@@ -85,26 +89,49 @@ class AnimPlayer(val animView: IAnimView) {
             decoder?.onVideoComplete()
             return
         }
+
         // 在线程中解析配置
         decoder?.renderThread?.handler?.post {
             val result = configManager.parseConfig(fileContainer, enableVersion1, videoMode, defaultFps)
+            ALog.i(TAG, "parseConfig result=$result, enableVersion1=$enableVersion1")
+
             if (result != Constant.OK) {
-                isStartRunning = false
-                decoder?.onFailed(result, Constant.getErrorMsg(result))
-                decoder?.onVideoComplete()
-                return@post
+                // 配置解析失败
+                ALog.w(TAG, "Config parse failed (code=$result)")
+
+                // 创建默认配置（尺寸未知，使用占位值）
+                // 实际的视频尺寸会在Decoder.preparePlay中更新
+                val config = AnimConfig().apply {
+                    isDefaultConfig = true
+                    // 关键：根据enableVersion1决定视频格式
+                    if (enableVersion1) {
+                        // 启用VAP模式：当作VAP格式处理
+                        videoFormat = AnimConfig.FORMAT_VAP
+                        hasAlpha = true
+                        ALog.i(TAG, "enableVersion1=true, treating as VAP format")
+                    } else {
+                        // 普通MP4模式
+                        createForNormalMP4(1, 1, Constant.VIDEO_MODE_SPLIT_HORIZONTAL, if (defaultFps > 0) defaultFps else 30)
+                        ALog.i(TAG, "enableVersion1=false, treating as normal MP4")
+                    }
+                }
+                configManager.config = config
             }
-            ALog.i(TAG, "parse ${configManager.config}")
+
+            ALog.i(TAG, "Config: ${configManager.config}")
             val config = configManager.config
-            // 如果是默认配置，因为信息不完整onVideoConfigReady不会被调用
-            if (config != null && (config.isDefaultConfig || animListener?.onVideoConfigReady(config) == true)) {
+
+            // 调用监听器的配置就绪回调
+            if (config != null && (config.isDefaultConfig || config.isNormalMP4 || animListener?.onVideoConfigReady(config) == true)) {
                 innerStartPlay(fileContainer)
             } else {
                 ALog.i(TAG, "onVideoConfigReady return false")
+                isStartRunning = false
+                decoder?.onVideoComplete()
             }
         }
     }
-
+    // 辅助方法：尝试从文件获取视频尺寸
     private fun innerStartPlay(fileContainer: IFileContainer) {
         synchronized(AnimPlayer::class.java) {
             if (isSurfaceAvailable) {
@@ -153,5 +180,47 @@ class AnimPlayer(val animView: IAnimView) {
         configManager.config?.maskConfig?.maskPositionPair = maskConfig?.maskPositionPair
         configManager.config?.maskConfig?.maskTexPair = maskConfig?.maskTexPair
     }
+    // 检测是否为VAP格式的启发式方法
+    private fun shouldTreatAsVap(videoInfo: VideoInfo): Boolean {
+        // 方法1：根据enableVersion1标志
+        if (enableVersion1) {
+            ALog.i(TAG, "enableVersion1=true, treating as VAP")
+            return true
+        }
+
+        // 方法2：检查视频宽高比
+        // VAP格式通常有特殊的宽高比（如2:1左右分割）
+        if (videoInfo.width > videoInfo.height * 1.5) {
+            // 宽度远大于高度，可能是左右分割的VAP
+            ALog.i(TAG, "Video aspect ratio suggests VAP format: ${videoInfo.width}:${videoInfo.height}")
+            return true
+        }
+
+        // 方法3：检查文件名
+        videoInfo.fileName?.let { fileName ->
+            val lowerName = fileName.lowercase()
+            if (lowerName.contains("vap") || lowerName.contains("split") || lowerName.contains("alpha")) {
+                ALog.i(TAG, "File name suggests VAP format: $fileName")
+                return true
+            }
+        }
+
+        // 方法4：检查视频尺寸是否能被2整除（对于左右分割）
+        if (videoInfo.width % 2 == 0) {
+            // 尝试检查左右两半是否相似（更复杂的检测）
+            // 这里可以添加更复杂的检测逻辑
+        }
+
+        return false
+    }
+
+    // 视频信息类
+    data class VideoInfo(
+        val width: Int,
+        val height: Int,
+        val frameRate: Int,
+        val hasAlpha: Boolean,
+        val fileName: String?
+    )
 
 }

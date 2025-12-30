@@ -24,6 +24,7 @@ import java.io.RandomAccessFile
 
 class FileContainer(private val file: File) : IFileContainer {
 
+    fun get() = file
     companion object {
         private const val TAG = "${Constant.TAG}.FileContainer"
     }

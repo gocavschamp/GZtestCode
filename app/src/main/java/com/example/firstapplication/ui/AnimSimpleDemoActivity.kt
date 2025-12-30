@@ -52,8 +52,18 @@ class AnimSimpleDemoActivity : Activity(), IAnimListener {
     data class VideoInfo(val fileName: String,val md5:String)
 
     // ps：每次修改mp4文件，但文件名不变，记得先卸载app，因为assets同名文件不会进行替换
-//    private val videoInfo = VideoInfo("demo.mp4", "3132824326bb07a1143739863e1e5762")
     private val videoInfo = VideoInfo("motan.mp4", "3132824326bb07a1143739863e1e5762")
+    var videoList = listOf(
+//        VideoInfo("demo.mp4", "3132824326bb07a1143739863e1e5762"),
+//        VideoInfo("test1.mp4", "3132824326bb07a1143739863e1e5762"),
+//        VideoInfo("motan.mp4", "3132824326bb07a1143739863e1e5762"),
+//        VideoInfo("bbq.mp4", "3132824326bb07a1143739863e1e5762"),
+//        VideoInfo("miansha.mp4", "3132824326bb07a1143739863e1e5762"),
+        VideoInfo("paoche.mp4", "3132824326bb07a1143739863e1e5762"),
+//        VideoInfo("quanzhang.mp4", "3132824326bb07a1143739863e1e5762"),
+    )
+//    private val videoInfo = VideoInfo("demo.mp4", "3132824326bb07a1143739863e1e5762")
+//    private val videoInfo = VideoInfo("test1.mp4", "3132824326bb07a1143739863e1e5762")
 
     // 动画View
     private lateinit var animView: AnimView
@@ -86,7 +96,7 @@ class AnimSimpleDemoActivity : Activity(), IAnimListener {
          * 开始播放主流程
          * ps: 主要流程都是对AnimView的操作，其它比如队列，或改变窗口大小等操作都不是必须的
          */
-        play(videoInfo)
+        play(videoList.elementAt(0))
     }
 
 
@@ -98,6 +108,7 @@ class AnimSimpleDemoActivity : Activity(), IAnimListener {
             val md5 = FileUtil.getFileMD5(file)
 //            if (videoInfo.md5 == md5) {
                 // 开始播放动画文件
+            animView.enableVersion1(true)
                 animView.startPlay(file)
 //            } else {
 //                Log.e(TAG, "md5 is not match, error md5=$md5")
@@ -183,13 +194,16 @@ class AnimSimpleDemoActivity : Activity(), IAnimListener {
     }
 
 
+    var index = 0
     private fun initTestView() {
         binding.btnLayout.visibility = View.VISIBLE
         /**
          * 开始播放按钮
          */
         binding.btnPlay.setOnClickListener {
-            play(videoInfo)
+            play(videoList.elementAt(index))
+            index++
+//            play(videoInfo)
         }
         /**
          * 结束视频按钮
@@ -200,8 +214,11 @@ class AnimSimpleDemoActivity : Activity(), IAnimListener {
     }
 
     private fun loadFile() {
-        val files = Array(1) {
-            videoInfo.fileName
+//        val files = Array(1) {
+//            videoInfo.fileName
+//        }
+        val files = Array(videoList.size) {
+            videoList[it].fileName
         }
         FileUtil.copyAssetsToStorage(this, dir, files) {
             uiHandler.post {

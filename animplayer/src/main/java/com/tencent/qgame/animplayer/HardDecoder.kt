@@ -51,6 +51,8 @@ class HardDecoder(player: AnimPlayer) : Decoder(player), SurfaceTexture.OnFrameA
     private var outputFormat: MediaFormat? = null
     // 添加标志位，标识是否正在使用普通 MP4 模式
     private var isNormalMP4Mode = false
+    // 视频颜色格式
+    private var colorFormat: Int = 0
     override fun start(fileContainer: IFileContainer) {
         isStopReq = false
         needDestroy = false
@@ -135,12 +137,34 @@ class HardDecoder(player: AnimPlayer) : Decoder(player), SurfaceTexture.OnFrameA
             alignWidth = videoWidth
             alignHeight = videoHeight
             ALog.i(TAG, "Video size is $videoWidth x $videoHeight")
+// 检测颜色格式，判断是否有透明通道
+            colorFormat = try {
+                format.getInteger(MediaFormat.KEY_COLOR_FORMAT)
+            } catch (e: Exception) {
+                0
+            }
 
+            ALog.i(TAG, "Video color format: $colorFormat")
+
+            // 判断是否为RGBA格式（有透明通道）
+            val hasAlphaChannel = colorFormat == MediaCodecInfo.CodecCapabilities.COLOR_Format32bitABGR8888 ||
+                    colorFormat == MediaCodecInfo.CodecCapabilities.COLOR_Format32bitARGB8888 ||
+                    colorFormat == MediaCodecInfo.CodecCapabilities.COLOR_Format32bitBGRA8888 ||
+                    colorFormat == MediaCodecInfo.CodecCapabilities.COLOR_Format24bitBGR888
             // 由于使用mediacodec解码老版本素材时对宽度1500尺寸的视频进行数据对齐，解码后的宽度变成1504，导致采样点出现偏差播放异常
             // 所以当开启兼容老版本视频模式并且老版本视频的宽度不能被16整除时要走YUV渲染逻辑
             // 但是这样直接判断有风险，后期想办法改
+            // 如果有透明通道，更新配置
+            if (hasAlphaChannel && player.configManager.config?.isDefaultConfig == true) {
+                ALog.i(TAG, "Video has alpha channel, updating config")
+                player.configManager.config?.videoFormat = AnimConfig.FORMAT_NORMAL_MP4_WITH_ALPHA
+                player.configManager.config?.hasAlpha = true
+            }
             needYUV = videoWidth % 16 != 0 && player.enableVersion1
-
+            if (hasAlphaChannel) {
+                needYUV = false
+                ALog.i(TAG, "Video has alpha channel, force use normal render mode")
+            }
             try {
                 if (!prepareRender(needYUV)) {
                     throw RuntimeException("render create fail")
@@ -153,19 +177,20 @@ class HardDecoder(player: AnimPlayer) : Decoder(player), SurfaceTexture.OnFrameA
             // 准备播放，这里可能抛出配置解析错误
             try {
                 preparePlay(videoWidth, videoHeight)
+                render?.apply {
+                    glTexture = SurfaceTexture(getExternalTexture()).apply {
+                        setOnFrameAvailableListener(this@HardDecoder)
+                        setDefaultBufferSize(videoWidth, videoHeight)
+                    }
+                    clearFrame()
+                }
             } catch (configError: Throwable) {
                 // 配置解析失败，降级为普通 MP4 模式
                 ALog.w(TAG, "Config parse failed, fallback to normal MP4: ${configError.message}")
                 throw RuntimeException("Config parse failed, need fallback")
             }
 
-            render?.apply {
-                glTexture = SurfaceTexture(getExternalTexture()).apply {
-                    setOnFrameAvailableListener(this@HardDecoder)
-                    setDefaultBufferSize(videoWidth, videoHeight)
-                }
-                clearFrame()
-            }
+
 
         } catch (e: Throwable) {
             // 如果是配置解析错误，重新抛出以便降级处理
