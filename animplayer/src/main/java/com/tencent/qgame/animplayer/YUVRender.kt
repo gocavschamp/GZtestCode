@@ -287,12 +287,12 @@ class YUVRender (surfaceTexture: SurfaceTexture): IRenderListener {
     }
     private fun cleanup() {
         // 不要清空y、u、v数据，这些数据由硬解码器持续提供
-        // y?.clear()
-        // u?.clear()
-        // v?.clear()
-        // y = null
-        // u = null
-        // v = null
+         y?.clear()
+         u?.clear()
+         v?.clear()
+         y = null
+         u = null
+         v = null
         GLES20.glDisableVertexAttribArray(avPosition)
         GLES20.glDisableVertexAttribArray(rgbPosition)
         GLES20.glDisableVertexAttribArray(alphaPosition)

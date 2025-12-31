@@ -54,14 +54,14 @@ class AnimSimpleDemoActivity : Activity(), IAnimListener {
     // ps：每次修改mp4文件，但文件名不变，记得先卸载app，因为assets同名文件不会进行替换
     private val videoInfo = VideoInfo("motan.mp4", "3132824326bb07a1143739863e1e5762")
     var videoList = listOf(
-        VideoInfo("demo.mp4", "3132824326bb07a1143739863e1e5762"),
+//        VideoInfo("demo.mp4", "3132824326bb07a1143739863e1e5762"),
 //        VideoInfo("test1.mp4", "3132824326bb07a1143739863e1e5762"),
 //        VideoInfo("motan.mp4", "3132824326bb07a1143739863e1e5762"),
 //        VideoInfo("bbq.mp4", "3132824326bb07a1143739863e1e5762"),
 //        VideoInfo("miansha.mp4", "3132824326bb07a1143739863e1e5762"),
 //        VideoInfo("paoche.mp4", "3132824326bb07a1143739863e1e5762"),
 //        VideoInfo("quanzhang.mp4", "3132824326bb07a1143739863e1e5762"),
-//        VideoInfo("youting.mp4", "3132824326bb07a1143739863e1e5762"),
+        VideoInfo("youting.mp4", "3132824326bb07a1143739863e1e5762"),
     )
 //    private val videoInfo = VideoInfo("demo.mp4", "3132824326bb07a1143739863e1e5762")
 //    private val videoInfo = VideoInfo("test1.mp4", "3132824326bb07a1143739863e1e5762")
