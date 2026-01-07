@@ -139,6 +139,10 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "vap", Toast.LENGTH_SHORT).show()
             startActivity(Intent(this, AnimSimpleDemoActivity::class.java))
         }
+        binding.scale.setOnClickListener {
+            Toast.makeText(this, "scale", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(this, ScaleDemoActivity::class.java))
+        }
         val circleCrop: Transformation<Bitmap?> = CircleCrop()
         Glide.with(this)
             .load(R.raw.ic_room_bottom_gift)
@@ -159,38 +163,6 @@ class MainActivity : AppCompatActivity() {
                    )
                    gameInt = 1
 //               }
-//               2 -> {
-//                   GameActivity.launch(
-//                       context = this,
-//                       keepInBackground = true,
-//                       transparentMode = true,
-//                       opaqueRatio = 0.3f,
-//                       opaquePosition = GameActivity.POSITION_BOTTOM,
-//                       showControls = true
-//                   )
-//                   gameInt = 3
-//               }
-//               3 -> {
-//                   GameActivity.launch(
-//                       context = this,
-//                       keepInBackground = false,
-//                       transparentMode = false,
-//                       showControls = false
-//                   )
-//                   gameInt = 4
-//               }
-//               4 -> {
-//                   GameActivity.launch(
-//                       context = this,
-//                       keepInBackground = true,
-//                       transparentMode = true,
-//                       opaqueRatio = 0.7f,
-//                       opaquePosition = GameActivity.POSITION_CUSTOM,
-//                       showControls = true
-//                   )
-//                   gameInt = 0
-//               }
-//           }
         }
 
     }
