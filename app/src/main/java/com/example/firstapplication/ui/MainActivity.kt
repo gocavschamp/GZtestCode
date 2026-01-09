@@ -25,6 +25,9 @@ import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.example.baseapi.floatview.FloatViewRouter
 import com.example.firstapplication.R
 import com.example.firstapplication.databinding.ActivityMainBinding
+import com.ywm.baselibray.utils.enableRightSwipeToDismiss
+import com.ywm.baselibray.utils.enableRightSwipeToDismissSimple
+import com.ywm.baselibray.utils.enableRightSwipeToDismissV2
 
 
 @Route(path = "/module/main")
@@ -61,6 +64,17 @@ class MainActivity : AppCompatActivity() {
         setupSendButton()
         // 初始化Handler，绑定到主线程Looper
         pollingHandler = Handler(Looper.getMainLooper())
+        // 方法1：使用 GestureDetector 版本
+        binding.testFrameLayout.setOndismissListener{
+            Toast.makeText(this, "dismiss", Toast.LENGTH_SHORT).show()
+        }
+        binding.testButton.setOnClickListener {
+            Toast.makeText(this, "click", Toast.LENGTH_SHORT).show()
+            binding.testFrameLayout.isVisible = true
+        }
+
+//         或者方法2：使用自定义触摸处理版本
+//        binding.testFrameLayout.enableRightSwipeToDismissV2()
 //        startPolling()
 //        binding.colorText.onclick = {
 //            Toast.makeText(this, "dian ji", Toast.LENGTH_SHORT).show()

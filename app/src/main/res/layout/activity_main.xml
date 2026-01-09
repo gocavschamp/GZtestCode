@@ -267,4 +267,27 @@
         android:textColor="#FF0000"
     android:background="#33000000"
     />
+
+    <com.ywm.baselibray.weiget.SwipeDismissConstraintLayout
+        app:layout_constraintTop_toTopOf="parent"
+        android:id="@+id/testFrameLayout"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:background="#2196F3"
+        android:clickable="true"
+        android:focusable="true">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/testButton"
+            android:background="@color/white"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_gravity="center"
+            android:text="Test Button"
+            android:padding="16dp" />
+
+    </com.ywm.baselibray.weiget.SwipeDismissConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
