@@ -30,22 +30,31 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-        android:id="@+id/picker"
-        android:layout_width="100dp"
-        android:layout_height="40dp"
-        android:text="选图片"
+    <com.ywm.baselibray.weiget.ShineViewWrapper
+        android:id="@+id/shineView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintLeft_toLeftOf="@id/image"
-        app:layout_constraintTop_toBottomOf="@id/image" />
+        app:layout_constraintTop_toBottomOf="@id/image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/picker"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:text="选图片"
+            app:layout_constraintLeft_toLeftOf="@id/image"
+            app:layout_constraintTop_toBottomOf="@id/image" />
+    </com.ywm.baselibray.weiget.ShineViewWrapper>
+
 
     <Button
         android:id="@+id/pag"
         android:layout_width="100dp"
         android:layout_height="40dp"
         android:text="pag图片"
-        app:layout_constraintLeft_toLeftOf="@id/picker"
-        app:layout_constraintTop_toBottomOf="@id/picker" />
+        app:layout_constraintLeft_toLeftOf="@id/shineView"
+        app:layout_constraintTop_toBottomOf="@id/shineView" />
     <Button
         android:id="@+id/game"
         android:layout_width="100dp"
@@ -254,23 +263,32 @@
             android:text="Send" />
 
     </LinearLayout>
-    <com.example.firstapplication.ui.widgit.ShineTextView
+    <com.ywm.baselibray.weiget.ShineViewWrapper
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:id="@+id/shineTextView"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="wrap_content">
+        <com.example.firstapplication.ui.widgit.ShineTextView
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:id="@+id/shineTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
 
-        android:text="流光文字效果"
-        android:textSize="20sp"
-        android:textColor="#FF0000"
-    android:background="#33000000"
-    />
+            android:text="流光文字效果"
+            android:textSize="20sp"
+            android:textColor="#FF0000"
+            android:background="#33000000"
+            />
+    </com.ywm.baselibray.weiget.ShineViewWrapper>
+
 
     <com.ywm.baselibray.weiget.SwipeDismissConstraintLayout
         app:layout_constraintTop_toTopOf="parent"
         android:id="@+id/testFrameLayout"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="200dp"
         android:background="#2196F3"
@@ -281,7 +299,7 @@
             android:id="@+id/testButton"
             android:background="@color/white"
             android:layout_width="150dp"
-            android:layout_height="150dp"
+            android:layout_height="200dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"

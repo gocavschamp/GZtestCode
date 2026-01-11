@@ -65,8 +65,9 @@ class MainActivity : AppCompatActivity() {
         // 初始化Handler，绑定到主线程Looper
         pollingHandler = Handler(Looper.getMainLooper())
         // 方法1：使用 GestureDetector 版本
-        binding.testFrameLayout.setOndismissListener{
-            Toast.makeText(this, "dismiss", Toast.LENGTH_SHORT).show()
+        binding.testFrameLayout.setOnDismissListener {
+//            binding.testFrameLayout.isVisible = true
+//            Toast.makeText(this, "dismiss", Toast.LENGTH_SHORT).show()
         }
         binding.testButton.setOnClickListener {
             Toast.makeText(this, "click", Toast.LENGTH_SHORT).show()
