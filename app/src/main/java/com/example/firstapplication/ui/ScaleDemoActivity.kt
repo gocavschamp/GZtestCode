@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
@@ -53,6 +54,11 @@ class ScaleDemoActivity : AppCompatActivity() {
         }
         binding = ActivityScaleBinding.inflate(layoutInflater)
         val root = binding.root
+        binding.swipeLayout.setOnChildScrollUpCallback { parent, child ->
+            // 当 AppBarLayout 完全展开（垂直偏移为0）时，才允许下拉刷新
+            // 否则，返回 true 表示子View还能向上滚动，阻止下拉刷新
+            binding.appBarLayout.top != 0
+        }
         setContentView(root)
         // 设置Toolbar
 //        setSupportActionBar(binding.toolbar)
@@ -133,6 +139,7 @@ private fun initListeners() {
     // 监听 AppBarLayout 的折叠状态
     binding.appBarLayout.addOnOffsetChangedListener { appBarLayout, verticalOffset ->
         // verticalOffset 从 0（展开）到 -appBarLayout.totalScrollRange（完全折叠）
+        Log.e("tag","hegiht $verticalOffset")
         val scrollRange = appBarLayout.totalScrollRange
         val progress = if (scrollRange != 0) {
             -verticalOffset / scrollRange.toFloat()

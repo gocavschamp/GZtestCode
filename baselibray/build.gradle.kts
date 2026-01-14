@@ -59,6 +59,9 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     implementation("com.tencent.tav:libpag:4.3.43")
+    api(libs.utilcodex)
+    api(libs.androidx.swiperefreshlayout)
+
 // 使用最新版本
     implementation("com.squareup.okhttp3:okhttp:4.11.0")
 // 网络下载

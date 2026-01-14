@@ -21,6 +21,9 @@ webpdecoder = "2.7.4.16.0"
 svga = "2.6.1"
 lottieVersion = "5.2.0"
 flexbox = '3.0.0'
+utilcodexVersion = '1.31.1'
+swiperefreshlayout = "1.1.0"
+
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -43,7 +46,9 @@ gift-lottie = { group = "com.airbnb.android", name = "lottie", version.ref = "lo
 svga = { group = "com.github.yyued", name = "SVGAPlayer-Android", version.ref = "svga" }
 vap = { module = "io.github.tencent:vap", version.ref = "vap" }
 webpdecoder = { module = "com.github.zjupure:webpdecoder", version.ref = "webpdecoder" }
+utilcodex = { group = "com.blankj", name = "utilcodex", version.ref = "utilcodexVersion" }
 android-flexbox = { group = "com.google.android.flexbox", name = "flexbox", version.ref = "flexbox" }
+androidx-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

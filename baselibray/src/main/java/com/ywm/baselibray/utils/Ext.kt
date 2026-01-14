@@ -628,3 +628,8 @@ private fun resetViewPosition(view: View) {
         start()
     }
 }
+val Int.dp
+    get() = UIUtils.getPixels(this.toFloat())
+
+val Float.dp
+    get() = UIUtils.getPixels(this)
