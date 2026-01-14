@@ -158,6 +158,9 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "scale", Toast.LENGTH_SHORT).show()
             startActivity(Intent(this, ScaleDemoActivity::class.java))
         }
+        binding.dialogUtils.setOnClickListener {
+            startActivity(Intent(this, DialogDemoActivity::class.java))
+        }
         val circleCrop: Transformation<Bitmap?> = CircleCrop()
         Glide.with(this)
             .load(R.raw.ic_room_bottom_gift)
