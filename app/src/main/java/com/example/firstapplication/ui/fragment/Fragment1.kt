@@ -1,5 +1,6 @@
 package com.example.firstapplication.ui.fragment
 
+import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.os.Looper
@@ -39,8 +40,8 @@ class Fragment1 : Fragment() {
         binding.recyclerView.layoutManager = LinearLayoutManager(context)
         binding.recyclerView.adapter = SimpleAdapter((1..10).map { "Fragment 1 - Item $it" })
         // 解决滑动冲突
-        setupSwipeConflictResolution( binding.recyclerView1)
-        setupSwipeConflictResolution( binding.recyclerView)
+        setupSwipeConflictResolution( binding.recyclerView1,activity)
+        setupSwipeConflictResolution( binding.recyclerView,activity)
         // 设置触摸监听
 //        binding.recyclerView1.addOnItemTouchListener(object : RecyclerView.SimpleOnItemTouchListener() {
 //            private var startX = 0f
@@ -71,7 +72,7 @@ class Fragment1 : Fragment() {
 //        })
     }
 
-    private fun setupSwipeConflictResolution(recyclerView: RecyclerView) {
+    private fun setupSwipeConflictResolution(recyclerView: RecyclerView,act: Activity?) {
         recyclerView.addOnItemTouchListener(object : RecyclerView.SimpleOnItemTouchListener() {
             private var startX = 0f
             private var startY = 0f
@@ -82,7 +83,7 @@ class Fragment1 : Fragment() {
                         startX = e.x
                         startY = e.y
                         // 禁用ViewPager2滑动
-                        activity?.findViewById<ViewPager2>(R.id.viewPager)?.isUserInputEnabled = false
+                        act?.findViewById<ViewPager2>(R.id.viewPager)?.isUserInputEnabled = false
                     }
                     MotionEvent.ACTION_MOVE -> {
                         val dx = abs(e.x - startX)
@@ -101,7 +102,7 @@ class Fragment1 : Fragment() {
 
                             if (!canScroll) {
                                 // RecyclerView不能继续滑动了，恢复ViewPager2滑动
-                                activity?.findViewById<ViewPager2>(R.id.viewPager)?.isUserInputEnabled = true
+                                act?.findViewById<ViewPager2>(R.id.viewPager)?.isUserInputEnabled = true
                                 return false // 让ViewPager2处理
                             }
                         }
@@ -109,7 +110,7 @@ class Fragment1 : Fragment() {
                     MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                         // 延迟恢复ViewPager2滑动，避免立即切换页面
                         android.os.Handler(Looper.getMainLooper()).postDelayed({
-                            activity?.findViewById<ViewPager2>(R.id.viewPager)?.isUserInputEnabled = true
+                            act?.findViewById<ViewPager2>(R.id.viewPager)?.isUserInputEnabled = true
                         }, 300)
                     }
                 }

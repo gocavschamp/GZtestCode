@@ -45,19 +45,25 @@ class ScaleDemoActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // 设置全屏透明状态栏
-        window.apply {
-            clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-            addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-            decorView.systemUiVisibility =
-                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-            statusBarColor = Color.TRANSPARENT
-        }
+//        window.apply {
+//            clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+//            addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+//            decorView.systemUiVisibility =
+//                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+//            statusBarColor = Color.TRANSPARENT
+//        }
         binding = ActivityScaleBinding.inflate(layoutInflater)
         val root = binding.root
         binding.swipeLayout.setOnChildScrollUpCallback { parent, child ->
             // 当 AppBarLayout 完全展开（垂直偏移为0）时，才允许下拉刷新
             // 否则，返回 true 表示子View还能向上滚动，阻止下拉刷新
             binding.appBarLayout.top != 0
+        }
+//        binding.swipeLayout.isEnabled = false
+        binding.swipeLayout.setOnRefreshListener {
+            uiHandler.postDelayed({
+                binding.swipeLayout.isRefreshing = false
+            },2000)
         }
         setContentView(root)
         // 设置Toolbar
@@ -151,10 +157,10 @@ private fun initListeners() {
         val clampedProgress = max(0f, min(1f, progress))
 
         // 根据折叠进度更新 UI
-        updateToolbarAlpha(clampedProgress)
-        updateTitleVisibility(clampedProgress)
-//        updateStatusBarColor(clampedProgress)
-        updateIconColor(clampedProgress)
+//        updateToolbarAlpha(clampedProgress)
+//        updateTitleVisibility(clampedProgress)
+////        updateStatusBarColor(clampedProgress)
+//        updateIconColor(clampedProgress)
     }
 
 }
