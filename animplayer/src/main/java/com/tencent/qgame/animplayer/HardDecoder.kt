@@ -87,6 +87,7 @@ class HardDecoder(player: AnimPlayer) : Decoder(player), SurfaceTexture.OnFrameA
     }
 
     private fun renderData() {
+        if (isStopReq) return
         ALog.d(TAG, "renderData: called - renderThread.handler=${renderThread.handler != null}, needYUV=$needYUV, render=${render != null}")
         renderThread.handler?.post {
             ALog.d(TAG, "renderData: executing in render thread - render=${render != null}")
@@ -97,13 +98,16 @@ class HardDecoder(player: AnimPlayer) : Decoder(player), SurfaceTexture.OnFrameA
                     if (render == null) {
                         ALog.e(TAG, "renderData: render is null in YUV mode!")
                     } else {
-                        ALog.i(TAG, "renderData: calling renderFrame...")
-                        render?.renderFrame()
-                        ALog.i(TAG, "renderData: renderFrame completed")
-                        player.pluginManager.onRendering()
-                        ALog.i(TAG, "renderData: calling swapBuffers...")
-                        render?.swapBuffers()
-                        ALog.i(TAG, "renderData: swapBuffers completed")
+                        // 添加同步机制，避免渲染竞争
+                        synchronized(this@HardDecoder) {
+                            ALog.i(TAG, "renderData: calling renderFrame...")
+                            render?.renderFrame()
+                            ALog.i(TAG, "renderData: renderFrame completed")
+                            player.pluginManager.onRendering()
+                            ALog.i(TAG, "renderData: calling swapBuffers...")
+                            render?.swapBuffers()
+                            ALog.i(TAG, "renderData: swapBuffers completed")
+                        }
                     }
                 } else {
                     glTexture?.apply {

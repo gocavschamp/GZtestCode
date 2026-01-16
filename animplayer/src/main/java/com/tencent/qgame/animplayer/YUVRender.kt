@@ -225,17 +225,19 @@ class YUVRender (surfaceTexture: SurfaceTexture): IRenderListener {
 
     override fun setYUVData(width: Int, height: Int, y: ByteArray?, u: ByteArray?, v: ByteArray?) {
         ALog.i(TAG, "setYUVData: width=$width, height=$height, y size=${y?.size}, u size=${u?.size}, v size=${v?.size}")
-        widthYUV = width
-        heightYUV = height
-        this.y = ByteBuffer.wrap(y)
-        this.u = ByteBuffer.wrap(u)
-        this.v = ByteBuffer.wrap(v)
+        synchronized(this) {
+            widthYUV = width
+            heightYUV = height
+            this.y = if (y != null) ByteBuffer.wrap(y) else null
+            this.u = if (u != null) ByteBuffer.wrap(u) else null
+            this.v = if (v != null) ByteBuffer.wrap(v) else null
 
-        // 当视频帧的u或者v分量的宽度不能被4整除时，用默认的4字节对齐会导致存取最后一行时越界，所以在向GPU传输数据前指定对齐方式
-        if ((widthYUV / 2) % 4 != 0) {
-            this.unpackAlign = if ((widthYUV / 2) % 2 == 0) 2 else 1
+            // 当视频帧的u或者v分量的宽度不能被4整除时，用默认的4字节对齐会导致存取最后一行时越界，所以在向GPU传输数据前指定对齐方式
+            if ((widthYUV / 2) % 4 != 0) {
+                this.unpackAlign = if ((widthYUV / 2) % 2 == 0) 2 else 1
+            }
+            ALog.i(TAG, "setYUVData: widthYUV=$widthYUV, heightYUV=$heightYUV, unpackAlign=$unpackAlign")
         }
-        ALog.i(TAG, "setYUVData: widthYUV=$widthYUV, heightYUV=$heightYUV, unpackAlign=$unpackAlign")
     }
     private fun draw() {
         ALog.i(TAG, "draw: widthYUV=$widthYUV, heightYUV=$heightYUV, y=${y != null}, u=${u != null}, v=${v != null}, currentShaderProgram=$currentShaderProgram, shaderProgram=$shaderProgram, normalMP4ShaderProgram=$normalMP4ShaderProgram")
@@ -286,13 +288,8 @@ class YUVRender (surfaceTexture: SurfaceTexture): IRenderListener {
         cleanup()
     }
     private fun cleanup() {
-        // 不要清空y、u、v数据，这些数据由硬解码器持续提供
-         y?.clear()
-         u?.clear()
-         v?.clear()
-         y = null
-         u = null
-         v = null
+        // 只清理顶点属性，不要清空YUV数据，这些数据由硬解码器持续提供
+        // 清空YUV数据会导致下一帧渲染时数据为空，造成闪烁
         GLES20.glDisableVertexAttribArray(avPosition)
         GLES20.glDisableVertexAttribArray(rgbPosition)
         GLES20.glDisableVertexAttribArray(alphaPosition)
