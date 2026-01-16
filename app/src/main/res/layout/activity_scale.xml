@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.ywm.baselibray.weiget.HorizontalConflictSwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/swipeLayout"
     android:layout_width="match_parent"
@@ -138,4 +138,4 @@
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+</com.ywm.baselibray.weiget.HorizontalConflictSwipeRefreshLayout>
