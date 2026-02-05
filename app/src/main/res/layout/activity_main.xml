@@ -13,6 +13,19 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+    <com.ywm.baselibray.weiget.ColorfulShineTextView
+        android:background="#333333"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_width="150dp"
+        android:layout_marginTop="100dp"
+        android:layout_height="150dp"
+        android:textSize="14sp"
+        android:text="彩色流光文字adfadf"
+        app:gradientColors="@array/rainbow_colors"
+        app:shineEnabled="true"
+        app:shineSpeed="15"
+        app:shineColors="@array/gold_shine_colors" />
     <Button
         android:id="@+id/newMsgCome"
         android:layout_width="wrap_content"
@@ -118,6 +131,7 @@
 <!--            android:textColor="@color/white" />-->
 
         <TextView
+            android:id="@+id/txt1"
             android:layout_width="wrap_content"
             android:layout_height="45dp"
             android:layout_marginHorizontal="2dp"
@@ -126,7 +140,30 @@
             android:paddingHorizontal="3dp"
             android:text="adfasd"
             android:textColor="@color/white" />
+        <ImageView
+            android:id="@+id/iv_1"
+            android:layout_width="45dp"
+            android:layout_marginTop="80dp"
+            android:layout_height="45dp"
+            android:layout_marginHorizontal="2dp"
+            android:gravity="center"
+            android:background="#f5f5f5"
+            android:paddingHorizontal="3dp"
+            android:text="adfasd"
+            android:textColor="@color/white" />
+        <ImageView
+            android:id="@+id/iv_2"
+            android:background="#f5f5f5"
+            android:layout_width="45dp"
+            android:layout_marginTop="80dp"
+            android:layout_height="45dp"
+            android:layout_marginHorizontal="2dp"
+            android:gravity="center"
+            android:paddingHorizontal="3dp"
+            android:text="adfasd"
+            android:textColor="@color/white" />
         <TextView
+            android:id="@+id/txt2"
             android:layout_width="wrap_content"
             android:layout_height="45dp"
             android:layout_marginHorizontal="2dp"
@@ -137,6 +174,8 @@
             android:textColor="@color/white" />
 
         <TextView
+            android:id="@+id/txt3"
+            android:visibility="gone"
             android:layout_width="wrap_content"
             android:layout_height="35dp"
             android:layout_marginHorizontal="2dp"
@@ -288,13 +327,13 @@
             android:text="Send" />
 
     </LinearLayout>
-    <com.ywm.baselibray.weiget.ShineViewWrapper
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-        <com.example.firstapplication.ui.widgit.ShineTextView
+<!--    <com.ywm.baselibray.weiget.ShineViewWrapper-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content">-->
+        <TextView
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -307,7 +346,20 @@
             android:textColor="#FF0000"
             android:background="#33000000"
             />
-    </com.ywm.baselibray.weiget.ShineViewWrapper>
+<!--        <com.example.firstapplication.ui.widgit.ShineTextView-->
+<!--            app:layout_constraintStart_toStartOf="parent"-->
+<!--            app:layout_constraintTop_toTopOf="parent"-->
+<!--            app:layout_constraintEnd_toEndOf="parent"-->
+<!--            android:id="@+id/shineTextView"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+
+<!--            android:text="流光文字效果"-->
+<!--            android:textSize="20sp"-->
+<!--            android:textColor="#FF0000"-->
+<!--            android:background="#33000000"-->
+<!--            />-->
+<!--    </com.ywm.baselibray.weiget.ShineViewWrapper>-->
 
 
     <com.ywm.baselibray.weiget.SwipeDismissConstraintLayout

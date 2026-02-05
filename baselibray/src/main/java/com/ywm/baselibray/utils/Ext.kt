@@ -4,6 +4,7 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
+import android.graphics.drawable.Drawable
 import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
@@ -11,6 +12,9 @@ import android.view.View
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.OvershootInterpolator
 import android.widget.FrameLayout
+import android.widget.TextView
+import androidx.annotation.DrawableRes
+import androidx.core.content.ContextCompat
 import com.ywm.baselibray.R
 
 class Ext {
@@ -633,3 +637,88 @@ val Int.dp
 
 val Float.dp
     get() = UIUtils.getPixels(this)
+fun TextView.setDrawableWithSize(
+    @DrawableRes startDrawableRes: Int? = null,
+    startWidth: Int = 0,
+    startHeight: Int = 0,
+    @DrawableRes topDrawableRes: Int? = null,
+    topWidth: Int = 0,
+    topHeight: Int = 0,
+    @DrawableRes endDrawableRes: Int? = null,
+    endWidth: Int = 0,
+    endHeight: Int = 0,
+    @DrawableRes bottomDrawableRes: Int? = null,
+    bottomWidth: Int = 0,
+    bottomHeight: Int = 0
+) {
+    val startDrawable = startDrawableRes?.let {
+        ContextCompat.getDrawable(context, it)?.apply {
+            setBounds(0, 0, startWidth, startHeight)
+        }
+    }
+
+    val topDrawable = topDrawableRes?.let {
+        ContextCompat.getDrawable(context, it)?.apply {
+            setBounds(0, 0, topWidth, topHeight)
+        }
+    }
+
+    val endDrawable = endDrawableRes?.let {
+        ContextCompat.getDrawable(context, it)?.apply {
+            setBounds(0, 0, endWidth, endHeight)
+        }
+    }
+
+    val bottomDrawable = bottomDrawableRes?.let {
+        ContextCompat.getDrawable(context, it)?.apply {
+            setBounds(0, 0, bottomWidth, bottomHeight)
+        }
+    }
+
+    this.setCompoundDrawablesRelative(if (!UIUtils.isRtl(context))startDrawable else endDrawable, topDrawable, if (!UIUtils.isRtl(context))endDrawable else startDrawable, bottomDrawable)
+}
+fun TextView.clearDrawable(
+    startDrawableRes: Int? = 0,
+) {
+    this.setCompoundDrawablesRelative(null, null, null, null)
+}
+fun TextView.setDrawableWithSize(
+    startDrawableRes: Drawable? = null,
+    startWidth: Int = 0,
+    startHeight: Int = 0,
+    topDrawableRes: Drawable? = null,
+    topWidth: Int = 0,
+    topHeight: Int = 0,
+    endDrawableRes: Drawable? = null,
+    endWidth: Int = 0,
+    endHeight: Int = 0,
+    bottomDrawableRes: Drawable? = null,
+    bottomWidth: Int = 0,
+    bottomHeight: Int = 0
+) {
+    val startDrawable = startDrawableRes?.let {
+        it?.apply {
+            setBounds(0, 0, startWidth, startHeight)
+        }
+    }
+
+    val topDrawable = topDrawableRes?.let {
+        it?.apply {
+            setBounds(0, 0, topWidth, topHeight)
+        }
+    }
+
+    val endDrawable = endDrawableRes?.let {
+        it?.apply {
+            setBounds(0, 0, endWidth, endHeight)
+        }
+    }
+
+    val bottomDrawable = bottomDrawableRes?.let {
+        it?.apply {
+            setBounds(0, 0, bottomWidth, bottomHeight)
+        }
+    }
+
+    this.setCompoundDrawablesRelative(if (!UIUtils.isRtl(context))startDrawable else endDrawable, topDrawable, if (!UIUtils.isRtl(context))endDrawable else startDrawable, bottomDrawable)
+}

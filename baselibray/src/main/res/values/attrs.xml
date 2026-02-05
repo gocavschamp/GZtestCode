@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 注意：名字必须是 ShineViewWrapper，与类名一致 -->
+    <declare-styleable name="ShineViewWrapper">
+        <!-- 基础控制 -->
+        <attr name="auto_start" format="boolean" />
+        <attr name="shine_enabled" format="boolean" />
+
+        <!-- 角度相关 -->
+        <attr name="shine_angle" format="float" />
+        <attr name="shine_direction" format="enum">
+            <enum name="horizontal" value="0" />
+            <enum name="vertical" value="90" />
+            <enum name="diagonal" value="45" />
+            <enum name="reverse_diagonal" value="135" />
+        </attr>
+
+        <!-- 动画相关 -->
+        <attr name="shine_duration" format="integer" />
+        <attr name="shine_repeat_count" format="integer" />
+        <attr name="shine_repeat_mode" format="enum">
+            <enum name="restart" value="1" />
+            <enum name="reverse" value="2" />
+        </attr>
+
+        <!-- 外观相关 -->
+        <attr name="shine_width" format="dimension" />
+        <attr name="shine_color" format="color" />
+        <attr name="shine_alpha" format="integer" />
+        <attr name="shine_secondary_color" format="color" />
+
+        <!-- 插值器类型 -->
+        <attr name="shine_interpolator" format="enum">
+            <enum name="linear" value="0" />
+            <enum name="accelerate" value="1" />
+            <enum name="decelerate" value="2" />
+            <enum name="accelerate_decelerate" value="3" />
+            <enum name="bounce" value="4" />
+            <enum name="overshoot" value="5" />
+        </attr>
+    </declare-styleable>
+    <declare-styleable name="ColorfulTextView">
+        <attr name="outlineColor" format="color" />
+        <attr name="outlineWidth" format="dimension" />
+        <attr name="gradientColors" format="reference" />
+        <attr name="shadowColor" format="color" />
+        <attr name="shadowDx" format="dimension" />
+        <attr name="shadowDy" format="dimension" />
+        <attr name="shadowRadius" format="dimension" />
+        <attr name="fontFamily" format="string" />
+        <attr name="textStyle">
+            <flag name="normal" value="0" />
+            <flag name="bold" value="1" />
+            <flag name="italic" value="2" />
+        </attr>
+        <attr name="gradientOrientation" format="integer">
+            <enum name="horizontal" value="0" />
+            <enum name="vertical" value="1" />
+        </attr>
+        
+        <!-- 流光特效属性 -->
+        <attr name="shineEnabled" format="boolean" />
+        <attr name="shineSpeed" format="integer" />
+        <attr name="shineColors" format="reference" />
+    </declare-styleable>
+</resources>

@@ -25,9 +25,13 @@ import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.example.baseapi.floatview.FloatViewRouter
 import com.example.firstapplication.R
 import com.example.firstapplication.databinding.ActivityMainBinding
+import com.ywm.baselibray.utils.CountryFlagUtil
+import com.ywm.baselibray.utils.dp
 import com.ywm.baselibray.utils.enableRightSwipeToDismiss
 import com.ywm.baselibray.utils.enableRightSwipeToDismissSimple
 import com.ywm.baselibray.utils.enableRightSwipeToDismissV2
+import com.ywm.baselibray.utils.setDrawableWithSize
+import com.ywm.baselibray.weiget.ShineEffect
 
 
 @Route(path = "/module/main")
@@ -55,11 +59,30 @@ class MainActivity : AppCompatActivity() {
         initViews()
 
         setupRecyclerView()
-
+        binding.shineTextView.post {
+            ShineEffect(binding.shineTextView).apply {
+                setAutoStart(true)
+            }
+        }
         for (i in 1..10){
             testIndex++
             messages.add(Message("testIndex=${testIndex}", System.currentTimeMillis()))
         }
+        val drawable =
+            CountryFlagUtil.getFlagDrawableSafe(this, "CN", com.ywm.baselibray.R.drawable.flag_tr)
+        binding.iv1.setImageDrawable(drawable)
+        val drawable1 =
+            CountryFlagUtil.getFlagDrawableSafe(this, "UY", com.ywm.baselibray.R.drawable.flag_tr)
+        binding.iv2.setImageDrawable(drawable1)
+        val drawable3 =
+            CountryFlagUtil.getFlagDrawableSafe(this, "TW", com.ywm.baselibray.R.drawable.flag_tr)
+        binding.txt1.setCompoundDrawablesRelative(drawable3, null, null, null)
+        binding.txt1.setDrawableWithSize(drawable3,20.dp,20.dp)
+
+ val drawable4 =
+            CountryFlagUtil.getFlagDrawableSafe(this, "CC", com.ywm.baselibray.R.drawable.flag_tr)
+        binding.txt2.setCompoundDrawablesRelative(drawable4, null, null, null)
+        binding.txt2.setDrawableWithSize(drawable4,20.dp,20.dp)
         messageAdapter.notifyDataSetChanged()
         setupSendButton()
         // 初始化Handler，绑定到主线程Looper

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 彩虹颜色数组 -->
+    <array name="rainbow_colors">
+        <item>@color/red</item>
+        <item>@color/blue</item>
+        <item>@color/purple</item>
+        <item>@color/green</item>
+    </array>
+    
+    <!-- 流光颜色数组 -->
+    <array name="shine_colors">
+        <item>@android:color/transparent</item>
+        <item>@android:color/white</item>
+        <item>@android:color/transparent</item>
+    </array>
+    
+    <!-- 金色流光颜色数组 -->
+    <array name="gold_shine_colors">
+        <item>@android:color/transparent</item>
+        <item>@color/gold</item>
+        <item>@android:color/transparent</item>
+    </array>
+    
+    <!-- 蓝色流光颜色数组 -->
+    <array name="blue_shine_colors">
+        <item>@android:color/transparent</item>
+        <item>@color/blue</item>
+        <item>@android:color/transparent</item>
+    </array>
+</resources>
