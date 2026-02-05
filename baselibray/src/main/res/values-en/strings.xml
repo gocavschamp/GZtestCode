@@ -1310,7 +1310,7 @@
     <string name="light_user_wall">Light up the gift for each other</string>
     <string name="start">Start</string>
     <string name="time">Time</string>
-    <string name="pk_info">The sum of the values received by each wheat position, if the wheat is lowered during the PK period, the value will be cleared to zero, and the value will be re-counted when the wheat is reloaded.</string>
+    <string name="pk_info">The sum of the values received by each microphone position will be cleared if the microphone is lowered during the PK period, and will be re-counted when the microphone is re-on.</string>
     <string name="unstart">Not started</string>
     <string name="enter_game_tip_info">Whether or not to open the recommended games in this room, everyone is playing it~</string>
     <string name="open_game">Open the game</string>
@@ -1321,4 +1321,5 @@
     <string name="mini_card_bg">Mini information cards</string>
     <string name="gift_wall_msg">Gift wall messages</string>
     <string name="pk_over">The brawl is over</string>
+
 </resources>
