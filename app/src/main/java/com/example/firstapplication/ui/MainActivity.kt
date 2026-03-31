@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -31,6 +32,7 @@ import com.ywm.baselibray.utils.enableRightSwipeToDismiss
 import com.ywm.baselibray.utils.enableRightSwipeToDismissSimple
 import com.ywm.baselibray.utils.enableRightSwipeToDismissV2
 import com.ywm.baselibray.utils.setDrawableWithSize
+import com.ywm.baselibray.weiget.ShimmerTextView
 import com.ywm.baselibray.weiget.ShineEffect
 
 
@@ -59,12 +61,18 @@ class MainActivity : AppCompatActivity() {
         initViews()
 
         setupRecyclerView()
+        binding.shimmer.post {
+            binding.shimmer.setShimmerEnabled(true)
+            binding.shimmer.startShimmerAnimation()
+
+        }
+
         binding.shineTextView.post {
             ShineEffect(binding.shineTextView).apply {
                 setAutoStart(true)
             }
         }
-        for (i in 1..10){
+        for (i in 1..30){
             testIndex++
             messages.add(Message("testIndex=${testIndex}", System.currentTimeMillis()))
         }
@@ -266,6 +274,7 @@ class MainActivity : AppCompatActivity() {
         class MessageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val messageText: TextView = itemView.findViewById(R.id.messageText)
             val timestampText: TextView = itemView.findViewById(R.id.timestampText)
+            val shimmer: ShimmerTextView = itemView.findViewById(R.id.shimmer)
         }
         
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageViewHolder {
@@ -273,12 +282,69 @@ class MainActivity : AppCompatActivity() {
                 .inflate(R.layout.item_message, parent, false)
             return MessageViewHolder(view)
         }
+
+        override fun onViewRecycled(holder: MessageViewHolder) {
+            super.onViewRecycled(holder)
+            holder.shimmer.onRecycled()
+        }
         
         override fun onBindViewHolder(holder: MessageViewHolder, position: Int) {
+
             val message = messages[position]
             holder.messageText.text ="index= $position ___" + message.content
             holder.timestampText.text = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
                 .format(java.util.Date(message.timestamp))
+            when (position) {
+                in 0..3 -> {
+                    holder.shimmer.setShimmerEnabled(true)
+//                    holder.shimmer.startShimmerAnimation()
+                    holder.shimmer.gradientColors = intArrayOf(
+                        ContextCompat.getColor(holder.itemView.context, R.color.blue),
+                        ContextCompat.getColor(holder.itemView.context, R.color.green),
+                        ContextCompat.getColor(holder.itemView.context, R.color.purple),
+                        ContextCompat.getColor(holder.itemView.context, R.color.gold),
+                        ContextCompat.getColor(holder.itemView.context, R.color.red)
+                    )
+                }
+                in 4..7 -> {
+                    holder.shimmer.gradientColors = intArrayOf(
+                        ContextCompat.getColor(holder.itemView.context, R.color.blue),
+                        ContextCompat.getColor(holder.itemView.context, R.color.blue)
+                    )
+                    holder.shimmer.setShimmerEnabled(true)
+//                    holder.shimmer.startShimmerAnimation()
+                }
+                in 8..14 -> {
+                    holder.shimmer.gradientColors = intArrayOf(
+                        ContextCompat.getColor(holder.itemView.context, R.color.gold),
+                        ContextCompat.getColor(holder.itemView.context, R.color.gold)
+                    )
+                    holder.shimmer.setShimmerEnabled(true)
+//                    holder.shimmer.startShimmerAnimation()
+
+                }
+                in 14..18 -> {
+                    holder.shimmer.gradientColors = intArrayOf(
+                        ContextCompat.getColor(holder.itemView.context, R.color.green),
+                        ContextCompat.getColor(holder.itemView.context, R.color.green)
+                    )
+                    holder.shimmer.setShimmerEnabled(false)
+//                    holder.shimmer.startShimmerAnimation()
+
+                }
+                else -> {
+                    holder.shimmer.setShimmerEnabled(false)
+
+                    holder.shimmer.gradientColors = intArrayOf(
+                        ContextCompat.getColor(holder.itemView.context, R.color.black),
+                        ContextCompat.getColor(holder.itemView.context, R.color.black),
+                        ContextCompat.getColor(holder.itemView.context, R.color.black),
+                        ContextCompat.getColor(holder.itemView.context, R.color.black),
+                        ContextCompat.getColor(holder.itemView.context, R.color.black)
+                    )
+                }
+            }
+            holder.shimmer.onBind()
             holder.itemView.setOnClickListener {
                 // Handle click event
                 ARouter.getInstance()

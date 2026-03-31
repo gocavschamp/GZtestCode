@@ -63,4 +63,38 @@
         <attr name="shineSpeed" format="integer" />
         <attr name="shineColors" format="reference" />
     </declare-styleable>
+    <declare-styleable name="ShimmerTextView">
+        <!-- 描边相关属性 -->
+        <attr name="shimmeroutlineColor" format="color" />
+        <attr name="shimmeroutlineWidth" format="dimension" />
+
+        <!-- 渐变相关属性 -->
+        <attr name="shimmergradientColors" format="reference" />
+        <attr name="shimmergradientOrientation" format="enum">
+            <enum name="horizontal" value="0" />
+            <enum name="vertical" value="1" />
+        </attr>
+
+        <!-- 阴影相关属性 -->
+        <attr name="shimmershadowColor" format="color" />
+        <attr name="shimmershadowDx" format="dimension" />
+        <attr name="shimmershadowDy" format="dimension" />
+        <attr name="shimmershadowRadius" format="dimension" />
+
+        <!-- 流光相关属性 -->
+        <attr name="shimmerEnabled" format="boolean" />
+        <attr name="shimmerColor" format="color" />
+        <attr name="shimmerWidth" format="float" />
+        <attr name="shimmerSpeed" format="integer" />
+        <attr name="shimmerAngle" format="float" />
+
+        <!-- 字体相关属性 -->
+        <attr name="shimmerfontFamily" format="reference" />
+        <attr name="shimmertextStyle" format="enum">
+            <enum name="normal" value="0" />
+            <enum name="bold" value="1" />
+            <enum name="italic" value="2" />
+            <enum name="bold_italic" value="3" />
+        </attr>
+    </declare-styleable>
 </resources>

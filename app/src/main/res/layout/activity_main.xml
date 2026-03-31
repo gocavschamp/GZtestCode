@@ -8,7 +8,7 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="0dp"
-        android:layout_height="300dp"
+        android:layout_height="550dp"
         tools:listitem="@layout/item_message"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -19,13 +19,28 @@
         app:layout_constraintTop_toTopOf="parent"
         android:layout_width="150dp"
         android:layout_marginTop="100dp"
-        android:layout_height="150dp"
+        android:layout_height="20dp"
         android:textSize="14sp"
         android:text="彩色流光文字adfadf"
         app:gradientColors="@array/rainbow_colors"
         app:shineEnabled="true"
         app:shineSpeed="15"
         app:shineColors="@array/gold_shine_colors" />
+    <com.ywm.baselibray.weiget.ShimmerTextView
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:id="@+id/shimmer"
+        android:layout_marginTop="130dp"
+
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="+ 流光效果文字dafadfasdfasd"
+        android:textSize="24sp"
+        app:shimmerAngle="20"
+        app:shimmerColor="#80FFFFFF"
+        app:shimmerEnabled="true"
+        app:shimmerSpeed="1500"
+        app:shimmergradientColors="@array/rainbow_colors" />
     <Button
         android:id="@+id/newMsgCome"
         android:layout_width="wrap_content"
