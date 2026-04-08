@@ -51,7 +51,8 @@ class ScoreViewActivity : AppCompatActivity() {
     }
 
     private fun init() {
-        binding.scoreview.setScore(976854321)
+        binding.scoreview.setScore(976854)
+        binding.scoreBoard2.setScore(123456)
         // 初始化日志
         // 设置状态栏颜色
         window.statusBarColor = ContextCompat.getColor(this, R.color.purple_700)
@@ -71,12 +72,14 @@ class ScoreViewActivity : AppCompatActivity() {
         super.onDestroy()
         // 清理资源
         binding.scoreview.cleanup()
+        binding.scoreBoard2.cleanup()
         Handler(Looper.getMainLooper()).removeCallbacksAndMessages(null)
     }
     private fun simulateScoreChange() {
         // 3秒后更新积分
         Handler(Looper.getMainLooper()).postDelayed({
-            binding.scoreview.setScore(Random.nextInt(100000, 1000000))
+            binding.scoreview.setScore(Random.nextInt(10000, 100000))
+            binding.scoreBoard2.setScore(Random.nextInt(10000, 100000))
             simulateScoreChange()
         }, 2000)
     }

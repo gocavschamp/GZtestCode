@@ -97,4 +97,25 @@
             <enum name="bold_italic" value="3" />
         </attr>
     </declare-styleable>
+    <declare-styleable name="ScoreBoardView">
+        <!-- 数字之间的间距 -->
+        <attr name="digitSpacing" format="dimension" />
+
+        <!-- 数字宽度（设置为0表示使用图片原始宽高比） -->
+        <attr name="digitWidth" format="dimension" />
+
+        <!-- 数字高度（设置为0表示使用图片原始宽高比） -->
+        <attr name="digitHeight" format="dimension" />
+
+        <!-- 是否保持图片原始宽高比 -->
+        <attr name="keepOriginalAspectRatio" format="boolean" />
+
+        <!-- 卡片背景颜色 -->
+        <attr name="cardColor" format="color" />
+
+        <!-- 卡片内边距 -->
+        <attr name="cardPadding" format="dimension" />
+        <!-- 最少显示位数 -->
+        <attr name="minDigits" format="integer" />
+    </declare-styleable>
 </resources>
