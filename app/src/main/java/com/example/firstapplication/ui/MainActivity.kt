@@ -192,6 +192,9 @@ class MainActivity : AppCompatActivity() {
         binding.dialogUtils.setOnClickListener {
             startActivity(Intent(this, DialogDemoActivity::class.java))
         }
+        binding.scoreview.setOnClickListener {
+            startActivity(Intent(this, ScoreViewActivity::class.java))
+        }
         val circleCrop: Transformation<Bitmap?> = CircleCrop()
         Glide.with(this)
             .load(R.raw.ic_room_bottom_gift)

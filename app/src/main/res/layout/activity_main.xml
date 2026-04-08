@@ -116,6 +116,13 @@
             android:text="dialog utils"
             app:layout_constraintLeft_toLeftOf="@id/vap"
             app:layout_constraintTop_toBottomOf="@id/vap" />
+        <Button
+            android:id="@+id/scoreview"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:text="scoreview"
+            app:layout_constraintLeft_toLeftOf="@id/dialogUtils"
+            app:layout_constraintTop_toBottomOf="@id/dialogUtils" />
     </LinearLayout>
 
 

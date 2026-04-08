@@ -65,6 +65,7 @@
         <activity android:name=".ui.AnimSimpleDemoActivity" android:screenOrientation="portrait"/>
         <activity android:name=".ui.ScaleDemoActivity" android:screenOrientation="portrait"/>
         <activity android:name=".ui.DialogDemoActivity" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.ScoreViewActivity" android:screenOrientation="portrait"/>
         <activity
             android:name=".ui.GameActivity"
             android:configChanges="orientation|screenSize|keyboardHidden|screenLayout"

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:paddingTop="44dp"
+    android:layout_height="match_parent">
+    <com.ywm.baselibray.scoreview.ScoreBoardView
+        android:id="@+id/scoreview"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"/>
+    <Button
+        android:id="@+id/picker"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:text="dialog activity"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+    <Button
+        android:id="@+id/picker1"
+        android:visibility="gone"
+
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:text="dialog view"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/picker" />
+    <Button
+        android:id="@+id/picker2"
+        android:visibility="gone"
+
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:text="扩展函数"
+        app:layout_constraintTop_toBottomOf="@id/picker1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
