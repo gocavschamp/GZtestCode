@@ -13,6 +13,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.toColorInt
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -28,11 +29,8 @@ import com.example.firstapplication.R
 import com.example.firstapplication.databinding.ActivityMainBinding
 import com.ywm.baselibray.utils.CountryFlagUtil
 import com.ywm.baselibray.utils.dp
-import com.ywm.baselibray.utils.enableRightSwipeToDismiss
-import com.ywm.baselibray.utils.enableRightSwipeToDismissSimple
-import com.ywm.baselibray.utils.enableRightSwipeToDismissV2
 import com.ywm.baselibray.utils.setDrawableWithSize
-import com.ywm.baselibray.weiget.ShimmerTextView
+import com.ywm.baselibray.weiget.ShimmerColorTextView
 import com.ywm.baselibray.weiget.ShineEffect
 
 
@@ -277,7 +275,7 @@ class MainActivity : AppCompatActivity() {
         class MessageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val messageText: TextView = itemView.findViewById(R.id.messageText)
             val timestampText: TextView = itemView.findViewById(R.id.timestampText)
-            val shimmer: ShimmerTextView = itemView.findViewById(R.id.shimmer)
+            val shimmer: ShimmerColorTextView = itemView.findViewById(R.id.shimmer)
         }
         
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageViewHolder {
@@ -301,12 +299,19 @@ class MainActivity : AppCompatActivity() {
                 in 0..3 -> {
                     holder.shimmer.setShimmerEnabled(true)
 //                    holder.shimmer.startShimmerAnimation()
+//                    holder.shimmer.gradientColors = intArrayOf(
+//                        ContextCompat.getColor(holder.itemView.context, R.color.blue),
+//                        ContextCompat.getColor(holder.itemView.context, R.color.green),
+//                        ContextCompat.getColor(holder.itemView.context, R.color.purple),
+//                        ContextCompat.getColor(holder.itemView.context, R.color.gold),
+//                        ContextCompat.getColor(holder.itemView.context, R.color.red)
+//                    )
                     holder.shimmer.gradientColors = intArrayOf(
-                        ContextCompat.getColor(holder.itemView.context, R.color.blue),
-                        ContextCompat.getColor(holder.itemView.context, R.color.green),
-                        ContextCompat.getColor(holder.itemView.context, R.color.purple),
-                        ContextCompat.getColor(holder.itemView.context, R.color.gold),
-                        ContextCompat.getColor(holder.itemView.context, R.color.red)
+                        "#ff0101".toColorInt(),
+                        "#ff9400".toColorInt(),
+                        "#eaff00".toColorInt(),
+                        "#00ff7b".toColorInt(),
+                        "#bd01ff".toColorInt(),
                     )
                 }
                 in 4..7 -> {

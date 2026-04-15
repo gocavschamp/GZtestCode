@@ -26,20 +26,27 @@
         app:shineEnabled="true"
         app:shineSpeed="15"
         app:shineColors="@array/gold_shine_colors" />
-    <com.ywm.baselibray.weiget.ShimmerTextView
+<!--    <com.ywm.baselibray.weiget.GradientFlowTextView-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent"-->
+<!--        android:id="@+id/shimmer"-->
+<!--        android:layout_marginTop="130dp"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="+看看看看看看"-->
+<!--        android:textSize="24sp" />-->
+    <com.ywm.baselibray.weiget.ShimmerColorTextView
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:id="@+id/shimmer"
         android:layout_marginTop="130dp"
-
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="+ 流光效果文字dafadfasdfasd"
+        android:text="+看看看看看看"
         android:textSize="24sp"
         app:shimmerAngle="20"
-        app:shimmerColor="#80FFFFFF"
         app:shimmerEnabled="true"
-        app:shimmerSpeed="1500"
+        app:shimmerSpeed="2500"
         app:shimmergradientColors="@array/rainbow_colors" />
     <Button
         android:id="@+id/newMsgCome"
