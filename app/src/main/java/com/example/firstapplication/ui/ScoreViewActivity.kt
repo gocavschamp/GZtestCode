@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.updatePadding
+import androidx.lifecycle.lifecycleScope
 import com.example.firstapplication.R
 import com.example.firstapplication.databinding.ActivityDialogBinding
 import com.example.firstapplication.databinding.ActivityScaleBinding
@@ -22,6 +23,10 @@ import com.google.android.material.tabs.TabLayoutMediator
 import com.ywm.baselibray.utils.BottomSheetDialogUtil
 import com.ywm.baselibray.utils.showAsBottomSheet
 import com.ywm.baselibray.utils.showBottomSheet
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.random.Random
@@ -83,7 +88,27 @@ class ScoreViewActivity : AppCompatActivity() {
             simulateScoreChange()
         }, 2000)
     }
+    // 处理多个耗时任务
+    fun processMultipleTasks() {
+        lifecycleScope.launch {
+            val task1 = async(Dispatchers.IO) {   }
+            val task2 = async(Dispatchers.IO) {  }
 
+            val n = withContext(Dispatchers.Main) { 1 }
+            try {
+                val result1 = task1.await()
+                val result2 = task2.await()
+
+                // 合并结果
+//                _combinedData.value = Result.success(Pair(result1, result2))
+            } catch (e: Exception) {
+                // 如果其中一个任务失败，取消另一个任务
+                task1.cancel()
+                task2.cancel()
+//                _combinedData.value = Result.failure(e)
+            }
+        }
+    }
 
 
     override fun onPause() {

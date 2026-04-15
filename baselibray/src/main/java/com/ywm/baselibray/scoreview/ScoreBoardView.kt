@@ -1,5 +1,7 @@
 package com.ywm.baselibray.scoreview
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Bitmap
@@ -11,6 +13,11 @@ import android.view.View
 import com.ywm.baselibray.R
 import kotlin.math.min
 import android.content.res.TypedArray
+import android.graphics.LinearGradient
+import android.graphics.Paint
+import android.graphics.Shader
+import androidx.core.graphics.toColorInt
+import com.ywm.baselibray.utils.dp
 import kotlin.math.max
 
 class ScoreBoardView @JvmOverloads constructor(
@@ -187,7 +194,7 @@ class ScoreBoardView @JvmOverloads constructor(
      */
     fun setScore(score: Int) {
         if (score < 0) {
-            throw IllegalArgumentException("积分不能为负数")
+            return
         }
 
         val oldScore = currentScore
@@ -330,37 +337,64 @@ class ScoreBoardView @JvmOverloads constructor(
         val oldDigits = oldScore.toDigits(minDigits)
         val maxLength = maxOf(oldDigits.size, newDigits.size, minDigits)
 
-        // 对齐数字位数
         val alignedOldDigits = oldDigits.padStart(maxLength, 0)
         val alignedNewDigits = newDigits.padStart(maxLength, 0)
 
-        // 初始化显示数字
         displayDigits = alignedOldDigits.toMutableList()
-
-        // 清理旧的动画状态
         digitAnimations.clear()
 
-        // 为每个数字创建动画
+        var runningAnimators = 0
+
+        fun commitFinalDigits() {
+            displayDigits = alignedNewDigits.toMutableList()
+            digitAnimations.forEach {
+                it.currentValue = it.targetValue
+                it.animationProgress = 1f
+                it.animator = null
+            }
+            requestLayout()
+            invalidate()
+        }
+
         alignedOldDigits.forEachIndexed { index, oldDigit ->
             val newDigit = alignedNewDigits[index]
             val animation = DigitAnimation(oldDigit, newDigit, animationProgress = 0f)
 
             if (oldDigit != newDigit) {
-                // 创建数字滚动动画
+                runningAnimators++
                 val animator = ValueAnimator.ofFloat(0f, 1f).apply {
                     duration = animationDuration
                     addUpdateListener {
                         animation.animationProgress = it.animatedValue as Float
                         invalidate()
                     }
+                    addListener(object : AnimatorListenerAdapter() {
+                        override fun onAnimationEnd(animationObj: Animator) {
+                            runningAnimators--
+                            if (runningAnimators <= 0) {
+                                commitFinalDigits()
+                            }
+                        }
+
+                        override fun onAnimationCancel(animationObj: Animator) {
+                            runningAnimators--
+                            if (runningAnimators <= 0) {
+                                commitFinalDigits()
+                            }
+                        }
+                    })
                 }
                 animation.animator = animator
+                digitAnimations.add(animation)
                 animator.start()
             } else {
                 animation.animationProgress = 1f
+                digitAnimations.add(animation)
             }
+        }
 
-            digitAnimations.add(animation)
+        if (runningAnimators == 0) {
+            commitFinalDigits()
         }
     }
 
@@ -461,18 +495,7 @@ class ScoreBoardView @JvmOverloads constructor(
             )
 
             // 绘制卡片背景
-            canvas.drawRoundRect(
-                cardLeft + cardPadding,
-                startY + cardPadding,
-                cardLeft + digitWidth - cardPadding,
-                startY + digitHeight - cardPadding,
-                cardPadding * 2,
-                cardPadding * 2,
-                android.graphics.Paint().apply {
-                    color = cardColor
-                    isAntiAlias = true
-                }
-            )
+            drawCardBg(canvas, cardLeft, startY)
 
             if (animation != null && progress < 1f && currentDigit != targetDigit) {
                 // 绘制动画中的数字
@@ -485,6 +508,73 @@ class ScoreBoardView @JvmOverloads constructor(
                 }
             }
         }
+    }
+
+    private fun drawCardBg(
+        canvas: Canvas,
+        cardLeft: Float,
+        startY: Float
+    ) {
+        val left = cardLeft + cardPadding
+        val top = startY + cardPadding
+        val right = cardLeft + digitWidth - cardPadding
+        val bottom = startY + digitHeight - cardPadding
+        val strokeWidth = 1.dp.toFloat()   // 边框宽度
+
+        val shader = LinearGradient(
+            left, top,          // 起点（左上）
+            left, bottom,       // 终点（左下）-> 垂直渐变
+            intArrayOf("#C09479".toColorInt(),"#80C09479".toColorInt(), "#694A38".toColorInt()),
+            null,
+            Shader.TileMode.CLAMP
+        )
+
+        val paint = Paint().apply {
+            isAntiAlias = true
+            style = Paint.Style.FILL_AND_STROKE
+        }
+        paint.strokeWidth = strokeWidth
+        paint.shader = shader
+
+        canvas.drawRoundRect(
+            left, top, right, bottom,
+            2.dp.toFloat(), 2.dp.toFloat(),
+            paint
+        )
+        val shader1 = LinearGradient(
+            left, top,          // 起点（左上）
+            left, bottom,       // 终点（左下）-> 垂直渐变
+            intArrayOf("#4E311B".toColorInt(), "#694A38".toColorInt()),
+            null,
+            Shader.TileMode.CLAMP
+        )
+
+        val paint1 = Paint().apply {
+            isAntiAlias = true
+            style = Paint.Style.FILL_AND_STROKE
+        }
+        paint1.strokeWidth = strokeWidth
+        paint1.shader = shader1
+
+        canvas.drawRoundRect(
+            left+(1.dp.toFloat()), top+(1.dp.toFloat()), right-(1.dp.toFloat()), bottom,
+            2.dp.toFloat(), 2.dp.toFloat(),
+            paint1
+        )
+
+
+//        canvas.drawRoundRect(
+//            cardLeft + cardPadding,
+//            startY + cardPadding,
+//            cardLeft + digitWidth - cardPadding,
+//            startY + digitHeight - cardPadding,
+//            2.dp.toFloat(),
+//            2.dp.toFloat(),
+//            Paint().apply {
+//                color = cardColor
+//                isAntiAlias = true
+//            }
+//        )
     }
 
     /**
