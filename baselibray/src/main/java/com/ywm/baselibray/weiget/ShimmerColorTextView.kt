@@ -43,6 +43,7 @@ defStyleAttr: Int = 0
     private var shimmerEnabled: Boolean = false
     private var shimmerSpeed: Long = 2500L // 动画周期（毫秒）
     private var shimmerAngle: Float = 40f // 流光角度
+    private var currentTextWidth: Float = 0f // 当前文字宽度
 
     // 流光动画
     private var shimmerAnimator: ValueAnimator? = null
@@ -137,9 +138,9 @@ defStyleAttr: Int = 0
 
     override fun setText(text: CharSequence?, type: BufferType?) {
         super.setText(text, type)
-        // 文本变化时重置 shader
+        // 文本变化时重置 shader 和文字宽度
         gradientShader = null
-//        compositeShader = null
+        currentTextWidth = 0f
     }
 
     private fun resetShaders() {
@@ -209,11 +210,11 @@ defStyleAttr: Int = 0
             val line = layout.getLineForOffset(0)
             val startX = layout.getLineLeft(line)
             val endX = layout.getLineRight(line)
-            val textWidth = endX - startX
+            currentTextWidth = endX - startX
 
             gradientShader = when (gradientOrientation) {
                 0 -> LinearGradient(
-                    0f, 0f, textWidth, 0f,
+                    0f, 0f, currentTextWidth, 0f,
                     gradientColors, null, TileMode.REPEAT
                 )
 
@@ -247,11 +248,15 @@ defStyleAttr: Int = 0
 
         stopShimmerAnimation()
 
-        // 动画范围：渐变宽度的两倍，实现完整循环
-        val startValue = 0f
-        val endValue = width * 2f
+        // 使用文字宽度计算动画范围，确保不同长度文字的变化速度一致
+        // 动画距离为文字宽度的 2 倍，实现完整循环
+        val animationDistance = if (currentTextWidth > 0) {
+            currentTextWidth * 2
+        } else {
+            width * 2f
+        }
 
-        shimmerAnimator = ValueAnimator.ofFloat(startValue, endValue).apply {
+        shimmerAnimator = ValueAnimator.ofFloat(0f, animationDistance).apply {
             duration = shimmerSpeed
             repeatCount = ValueAnimator.INFINITE
             repeatMode = ValueAnimator.RESTART

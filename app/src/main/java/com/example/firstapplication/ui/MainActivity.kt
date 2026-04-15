@@ -61,6 +61,13 @@ class MainActivity : AppCompatActivity() {
         setupRecyclerView()
         binding.shimmer.post {
             binding.shimmer.setShimmerEnabled(true)
+            binding.shimmer.gradientColors = intArrayOf(
+                "#ff0101".toColorInt(),
+                "#ff9400".toColorInt(),
+                "#eaff00".toColorInt(),
+                "#00ff7b".toColorInt(),
+                "#bd01ff".toColorInt(),
+            )
             binding.shimmer.startShimmerAnimation()
 
         }
@@ -296,16 +303,21 @@ class MainActivity : AppCompatActivity() {
             holder.timestampText.text = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
                 .format(java.util.Date(message.timestamp))
             when (position) {
-                in 0..3 -> {
+                in 0..1 -> {
                     holder.shimmer.setShimmerEnabled(true)
-//                    holder.shimmer.startShimmerAnimation()
-//                    holder.shimmer.gradientColors = intArrayOf(
-//                        ContextCompat.getColor(holder.itemView.context, R.color.blue),
-//                        ContextCompat.getColor(holder.itemView.context, R.color.green),
-//                        ContextCompat.getColor(holder.itemView.context, R.color.purple),
-//                        ContextCompat.getColor(holder.itemView.context, R.color.gold),
-//                        ContextCompat.getColor(holder.itemView.context, R.color.red)
-//                    )
+                    holder.shimmer.text = "index= index= index= $position"
+
+                    holder.shimmer.gradientColors = intArrayOf(
+                        "#ff0101".toColorInt(),
+                        "#ff9400".toColorInt(),
+                        "#eaff00".toColorInt(),
+                        "#00ff7b".toColorInt(),
+                        "#bd01ff".toColorInt(),
+                    )
+                }
+                in 2..3 -> {
+                    holder.shimmer.setShimmerEnabled(true)
+                    holder.shimmer.text = "inde$position"
                     holder.shimmer.gradientColors = intArrayOf(
                         "#ff0101".toColorInt(),
                         "#ff9400".toColorInt(),
