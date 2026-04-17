@@ -6,13 +6,14 @@
     android:layout_height="wrap_content"
     android:background="@color/white"
     android:orientation="vertical"
-    android:padding="12dp">
+    android:padding="2dp">
 
     <TextView
         android:id="@+id/messageText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="1322"
+        android:visibility="gone"
         android:textColor="@android:color/black"
         android:textSize="16sp" />
 
@@ -22,6 +23,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:text="12:02"
+        android:visibility="gone"
         android:textColor="@android:color/darker_gray"
         android:textSize="12sp" />
 
@@ -30,7 +32,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="+流光效果文字"
-        android:textSize="24sp"
+        android:textSize="15sp"
         app:shimmerAngle="20"
         app:shimmerColor="#80FFFFFF"
         app:shimmerEnabled="true"

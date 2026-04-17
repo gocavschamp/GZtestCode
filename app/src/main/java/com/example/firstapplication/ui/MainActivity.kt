@@ -305,7 +305,7 @@ class MainActivity : AppCompatActivity() {
             when (position) {
                 in 0..1 -> {
                     holder.shimmer.setShimmerEnabled(true)
-                    holder.shimmer.text = "index= index= index= $position"
+                    holder.shimmer.text = "index=index=index=$position"
 
                     holder.shimmer.gradientColors = intArrayOf(
                         "#ff0101".toColorInt(),
@@ -317,7 +317,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 in 2..3 -> {
                     holder.shimmer.setShimmerEnabled(true)
-                    holder.shimmer.text = "inde$position"
+                    holder.shimmer.text = "ind$position"
                     holder.shimmer.gradientColors = intArrayOf(
                         "#ff0101".toColorInt(),
                         "#ff9400".toColorInt(),

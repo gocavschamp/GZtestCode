@@ -16,6 +16,8 @@ import android.view.animation.LinearInterpolator
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.res.ResourcesCompat
 import com.ywm.baselibray.R
+import kotlin.math.max
+import kotlin.math.roundToLong
 
 open class ShimmerColorTextView @JvmOverloads constructor(
 context: Context,
@@ -138,15 +140,48 @@ defStyleAttr: Int = 0
 
     override fun setText(text: CharSequence?, type: BufferType?) {
         super.setText(text, type)
-        // 文本变化时重置 shader 和文字宽度
         gradientShader = null
         currentTextWidth = 0f
+
+        if (shimmerEnabled && isViewAttached) {
+            post {
+                updateCurrentTextWidth()
+                if (width > 0) {
+                    startShimmerAnimation()
+                }
+            }
+        }
     }
 
     private fun resetShaders() {
         gradientShader = null
         outlineShader = null
         shimmerMatrix.reset()
+    }
+
+    private fun updateCurrentTextWidth(): Float {
+        val textStr = text?.toString().orEmpty()
+        if (textStr.isEmpty()) {
+            currentTextWidth = 0f
+            return currentTextWidth
+        }
+
+        paint.textSize = textSize
+        paint.typeface = typeface
+
+        val layout = layout
+        currentTextWidth = if (layout != null && layout.lineCount > 0) {
+            var maxLineWidth = 0f
+            for (i in 0 until layout.lineCount) {
+                val w = layout.getLineRight(i) - layout.getLineLeft(i)
+                if (w > maxLineWidth) maxLineWidth = w
+            }
+            maxLineWidth
+        } else {
+            paint.measureText(textStr)
+        }
+
+        return currentTextWidth
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -206,15 +241,13 @@ defStyleAttr: Int = 0
             if (gradientColors.size == 1) {
                 gradientColors = intArrayOf(gradientColors[0], gradientColors[0])
             }
-            val layout = layout ?: return
-            val line = layout.getLineForOffset(0)
-            val startX = layout.getLineLeft(line)
-            val endX = layout.getLineRight(line)
-            currentTextWidth = endX - startX
+
+            val textWidth = if (currentTextWidth > 0f) currentTextWidth else updateCurrentTextWidth()
+            val shaderWidth = max(textWidth, width.toFloat().coerceAtLeast(1f))
 
             gradientShader = when (gradientOrientation) {
                 0 -> LinearGradient(
-                    0f, 0f, currentTextWidth, 0f,
+                    0f, 0f, shaderWidth, 0f,
                     gradientColors, null, TileMode.REPEAT
                 )
 
@@ -248,16 +281,13 @@ defStyleAttr: Int = 0
 
         stopShimmerAnimation()
 
-        // 使用文字宽度计算动画范围，确保不同长度文字的变化速度一致
-        // 动画距离为文字宽度的 2 倍，实现完整循环
-        val animationDistance = if (currentTextWidth > 0) {
-            currentTextWidth * 2
-        } else {
-            width * 2f
-        }
+        val textWidth = if (currentTextWidth > 0f) currentTextWidth else updateCurrentTextWidth()
+        val baseDistance = width * 2f
+        val animationDistance = max(textWidth, width.toFloat()) * 2f
+        val computedDuration = (animationDistance / baseDistance * shimmerSpeed).roundToLong().coerceAtLeast(1L)
 
         shimmerAnimator = ValueAnimator.ofFloat(0f, animationDistance).apply {
-            duration = shimmerSpeed
+            duration = computedDuration
             repeatCount = ValueAnimator.INFINITE
             repeatMode = ValueAnimator.RESTART
             interpolator = LinearInterpolator()
