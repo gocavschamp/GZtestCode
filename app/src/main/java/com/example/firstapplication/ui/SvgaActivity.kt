@@ -43,6 +43,18 @@ class SvgaActivity : AppCompatActivity() {
             createAnimNew("svga/magicwin.svga")
 
         }
+        viewBinding.sendButton3.setOnClickListener {
+            createAnimNew("svga/room_pk_countdown.svga")
+
+        }
+        viewBinding.sendButton4.setOnClickListener {
+            createAnimNew("svga/room_pk_start_anim.svga")
+
+        }
+        viewBinding.sendButton5.setOnClickListener {
+            createAnimNew("svga/room_start_pk.svga")
+
+        }
 //        initRecyclerView()
 //        loadData()
 

@@ -34,9 +34,8 @@
 
         <EditText
             android:id="@+id/editText"
-            android:layout_width="0dp"
+            android:layout_width="50dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:hint="Type a message"
             android:imeOptions="actionSend"
             android:inputType="text"
@@ -44,22 +43,34 @@
 
         <Button
             android:id="@+id/sendButton"
-            android:layout_width="wrap_content"
+            android:layout_width="45dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="svga1" />
+            android:text="s1" />
         <Button
             android:id="@+id/sendButton1"
-            android:layout_width="wrap_content"
+            android:layout_width="45dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="svga2" />
+            android:text="s2" />
         <Button
             android:id="@+id/sendButton2"
-            android:layout_width="wrap_content"
+            android:layout_width="45dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="svga3" />
+            android:text="s3" />
+        <Button
+            android:id="@+id/sendButton3"
+            android:layout_width="45dp"
+            android:layout_height="wrap_content"
+            android:text="s4" />
+        <Button
+            android:id="@+id/sendButton4"
+            android:layout_width="45dp"
+            android:layout_height="wrap_content"
+            android:text="s5" />
+        <Button
+            android:id="@+id/sendButton5"
+            android:layout_width="45dp"
+            android:layout_height="wrap_content"
+            android:text="s6" />
 
     </LinearLayout>
 
