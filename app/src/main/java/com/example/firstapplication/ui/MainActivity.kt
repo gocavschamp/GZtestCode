@@ -71,7 +71,9 @@ class MainActivity : AppCompatActivity() {
             binding.shimmer.startShimmerAnimation()
 
         }
-
+//        binding.luckCount.getTextView().setDrawableWithSize(com.example.basetools.R.drawable.ic_icon,16.dp,16.dp)
+        binding.luckCount.setText(System.currentTimeMillis().toString())
+        binding.luckCount.isVisible = true
         binding.shineTextView.post {
             ShineEffect(binding.shineTextView).apply {
                 setAutoStart(true)
@@ -237,6 +239,9 @@ class MainActivity : AppCompatActivity() {
             binding.newMsgCome.isVisible = false
         }
         binding.sendButton.setOnClickListener {
+//            binding.luckCount.getTextView().setDrawableWithSize(com.example.basetools.R.drawable.ic_icon,16.dp,16.dp)
+            binding.luckCount.setTextWithAnimation(System.currentTimeMillis().toString())
+
             sendMessage()
 //            ARouter.getInstance()
 //                .build("/type/home") // 构建跳转

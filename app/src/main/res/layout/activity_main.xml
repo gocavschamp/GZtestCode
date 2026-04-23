@@ -237,7 +237,25 @@
             android:paddingHorizontal="3dp"
             android:text="adfasdafdadfsasdf"
             android:textColor="@color/white" />
+        <com.ywm.baselibray.weiget.RollingTextView
+            android:id="@+id/luckCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:paddingVertical="4dp"
+            android:paddingHorizontal="6dp"
+            android:background="@color/black">
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableStart="@drawable/ic_icon"
+                android:drawablePadding="2dp"
+                android:gravity="center_vertical"
+                android:textSize="12sp"
+                android:textColor="#FFFFFF"
+                android:text="+8888" />
+        </com.ywm.baselibray.weiget.RollingTextView>
     </com.google.android.flexbox.FlexboxLayout>
 
     <com.google.android.flexbox.FlexboxLayout
