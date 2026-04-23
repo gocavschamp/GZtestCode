@@ -105,8 +105,15 @@
                 android:background="@color/blue"
                 android:gravity="center"
                 android:textColor="@color/white"
-
                 android:text="pag图片"/>
+            <Button
+                android:id="@+id/svga"
+                android:layout_width="190dp"
+                android:layout_height="40dp"
+                android:background="@color/blue"
+                android:gravity="center"
+                android:textColor="@color/white"
+                android:text="svga图片"/>
             <Button
                 android:id="@+id/game"
                 android:background="@color/blue"

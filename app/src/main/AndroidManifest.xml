@@ -59,10 +59,13 @@
             android:name=".ui.PagActivity"
             android:configChanges="keyboardHidden|orientation"
             android:windowSoftInputMode="adjustResize"
-            android:screenOrientation="fullSensor">
-
-        </activity>
-        <activity android:name=".ui.AnimSimpleDemoActivity" android:screenOrientation="portrait"/>
+            android:screenOrientation="fullSensor"/>
+        <activity
+            android:name=".ui.SvgaActivity"
+            android:configChanges="keyboardHidden|orientation"
+            android:windowSoftInputMode="adjustResize"
+            android:screenOrientation="fullSensor"/>
+        <activity android:name=".ui.AnimSimpleDemoActivity" android:screenOrientation="fullSensor"/>
         <activity android:name=".ui.ScaleDemoActivity" android:screenOrientation="portrait"/>
         <activity android:name=".ui.DialogDemoActivity" android:screenOrientation="portrait"/>
         <activity android:name=".ui.ScoreViewActivity" android:screenOrientation="portrait"/>

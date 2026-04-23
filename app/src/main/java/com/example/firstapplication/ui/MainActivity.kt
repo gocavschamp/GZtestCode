@@ -188,6 +188,10 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "dian ji", Toast.LENGTH_SHORT).show()
             startActivity(Intent(this, PagActivity::class.java))
         }
+        binding.svga.setOnClickListener {
+            Toast.makeText(this, "dian ji", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(this, SvgaActivity::class.java))
+        }
         binding.vap.setOnClickListener {
             Toast.makeText(this, "vap", Toast.LENGTH_SHORT).show()
             startActivity(Intent(this, AnimSimpleDemoActivity::class.java))
