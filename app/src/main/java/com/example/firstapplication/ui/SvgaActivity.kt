@@ -13,11 +13,13 @@ import com.blankj.utilcode.util.Utils
 import com.example.firstapplication.databinding.ActivityPagBinding
 import com.example.firstapplication.databinding.ActivitySvgaBinding
 import com.opensource.svgaplayer.SVGACallback
+import com.opensource.svgaplayer.utils.SVGARange
 import com.ywm.baselibray.pag.PagAdapter
 import com.ywm.baselibray.pag.PagItem
 import com.ywm.baselibray.pag.PagPlayerManager
 import com.ywm.baselibray.pag.RecyclablePagView
 import com.ywm.baselibray.utils.SvgaInitUtil
+import java.util.LinkedList
 
 @Route(path = "/module/main")
 class SvgaActivity : AppCompatActivity() {
@@ -33,35 +35,42 @@ class SvgaActivity : AppCompatActivity() {
         // 初始化 PAG 播放管理器
 
         viewBinding.sendButton.setOnClickListener {
-            createAnimNew("svga/win_effect.svga")
+            linkedList.add("svga/win_effect.svga")
+            linkedList.add("svga/bigwin.svga")
+            linkedList.add("svga/magicwin.svga")
+            createAnimNew(linkedList.pollFirst())
         }
         viewBinding.sendButton1.setOnClickListener {
-            createAnimNew("svga/bigwin.svga")
-
+            linkedList.add("svga/bigwin.svga")
+            createAnimNew(linkedList.pollFirst())
         }
         viewBinding.sendButton2.setOnClickListener {
-            createAnimNew("svga/magicwin.svga")
-
+            linkedList.add("svga/magicwin.svga")
+            createAnimNew(linkedList.pollFirst())
         }
         viewBinding.sendButton3.setOnClickListener {
-            createAnimNew("svga/room_pk_countdown.svga")
-
+            linkedList.add("svga/room_pk_countdown.svga")
+            createAnimNew(linkedList.pollFirst())
         }
         viewBinding.sendButton4.setOnClickListener {
-            createAnimNew("svga/room_pk_start_anim.svga")
+            linkedList.add("svga/room_pk_start_anim.svga")
+            createAnimNew(linkedList.pollFirst())
 
         }
         viewBinding.sendButton5.setOnClickListener {
-            createAnimNew("svga/room_start_pk.svga")
-
+            linkedList.add("svga/room_start_pk.svga")
+            createAnimNew(linkedList.pollFirst())
         }
 //        initRecyclerView()
 //        loadData()
 
     }
 
+    val linkedList = LinkedList<String>()
+    var isAnimRunningData = false
     private fun createAnimNew(user: String) {
         LogUtils.e("-----luck user create-----${user.toString()}")
+        if (isAnimRunningData)return
         viewBinding?.root?.isVisible = true
         viewBinding?.svgaView?.isVisible = true
         viewBinding?.svgaView?.stopAnimation(true)
@@ -89,22 +98,34 @@ class SvgaActivity : AppCompatActivity() {
             override fun onStep(frame: Int, percentage: Double) {
                 if (percentage == 1.0){
                     LogUtils.e("-----luck user onStep end-----$percentage")
-//                    isAnimRunningData = false
-//                    start()
+                    isAnimRunningData = false
+                    if (linkedList.size>0){
+                        createAnimNew(linkedList.pollFirst())
+                    }
+return
+                }
+                if (frame == 42){
+                    if (linkedList.size==0)return
+                    viewBinding?.svgaView?.pauseAnimation()
+                    parserSvag(linkedList.pollFirst(), "8888"){
+                        if (it) {
+                            viewBinding?.root?.isVisible = true
+                            viewBinding?.svgaView?.isVisible = true
+                            viewBinding?.svgaView?.stepToFrame(13,true)
+                        } else {
+                            viewBinding?.root?.isVisible = false
+                            viewBinding?.svgaView?.isVisible = false
+                            viewBinding?.svgaView?.stopAnimation()
+                            //                isAnimRunningData = false
+                        }
+                    }
+
                 }
             }
         })
-        viewBinding?.svgaView?.isVisible = true
-        svgaInitUtil?.initSvgaWithInfo(
-            fileName = winSaga, context = Utils.getApp(), svgaImageView = viewBinding?.svgaView,
-            avatarUrl = "https://pic.pngsucai.com/01/00/07/30e91009b3544dcc.webp",
-            text1 = "user.nickName", text1Key = "text_1",
-            text2 = "x${user}", text2Key = "text_2",
-            imgKey = "avatar"
-        ) { parseSuccess: Boolean ->
-            LogUtils.e("-----luck user parseSuccess-----${parseSuccess}")
-
-            if (parseSuccess) {
+        isAnimRunningData = true
+        parserSvag(winSaga, "0000"){
+            if (it) {
                 viewBinding?.root?.isVisible = true
                 viewBinding?.svgaView?.isVisible = true
                 viewBinding?.svgaView?.startAnimation()
@@ -112,10 +133,24 @@ class SvgaActivity : AppCompatActivity() {
                 viewBinding?.root?.isVisible = false
                 viewBinding?.svgaView?.isVisible = false
                 viewBinding?.svgaView?.stopAnimation()
-//                isAnimRunningData = false
+                //                isAnimRunningData = false
             }
         }
 
+    }
+
+    private fun parserSvag(winSaga: String, user: String,onComplete: (parseSuccess: Boolean)->Unit) {
+        viewBinding?.svgaView?.isVisible = true
+        svgaInitUtil?.initSvgaWithInfo(
+            fileName = winSaga, context = Utils.getApp(), svgaImageView = viewBinding?.svgaView,
+            avatarUrl = "https://pic.pngsucai.com/01/00/07/30e91009b3544dcc.webp",
+            text1 = "nickName $user", text1Key = "text_1",
+            text2 = "xxx${user}", text2Key = "text_2",
+            imgKey = "avatar"
+        ) { parseSuccess: Boolean ->
+            LogUtils.e("-----luck user parseSuccess-----${parseSuccess}")
+           onComplete.invoke(parseSuccess)
+        }
     }
 
     override fun onDestroy() {

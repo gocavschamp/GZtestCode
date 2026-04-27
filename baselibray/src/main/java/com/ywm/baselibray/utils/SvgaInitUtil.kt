@@ -163,7 +163,7 @@ class SvgaInitUtil {
                             svgaImageView?.setImageDrawable(svgaDrawable)
                             svgaImageView?.stepToFrame(0,false)
                             onComplete.invoke(true)
-                svgaImageView?.startAnimation()
+//                svgaImageView?.startAnimation()
                         }
 
                         override fun onLoadCleared(placeholder: Drawable?) {

@@ -73,7 +73,9 @@ class MainActivity : AppCompatActivity() {
         }
 //        binding.luckCount.getTextView().setDrawableWithSize(com.example.basetools.R.drawable.ic_icon,16.dp,16.dp)
         binding.luckCount.setText(System.currentTimeMillis().toString())
+        binding.luckCountMin.setText("100")
         binding.luckCount.isVisible = true
+        binding.luckCountMin.isVisible = true
         binding.shineTextView.post {
             ShineEffect(binding.shineTextView).apply {
                 setAutoStart(true)
@@ -245,6 +247,10 @@ class MainActivity : AppCompatActivity() {
         binding.sendButton.setOnClickListener {
 //            binding.luckCount.getTextView().setDrawableWithSize(com.example.basetools.R.drawable.ic_icon,16.dp,16.dp)
             binding.luckCount.setTextWithAnimation(System.currentTimeMillis().toString())
+            binding.luckCountMin.setText("+"+System.currentTimeMillis().toString())
+            binding.luckCountMin.postDelayed({
+                binding.luckCountMin.setTextWithAnimation("")
+            },2000L)
 
             sendMessage()
 //            ARouter.getInstance()
