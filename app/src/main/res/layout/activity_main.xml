@@ -159,6 +159,13 @@
                 android:text="scoreview"
                 app:layout_constraintLeft_toLeftOf="@id/dialogUtils"
                 app:layout_constraintTop_toBottomOf="@id/dialogUtils" />
+            <Button
+                android:id="@+id/countdown"
+                android:layout_width="100dp"
+                android:layout_height="40dp"
+                android:text="countdown"
+                app:layout_constraintLeft_toLeftOf="@id/dialogUtils"
+                app:layout_constraintTop_toBottomOf="@id/scoreview" />
         </LinearLayout>
     </com.google.android.flexbox.FlexboxLayout>
 

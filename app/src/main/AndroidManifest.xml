@@ -61,6 +61,11 @@
             android:windowSoftInputMode="adjustResize"
             android:screenOrientation="fullSensor"/>
         <activity
+            android:name=".ui.CountdownActivity"
+            android:configChanges="keyboardHidden|orientation"
+            android:windowSoftInputMode="adjustResize"
+            android:screenOrientation="fullSensor"/>
+        <activity
             android:name=".ui.SvgaActivity"
             android:configChanges="keyboardHidden|orientation"
             android:windowSoftInputMode="adjustResize"

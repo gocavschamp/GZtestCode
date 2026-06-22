@@ -208,6 +208,11 @@ class MainActivity : AppCompatActivity() {
         binding.scoreview.setOnClickListener {
             startActivity(Intent(this, ScoreViewActivity::class.java))
         }
+        binding.countdown.setOnClickListener {
+            ARouter.getInstance()
+                .build("/module/countdown") // 构建跳转
+                .navigation()
+        }
         val circleCrop: Transformation<Bitmap?> = CircleCrop()
         Glide.with(this)
             .load(R.raw.ic_room_bottom_gift)

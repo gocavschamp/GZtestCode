@@ -97,6 +97,11 @@
             <enum name="bold_italic" value="3" />
         </attr>
     </declare-styleable>
+    <declare-styleable name="CountdownTextView">
+        <attr name="progressColor" format="color" />
+        <attr name="progressWidth" format="dimension" />
+        <attr name="cornerRadius" format="dimension" />
+    </declare-styleable>
     <declare-styleable name="ScoreBoardView">
         <!-- 数字之间的间距 -->
         <attr name="digitSpacing" format="dimension" />
