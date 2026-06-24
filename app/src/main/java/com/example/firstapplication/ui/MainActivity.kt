@@ -27,6 +27,8 @@ import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.example.baseapi.floatview.FloatViewRouter
 import com.example.firstapplication.R
 import com.example.firstapplication.databinding.ActivityMainBinding
+import com.ethanhua.skeleton.Skeleton
+import com.ethanhua.skeleton.SkeletonScreen
 import com.ywm.baselibray.utils.CountryFlagUtil
 import com.ywm.baselibray.utils.dp
 import com.ywm.baselibray.utils.setDrawableWithSize
@@ -43,6 +45,7 @@ class MainActivity : AppCompatActivity() {
 //    private lateinit var sendButton: Button
     private lateinit var messageAdapter: MessageAdapter
     private val messages = mutableListOf<Message>()
+    private var skeletonScreen: SkeletonScreen? = null
     private lateinit var pollingHandler: Handler
     private var pollingRunnable: Runnable? = null
     private val pollingInterval = 10000L // 轮询间隔，单位：毫秒 (例如 5秒)
@@ -241,6 +244,22 @@ class MainActivity : AppCompatActivity() {
         messageAdapter = MessageAdapter(messages)
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.recyclerView.adapter = messageAdapter
+
+        // 显示骨架屏，模拟加载
+        skeletonScreen = Skeleton.bind(binding.recyclerView)
+            .adapter(messageAdapter)
+            .load(R.layout.layout_skeleton_item_message)
+            .shimmer(false)
+            .angle(20)
+            .duration(1200)
+            .count(10)
+            .show()
+
+        // 模拟加载完成，2s 后隐藏骨架屏
+        binding.recyclerView.postDelayed({
+            skeletonScreen?.hide()
+            skeletonScreen = null
+        }, 2000L)
     }
     
     private fun setupSendButton() {

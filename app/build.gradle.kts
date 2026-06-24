@@ -62,6 +62,8 @@ dependencies {
     implementation(libs.arouter)
     annotationProcessor (libs.arouter.compiler)
     implementation (libs.android.flexbox)
+    implementation(libs.skeleton)
+    implementation(libs.shimmerlayout)
     
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

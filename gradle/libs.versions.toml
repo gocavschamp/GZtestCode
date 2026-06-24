@@ -23,6 +23,8 @@ lottieVersion = "5.2.0"
 flexbox = '3.0.0'
 utilcodexVersion = '1.31.1'
 swiperefreshlayout = "1.1.0"
+skeleton = "1.1.2"
+shimmerlayout = "2.1.0"
 
 
 [libraries]
@@ -49,6 +51,8 @@ webpdecoder = { module = "com.github.zjupure:webpdecoder", version.ref = "webpde
 utilcodex = { group = "com.blankj", name = "utilcodex", version.ref = "utilcodexVersion" }
 android-flexbox = { group = "com.google.android.flexbox", name = "flexbox", version.ref = "flexbox" }
 androidx-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout" }
+skeleton = { module = "com.ethanhua:skeleton", version.ref = "skeleton" }
+shimmerlayout = { module = "io.supercharge:shimmerlayout", version.ref = "shimmerlayout" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
