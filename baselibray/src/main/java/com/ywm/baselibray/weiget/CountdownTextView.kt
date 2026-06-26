@@ -12,6 +12,7 @@ import android.view.animation.LinearInterpolator
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.animation.addListener
 import com.ywm.baselibray.R
+import kotlin.math.max
 
 open class CountdownTextView @JvmOverloads constructor(
     context: Context,
@@ -101,6 +102,11 @@ open class CountdownTextView @JvmOverloads constructor(
         invalidate()
     }
 
+    fun setCornerRadiusDp(radiusDp: Float) {
+        cornerRadius = radiusDp * resources.displayMetrics.density
+        invalidate()
+    }
+
     fun getCornerRadius(): Float = cornerRadius
 
     override fun onDraw(canvas: Canvas) {
@@ -113,11 +119,12 @@ open class CountdownTextView @JvmOverloads constructor(
         val w = width.toFloat()
         val h = height.toFloat()
         val halfStroke = progressWidth / 2f
+        val adjustedRadius = max(0f, cornerRadius - halfStroke)
 
         roundRectPath.reset()
         roundRectPath.addRoundRect(
             halfStroke, halfStroke, w - halfStroke, h - halfStroke,
-            cornerRadius, cornerRadius, Path.Direction.CW
+            adjustedRadius, adjustedRadius, Path.Direction.CW
         )
 
         pathMeasure.setPath(roundRectPath, false)
