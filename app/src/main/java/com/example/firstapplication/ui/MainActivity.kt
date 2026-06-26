@@ -2,6 +2,7 @@ package com.example.firstapplication.ui
 
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -32,6 +33,7 @@ import com.ethanhua.skeleton.SkeletonScreen
 import com.ywm.baselibray.utils.CountryFlagUtil
 import com.ywm.baselibray.utils.dp
 import com.ywm.baselibray.utils.setDrawableWithSize
+import com.ywm.baselibray.utils.setRichText
 import com.ywm.baselibray.weiget.ShimmerColorTextView
 import com.ywm.baselibray.weiget.ShineEffect
 
@@ -79,11 +81,12 @@ class MainActivity : AppCompatActivity() {
         binding.luckCountMin.setText("100")
         binding.luckCount.isVisible = true
         binding.luckCountMin.isVisible = true
-        binding.shineTextView.post {
-            ShineEffect(binding.shineTextView).apply {
-                setAutoStart(true)
-            }
-        }
+        //todo shine effect text
+//        binding.shineTextView.post {
+//            ShineEffect(binding.shineTextView).apply {
+//                setAutoStart(true)
+//            }
+//        }
         for (i in 1..30){
             testIndex++
             messages.add(Message("testIndex=${testIndex}", System.currentTimeMillis()))
@@ -116,7 +119,54 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "click", Toast.LENGTH_SHORT).show()
             binding.testFrameLayout.isVisible = true
         }
+        // 在 Kotlin 代码中调用
+        binding.shineTextView.setRichText {
+            // 1. 拼接蓝色文字
+            text(
+                text = "点击这里",
+                color = Color.BLUE,
+                underline = true,
+                onClick = {
+                    Toast.makeText(this@MainActivity, "文字被点击", Toast.LENGTH_SHORT).show()
+                }
+            )
 
+            // 2. 拼接一个星星图标 (24x24 px)
+            icon(
+                drawable = ContextCompat.getDrawable(this@MainActivity, com.example.basetools.R.drawable.ic_icon)!!,
+                width = 24.dp,
+                height = 24.dp,
+                onClick = {
+                    Toast.makeText(this@MainActivity, "星星被点击", Toast.LENGTH_SHORT).show()
+                }
+            )
+
+            // 3. 拼接普通红色文字（无下划线，无点击）
+            text(
+                text = " 普通红色文字",
+                color = Color.RED
+            )
+            // 3. 拼接普通红色文字（无下划线，无点击）
+            text(
+                text = " 普通红色文字",
+                color = Color.GREEN
+            )
+ // 3. 拼接普通红色文字（无下划线，无点击）
+            text(
+                text = " 普通红色文字",
+                color = Color.YELLOW
+            )
+
+            // 4. 拼接一个箭头图标 + 点击
+            icon(
+                drawable = ContextCompat.getDrawable(this@MainActivity, com.huantansheng.easyphotos.R.drawable.ic_album_item_choose_easy_photos)!!,
+                width = 30.dp,
+                height = 30.dp,
+                onClick = {
+                    Toast.makeText(this@MainActivity, "箭头被点击", Toast.LENGTH_SHORT).show()
+                }
+            )
+        }
 //         或者方法2：使用自定义触摸处理版本
 //        binding.testFrameLayout.enableRightSwipeToDismissV2()
 //        startPolling()
