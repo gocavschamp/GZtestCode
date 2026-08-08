@@ -112,6 +112,26 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Kids"/>
         <activity
+            android:name=".ui.kids.EnglishAlphabetActivity"
+            android:configChanges="keyboardHidden|orientation"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Kids"/>
+        <activity
+            android:name=".ui.kids.EnglishWordsActivity"
+            android:configChanges="keyboardHidden|orientation"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Kids"/>
+        <activity
+            android:name=".ui.kids.EnglishCheckinActivity"
+            android:configChanges="keyboardHidden|orientation"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Kids"/>
+        <activity
+            android:name=".ui.kids.EnglishGameActivity"
+            android:configChanges="keyboardHidden|orientation"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Kids"/>
+        <activity
             android:name=".ui.GameActivity"
             android:configChanges="orientation|screenSize|keyboardHidden|screenLayout"
             android:hardwareAccelerated="true"
