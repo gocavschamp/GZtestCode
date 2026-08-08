@@ -120,6 +120,33 @@ object KidsProgressStore {
         return cal.get(java.util.Calendar.YEAR) * 100 + (cal.get(java.util.Calendar.MONTH) + 1)
     }
 
+    // ==================== 英语互动游戏（100 关闯关进度） ====================
+
+    private const val KEY_EN_GAME_PROGRESS = "english_game_progress"
+    private const val KEY_EN_GAME_SCORE = "english_game_score"
+
+    /** 已通关题数（0..100） */
+    fun getEnglishGameProgress(context: Context): Int = runBlocking {
+        db(context).progressDao().getValue(KEY_EN_GAME_PROGRESS) ?: 0
+    }
+
+    fun setEnglishGameProgress(context: Context, value: Int) {
+        runBlocking {
+            db(context).progressDao().put(StudyProgressEntity(KEY_EN_GAME_PROGRESS, value))
+        }
+    }
+
+    /** 游戏累计得分 */
+    fun getEnglishGameScore(context: Context): Int = runBlocking {
+        db(context).progressDao().getValue(KEY_EN_GAME_SCORE) ?: 0
+    }
+
+    fun setEnglishGameScore(context: Context, value: Int) {
+        runBlocking {
+            db(context).progressDao().put(StudyProgressEntity(KEY_EN_GAME_SCORE, value))
+        }
+    }
+
     // ==================== 第一版 SharedPreferences 数据迁移 ====================
 
     /** 首次运行时把旧版 SharedPreferences 里的进度迁移进数据库（幂等） */

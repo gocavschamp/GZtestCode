@@ -59,14 +59,14 @@ app/src/main/java/com/example/firstapplication/ui/kids/
 ├── ChineseWordActivity.kt       # 汉字乐园（TabLayout 五页：基础笔画/笔画演示/汉字识字500/仿写描红/每日一句，点击朗读并标记学会）
 ├── KidsH5Activity.kt            # H5 小游戏容器（WebView 加载本地 assets/h5，三个游戏切换按钮）
 ├── PoetryActivity.kt            # 古诗学堂（列表页 50 首中小学课本古诗 → 详情页：整首朗读 / 每字点击朗读字+拼音，每首诗意渐变背景 + 内容相关 emoji 装饰 + 释义解说）
-├── EnglishActivity.kt           # 英语乐园（TabLayout 四页：①字母表 26 字母含音标+示例单词 ②单词句子 15 类 330 词 + 60 句可朗读 ③每日打卡 30 天×10 词+2 句、本地记录当月打卡掩码、今天可打卡 ④互动游戏"听音选词"10 题一局）
+├── EnglishActivity.kt           # 英语乐园（TabLayout 四页：①字母表 26 字母含音标+示例单词 ②单词句子闪卡（15 类 330 词 + 60 句，一次一张滑动切换+指示器） ③每日打卡 30 天×10 词+2 句、每词自动配 2 例句、日历 6 列网格 + 内容闪卡、本地记录当月打卡掩码、今天可打卡 ④互动游戏"听音选词"100 关闯关：答对 +10 分并通关 +1，进度/得分 Room 持久化，全部通关后可从头开始）
 ├── KidsStatusBar.kt             # 沉浸式状态栏工具（透明状态栏 + 内容延伸到状态栏 + 根布局自动避让）
 ├── HanziLibrary.kt              # 汉字数据源：34 精细教学字 + 500 常用字（EXTENDED_HANZI）+ 8 基础笔画 + 44 条每日句子
 ├── PoetryLibrary.kt             # 古诗数据源：50 首中小学课本古诗（标题/作者/逐字拼音/释义/主题渐变配色/背景 emoji）
-├── EnglishLibrary.kt            # 英语数据源：26 字母（ALPHABET，各含 2 示例单词）+ 15 类 330 词（CATEGORIES/ALL_WORDS）+ 60 条句子（SENTENCES）+ 30 天打卡（CHECK_IN_DAYS，前 300 词每 10 词一天 + 每天 2 句）
+├── EnglishLibrary.kt            # 英语数据源：26 字母（ALPHABET，各含 2 示例单词）+ 15 类 330 词（CATEGORIES/ALL_WORDS）+ 60 条句子（SENTENCES）+ 30 天打卡（CHECK_IN_DAYS，前 300 词每 10 词一天 + 每天 2 句）+ exampleSentencesFor() 按词性模板为每词生成 2 例句（动词 can/let's、颜色 it is、数字 count、默认 this is a/an）
 ├── StrokeAnimationView.kt       # 自定义 View：田字格笔画顺序动画（内置 34 个汉字 + 8 个基础笔画数据）
 ├── TracingView.kt               # 自定义 View：仿写描红，触摸笔迹，PNG 本地保存
-├── KidsProgressStore.kt         # Room 数据门面（同步 API + runBlocking 包装），含第一版 SharedPreferences 迁移
+├── KidsProgressStore.kt         # Room 数据门面（同步 API + runBlocking 包装），含第一版 SharedPreferences 迁移；英语模块：打卡掩码（english_checkin_month/mask，跨月归零）+ 游戏进度（english_game_progress 0..100 / english_game_score）
 ├── KidsTts.kt                   # 本地语音朗读（系统 TextToSpeech：中文 speak + 英文 speakEnglish 临时切 Locale.US）
 └── db/KidsDatabase.kt           # Room：Database + 3 个 DAO（进度键值 / 已学汉字 / 答题记录）
     db/KidsEntities.kt           # Entity：StudyProgressEntity / LearnedCharEntity / ArithmeticRecordEntity

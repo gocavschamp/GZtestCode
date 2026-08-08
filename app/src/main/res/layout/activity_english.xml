@@ -61,8 +61,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:padding="16dp"
-            android:visibility="gone">
+            android:padding="16dp">
 
             <HorizontalScrollView
                 android:layout_width="match_parent"
@@ -92,31 +91,33 @@
                 android:layout_height="0dp"
                 android:layout_marginTop="8dp"
                 android:layout_weight="1"
-                app:cardBackgroundColor="#F2FFFFFF"
+                app:cardBackgroundColor="#FFFFFFFF"
                 app:cardCornerRadius="32dp"
-                app:cardElevation="8dp">
+                app:cardElevation="10dp"
+                app:strokeColor="@color/kids_orange"
+                app:strokeWidth="2dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center_horizontal"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:padding="16dp">
 
                     <TextView
                         android:id="@+id/tvLetterBig"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="A a"
-                        android:textColor="@color/kids_text_deep"
-                        android:textSize="72sp"
+                        android:textColor="@color/kids_orange"
+                        android:textSize="76sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/tvLetterPhonetic"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
+                        android:layout_marginTop="2dp"
                         android:text="/eɪ/"
                         android:textColor="@color/kids_text"
                         android:textSize="18sp" />
@@ -124,8 +125,9 @@
                     <LinearLayout
                         android:id="@+id/letterWordList"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
+                        android:layout_height="0dp"
+                        android:layout_marginTop="12dp"
+                        android:layout_weight="1"
                         android:orientation="vertical" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -143,7 +145,7 @@
                 android:textSize="16sp" />
         </LinearLayout>
 
-        <!-- ============ 页面1：单词句子 ============ -->
+        <!-- ============ 页面1：单词句子（闪卡切换） ============ -->
         <LinearLayout
             android:id="@+id/pageWords"
             android:layout_width="match_parent"
@@ -170,17 +172,28 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:gravity="center"
-                android:text="✨ 点击卡片听发音"
+                android:text="✨ 左右滑动切换卡片，点击卡片听发音"
                 android:textColor="#66FFFFFF"
                 android:textSize="13sp" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerWords"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="8dp"
-                android:clipToPadding="false"
-                android:paddingBottom="12dp" />
+                android:layout_height="0dp"
+                android:layout_marginTop="4dp"
+                android:layout_weight="1"
+                android:clipToPadding="false" />
+
+            <TextView
+                android:id="@+id/tvWordsIndicator"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="center"
+                android:text="1 / 42"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold" />
         </LinearLayout>
 
         <!-- ============ 页面2：每日打卡 ============ -->
@@ -215,26 +228,52 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerCheckin"
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:layout_marginTop="8dp"
+                android:layout_height="290dp"
+                android:layout_marginTop="6dp"
                 android:clipToPadding="false"
-                android:paddingBottom="4dp" />
+                android:overScrollMode="never" />
 
-            <androidx.core.widget.NestedScrollView
+            <TextView
+                android:id="@+id/tvCheckinStreak2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center"
+                android:text="👇 点选日期，卡片滑动学习当天单词和句子"
+                android:textColor="#66FFFFFF"
+                android:textSize="12sp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerCheckinContent"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_marginTop="8dp"
-                android:layout_weight="1">
+                android:layout_marginTop="2dp"
+                android:layout_weight="1"
+                android:clipToPadding="false" />
 
-                <LinearLayout
-                    android:id="@+id/checkinContent"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical" />
-            </androidx.core.widget.NestedScrollView>
+            <TextView
+                android:id="@+id/tvCheckinIndicator"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center"
+                android:text="第 1 / 12 张"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btnCheckinDone"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="6dp"
+                android:backgroundTint="@color/kids_grass"
+                android:text="✅ 完成今日打卡"
+                android:textColor="@color/white"
+                android:textSize="16sp" />
         </LinearLayout>
 
-        <!-- ============ 页面3：互动游戏（听音选词） ============ -->
+        <!-- ============ 页面3：互动游戏（100 关听音选词） ============ -->
         <ScrollView
             android:id="@+id/pageGame"
             android:layout_width="match_parent"
@@ -271,9 +310,10 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:gravity="center"
-                        android:text="第 1 / 10 题"
+                        android:text="已通关 0 / 100 关"
                         android:textColor="#FFFFFF"
-                        android:textSize="16sp" />
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
 
                 <com.google.android.material.card.MaterialCardView
@@ -394,7 +434,7 @@
                     android:layout_marginTop="12dp"
                     android:layout_marginBottom="16dp"
                     android:backgroundTint="@color/kids_sky_blue_deep"
-                    android:text="🔄 再来一局"
+                    android:text="🔄 从头开始"
                     android:textColor="@color/white"
                     android:textSize="16sp"
                     android:visibility="gone" />

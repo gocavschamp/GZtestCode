@@ -17,19 +17,19 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.LinearSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.example.firstapplication.R
 import com.example.firstapplication.databinding.ActivityEnglishBinding
 import com.example.firstapplication.databinding.ItemEnglishCheckinDayBinding
+import com.example.firstapplication.databinding.ItemEnglishFlashcardBinding
 import com.example.firstapplication.databinding.ItemEnglishSentenceBinding
-import com.example.firstapplication.databinding.ItemEnglishWordBinding
-import com.example.firstapplication.ui.kids.EnglishLibrary.CheckInDay
 import com.example.firstapplication.ui.kids.EnglishLibrary.EnglishWord
 import com.example.firstapplication.ui.kids.EnglishLibrary.Sentence
 import java.util.Calendar
 
 /**
- * 英语乐园：字母表 / 单词句子 / 每日打卡（30天×10词+2句，本地记录）/ 互动游戏（听音选词）
+ * 英语乐园：字母表 / 单词句子（闪卡切换）/ 每日打卡（30天×10词+2句，每词配 2 例句，本地记录）/ 互动游戏（100 关听音选词，进度持久化）
  * 朗读：字母、单词、句子均为英文发音（KidsTts.speakEnglish），中文释义按钮读中文
  */
 class EnglishActivity : AppCompatActivity() {
@@ -42,21 +42,25 @@ class EnglishActivity : AppCompatActivity() {
     private val wordAdapter = WordAdapter()
     private val sentenceAdapter = SentenceAdapter()
     private val checkinAdapter = CheckinAdapter()
+    private val checkinContentAdapter = CheckinContentAdapter()
 
     // 打卡状态
     private var checkinMask = 0
+    private var selectedCheckinDay = 0
 
-    // 游戏状态
+    // 游戏状态（100 关闯关，进度持久化）
     private val gamePool = EnglishLibrary.ALL_WORDS
-    private var gameQuestions = mutableListOf<Pair<EnglishWord, List<String>>>()
-    private var gameIndex = 0
+    private var gameProgress = 0
     private var gameScore = 0
+    private var currentQuestionWord: EnglishWord? = null
     private val gameButtons: List<Button> get() = listOf(
         binding.btnOption1, binding.btnOption2, binding.btnOption3, binding.btnOption4
     )
 
     /** 游戏选项按钮初始背景色（答错后恢复用） */
     private val optionTints = mutableListOf<android.content.res.ColorStateList?>()
+
+    private fun dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,6 +71,7 @@ class EnglishActivity : AppCompatActivity() {
         KidsTts.init(this)
 
         checkinMask = KidsProgressStore.getEnglishCheckinMask(this)
+        selectedCheckinDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH).coerceIn(1, 30)
 
         optionTints.clear()
         gameButtons.forEach { optionTints.add(it.backgroundTintList) }
@@ -106,8 +111,7 @@ class EnglishActivity : AppCompatActivity() {
             binding.alphabetList.addView(chip)
         }
         binding.btnSpeakLetter.setOnClickListener {
-            val info = EnglishLibrary.ALPHABET[currentLetterIndex]
-            speakLetter(info)
+            speakLetter(EnglishLibrary.ALPHABET[currentLetterIndex])
         }
         showLetter(EnglishLibrary.ALPHABET[0])
     }
@@ -115,8 +119,9 @@ class EnglishActivity : AppCompatActivity() {
     /** 刷新字母 chip 选中样式 */
     private fun refreshLetterChips() {
         for (i in 0 until binding.alphabetList.childCount) {
-            (binding.alphabetList.getChildAt(i) as TextView).background =
-                chipBackground(i == currentLetterIndex)
+            val tv = binding.alphabetList.getChildAt(i) as TextView
+            tv.background = chipBackground(i == currentLetterIndex)
+            tv.setTextColor(if (i == currentLetterIndex) 0xFF7A3C00.toInt() else Color.WHITE)
         }
     }
 
@@ -125,26 +130,28 @@ class EnglishActivity : AppCompatActivity() {
         binding.tvLetterPhonetic.text = info.phonetic
         binding.letterWordList.removeAllViews()
         info.words.forEach { sample ->
-            binding.letterWordList.addView(
-                createLetterWordCard(sample.word, sample.chinese, sample.emoji)
-            )
+            binding.letterWordList.addView(createLetterWordCard(sample.word, sample.chinese, sample.emoji))
         }
     }
 
-    /** 字母页示例单词卡片（点击朗读英文） */
+    /** 字母页示例单词卡（复用闪卡布局，隐藏例句，固定高度） */
     private fun createLetterWordCard(word: String, chinese: String, emoji: String): View {
-        val b = ItemEnglishWordBinding.inflate(layoutInflater)
-        b.tvWord.text = word
-        b.tvWordChinese.text = chinese
-        b.tvWordEmoji.text = emoji
-        b.tvWordPhonetic.visibility = View.GONE
+        val b = ItemEnglishFlashcardBinding.inflate(layoutInflater)
+        b.tvFlashWord.text = word
+        b.tvFlashPhonetic.visibility = View.GONE
+        b.tvFlashChinese.text = chinese
+        b.tvFlashEmoji.text = emoji
+        b.viewFlashDivider.visibility = View.GONE
+        b.flashExampleList.visibility = View.GONE
+        b.btnSpeakFlash.visibility = View.GONE
         b.root.setOnClickListener { speakWord(word) }
-        b.btnSpeakWord.setOnClickListener { speakWord(word) }
+        b.root.layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, dp(150)
+        ).apply { topMargin = dp(10) }
         return b.root
     }
 
     private fun speakLetter(info: EnglishLibrary.LetterInfo) {
-        // 字母名 + 示例单词一起朗读
         KidsTts.speakEnglish(info.letter)
         binding.root.postDelayed({
             info.words.forEach { sample -> KidsTts.speakEnglish(sample.word) }
@@ -155,10 +162,9 @@ class EnglishActivity : AppCompatActivity() {
         KidsTts.speakEnglish(word)
     }
 
-    // ==================== 页面1：单词句子 ====================
+    // ==================== 页面1：单词句子（闪卡切换） ====================
 
     private fun setupWordsPage() {
-        // 分类 chips（最后加一个"常用句子"入口）
         EnglishLibrary.CATEGORIES.forEachIndexed { index, category ->
             val chip = createChip(category.name, index == 0)
             chip.setOnClickListener {
@@ -166,7 +172,7 @@ class EnglishActivity : AppCompatActivity() {
                 refreshCategoryChips()
                 binding.recyclerWords.adapter = wordAdapter
                 wordAdapter.submitList(EnglishLibrary.CATEGORIES[index].words)
-                binding.tvWordsHint.text = "✨ 点击卡片听发音 · 共 ${EnglishLibrary.CATEGORIES[index].words.size} 个单词"
+                binding.tvWordsHint.text = "✨ 左右滑动切换卡片 · 共 ${EnglishLibrary.CATEGORIES[index].words.size} 个单词"
             }
             binding.categoryList.addView(chip)
         }
@@ -176,20 +182,24 @@ class EnglishActivity : AppCompatActivity() {
             refreshCategoryChips()
             binding.recyclerWords.adapter = sentenceAdapter
             sentenceAdapter.submitList(EnglishLibrary.SENTENCES)
-            binding.tvWordsHint.text = "✨ 点击卡片听句子 · 共 ${EnglishLibrary.SENTENCES.size} 句"
+            binding.tvWordsHint.text = "✨ 左右滑动切换卡片 · 共 ${EnglishLibrary.SENTENCES.size} 句"
         }
         binding.categoryList.addView(sentenceChip)
 
-        binding.recyclerWords.layoutManager = LinearLayoutManager(this)
+        val lm = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        binding.recyclerWords.layoutManager = lm
         binding.recyclerWords.adapter = wordAdapter
+        attachSnap(binding.recyclerWords) { pos, total -> "第 $pos / $total 张" }
         wordAdapter.submitList(EnglishLibrary.CATEGORIES[0].words)
-        binding.tvWordsHint.text = "✨ 点击卡片听发音 · 共 ${EnglishLibrary.CATEGORIES[0].words.size} 个单词"
+        binding.tvWordsHint.text = "✨ 左右滑动切换卡片 · 共 ${EnglishLibrary.CATEGORIES[0].words.size} 个单词"
+        binding.tvWordsIndicator.text = "第 1 / ${EnglishLibrary.CATEGORIES[0].words.size} 张"
     }
 
     private fun refreshCategoryChips() {
         for (i in 0 until binding.categoryList.childCount) {
-            (binding.categoryList.getChildAt(i) as TextView).background =
-                chipBackground(i == currentCategoryIndex)
+            val tv = binding.categoryList.getChildAt(i) as TextView
+            tv.background = chipBackground(i == currentCategoryIndex)
+            tv.setTextColor(if (i == currentCategoryIndex) 0xFF7A3C00.toInt() else Color.WHITE)
         }
     }
 
@@ -198,8 +208,28 @@ class EnglishActivity : AppCompatActivity() {
     private fun setupCheckinPage() {
         binding.recyclerCheckin.layoutManager = GridLayoutManager(this, 6)
         binding.recyclerCheckin.adapter = checkinAdapter
+        binding.recyclerCheckin.isNestedScrollingEnabled = false
         checkinAdapter.submitList((1..30).toList())
         refreshCheckinHeader()
+
+        binding.recyclerCheckinContent.layoutManager =
+            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        binding.recyclerCheckinContent.adapter = checkinContentAdapter
+        attachSnap(binding.recyclerCheckinContent) { pos, total -> "第 $pos / $total 张" }
+
+        binding.btnCheckinDone.setOnClickListener {
+            if (selectedCheckinDay <= 0) return@setOnClickListener
+            val today = Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
+            if (selectedCheckinDay != today) return@setOnClickListener
+            checkinMask = KidsProgressStore.markEnglishCheckin(this, selectedCheckinDay)
+            refreshCheckinHeader()
+            checkinAdapter.notifyDataSetChanged()
+            KidsTts.speakEnglish("Great job! You are awesome!")
+            refreshCheckinContent()
+        }
+
+        // 默认选中今天
+        showCheckinContent(selectedCheckinDay)
     }
 
     private fun refreshCheckinHeader() {
@@ -207,149 +237,116 @@ class EnglishActivity : AppCompatActivity() {
         binding.tvCheckinTitle.text = "📅 本月打卡 $count / 30 天"
     }
 
-    /** 展示某天内容：10 单词 + 2 句子 + 打卡按钮 */
+    /** 展示某天内容：10 个单词卡（各配 2 例句）+ 2 个句子卡，闪卡滑动切换 */
     private fun showCheckinContent(day: Int) {
+        selectedCheckinDay = day
         val plan = EnglishLibrary.CHECK_IN_DAYS[day - 1]
-        val container = binding.checkinContent
-        container.removeAllViews()
+        val cards: MutableList<Any> = mutableListOf()
+        cards.addAll(plan.words)
+        cards.addAll(plan.sentences)
+        checkinContentAdapter.submitList(cards)
+        binding.recyclerCheckinContent.scrollToPosition(0)
+        binding.tvCheckinIndicator.text = "第 1 / ${cards.size} 张"
+        refreshCheckinContent()
+    }
 
-        // 标题卡片
-        val title = TextView(this).apply {
-            text = "Day $day · ${plan.theme}"
-            setTextColor(Color.WHITE)
-            textSize = 20f
-            setTypeface(typeface, android.graphics.Typeface.BOLD)
-            gravity = Gravity.CENTER
-            setPadding(0, 6, 0, 4)
-        }
-        container.addView(title)
-
-        val sub = TextView(this).apply {
-            text = "今天学 ${plan.words.size} 个单词 + ${plan.sentences.size} 个句子"
-            setTextColor(0xCCFFFFFF.toInt())
-            textSize = 13f
-            gravity = Gravity.CENTER
-            setPadding(0, 0, 0, 10)
-        }
-        container.addView(sub)
-
-        // 单词卡片（点击朗读英文）
-        plan.words.forEach { word ->
-            container.addView(createWordCard(word))
-        }
-
-        // 句子卡片
-        plan.sentences.forEach { sentence ->
-            container.addView(createSentenceCard(sentence))
-        }
-
-        // 打卡按钮
+    /** 更新打卡按钮状态 */
+    private fun refreshCheckinContent() {
+        val day = selectedCheckinDay
+        if (day <= 0) return
         val today = Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
         val done = (checkinMask and (1 shl (day - 1))) != 0
-        if (done) {
-            container.addView(
-                TextView(this).apply {
-                    text = "✅ 第 $day 天已完成打卡，太棒啦！"
-                    setTextColor(Color.WHITE)
-                    textSize = 16f
-                    gravity = Gravity.CENTER
-                    setPadding(0, 18, 0, 12)
-                }
-            )
-        } else if (day == today) {
-            val btn = Button(this).apply {
-                text = "✅ 完成今日打卡"
-                textSize = 16f
-                setTextColor(Color.WHITE)
-                backgroundTintList = ContextCompat.getColorStateList(
-                    this@EnglishActivity, R.color.kids_grass
-                )
-                layoutParams = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    120
-                ).apply { topMargin = 14 }
+        binding.btnCheckinDone.isEnabled = false
+        binding.btnCheckinDone.alpha = 0.55f
+        when {
+            done -> {
+                binding.btnCheckinDone.text = "✅ 第 $day 天已完成打卡"
+                binding.btnCheckinDone.backgroundTintList =
+                    ContextCompat.getColorStateList(this, R.color.kids_grass)
             }
-            btn.setOnClickListener {
-                checkinMask = KidsProgressStore.markEnglishCheckin(this@EnglishActivity, day)
-                refreshCheckinHeader()
-                checkinAdapter.notifyDataSetChanged()
-                KidsTts.speakEnglish("Great job! You are awesome!")
-                showCheckinContent(day)
+            day == today -> {
+                binding.btnCheckinDone.text = "✅ 完成今日打卡"
+                binding.btnCheckinDone.backgroundTintList =
+                    ContextCompat.getColorStateList(this, R.color.kids_grass)
+                binding.btnCheckinDone.isEnabled = true
+                binding.btnCheckinDone.alpha = 1f
             }
-            container.addView(btn)
-        } else if (day < today) {
-            container.addView(
-                TextView(this).apply {
-                    text = "⏰ 第 $day 天已过去，今天起要坚持打卡哦！"
-                    setTextColor(Color.WHITE)
-                    textSize = 15f
-                    gravity = Gravity.CENTER
-                    setPadding(0, 18, 0, 12)
-                }
-            )
-        } else {
-            container.addView(
-                TextView(this).apply {
-                    text = "🔮 第 $day 天还没到，先看看今天的内容吧！"
-                    setTextColor(Color.WHITE)
-                    textSize = 15f
-                    gravity = Gravity.CENTER
-                    setPadding(0, 18, 0, 12)
-                }
-            )
+            day < today -> {
+                binding.btnCheckinDone.text = "⏰ 第 $day 天已错过，今天起要坚持哦"
+                binding.btnCheckinDone.backgroundTintList =
+                    ContextCompat.getColorStateList(this, R.color.kids_coral)
+            }
+            else -> {
+                binding.btnCheckinDone.text = "🔮 第 $day 天还没到"
+                binding.btnCheckinDone.backgroundTintList =
+                    ContextCompat.getColorStateList(this, R.color.kids_sky_blue_deep)
+            }
         }
     }
 
-    /** 通用单词卡片（打卡页用，点击整卡朗读英文，喇叭读中文） */
-    private fun createWordCard(word: EnglishWord): View {
-        val b = ItemEnglishWordBinding.inflate(layoutInflater)
-        b.tvWord.text = word.word
-        b.tvWordPhonetic.text = word.phonetic
-        b.tvWordChinese.text = word.chinese
-        b.tvWordEmoji.text = word.emoji
+    /** 绑定闪卡内容：单词 + 2 个例句 */
+    private fun bindFlashcard(b: ItemEnglishFlashcardBinding, word: EnglishWord) {
+        b.tvFlashWord.text = word.word
+        b.tvFlashPhonetic.text = word.phonetic
+        b.tvFlashChinese.text = word.chinese
+        b.tvFlashEmoji.text = word.emoji
+        b.flashExampleList.removeAllViews()
+        EnglishLibrary.exampleSentencesFor(word).forEach { sentence ->
+            val block = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                setPadding(0, 6, 0, 6)
+                setOnClickListener { KidsTts.speakEnglish(sentence.en) }
+            }
+            block.addView(TextView(this).apply {
+                text = sentence.en
+                setTextColor(0xFF455A64.toInt())
+                textSize = 16f
+                setTypeface(typeface, android.graphics.Typeface.BOLD)
+            })
+            block.addView(TextView(this).apply {
+                text = "    ${sentence.cn}"
+                setTextColor(0xFF78909C.toInt())
+                textSize = 13f
+            })
+            b.flashExampleList.addView(block)
+        }
+        b.btnSpeakFlash.setOnClickListener { KidsTts.speakEnglish(word.word) }
         b.root.setOnClickListener { KidsTts.speakEnglish(word.word) }
-        b.btnSpeakWord.setOnClickListener { KidsTts.speak(word.chinese) }
-        return b.root
     }
 
-    private fun createSentenceCard(sentence: Sentence): View {
-        val b = ItemEnglishSentenceBinding.inflate(layoutInflater)
-        b.tvSentenceEn.text = sentence.en
-        b.tvSentenceCn.text = sentence.cn
-        b.root.setOnClickListener { KidsTts.speakEnglish(sentence.en) }
-        b.btnSpeakSentence.setOnClickListener { KidsTts.speakEnglish(sentence.en) }
-        return b.root
-    }
-
-    // ==================== 页面3：互动游戏（听音选词） ====================
+    // ==================== 页面3：互动游戏（100 关听音选词，进度持久化） ====================
 
     private fun setupGamePage() {
         binding.btnGameSpeak.setOnClickListener { speakCurrentQuestion() }
         gameButtons.forEachIndexed { index, btn ->
             btn.setOnClickListener { onAnswer(index) }
         }
-        binding.btnGameRestart.setOnClickListener { startGame() }
-        startGame()
-    }
-
-    private fun startGame() {
-        gameScore = 0
-        gameIndex = 0
-        // 10 题：随机 10 个正确词，各配 3 个干扰词
-        gameQuestions = gamePool.shuffled().take(10).map { word ->
-            val distractors = gamePool.filter { it.word != word.word }.shuffled().take(3).map { it.word }
-            word to (distractors + word.word).shuffled()
-        }.toMutableList()
-        binding.btnGameRestart.visibility = View.GONE
-        binding.tvGameResult.text = ""
+        binding.btnGameRestart.setOnClickListener {
+            gameProgress = 0
+            gameScore = 0
+            KidsProgressStore.setEnglishGameProgress(this, 0)
+            KidsProgressStore.setEnglishGameScore(this, 0)
+            binding.btnGameRestart.visibility = View.GONE
+            binding.tvGameResult.text = ""
+            showQuestion()
+        }
+        gameProgress = KidsProgressStore.getEnglishGameProgress(this).coerceIn(0, 100)
+        gameScore = KidsProgressStore.getEnglishGameScore(this)
         showQuestion()
     }
 
     private fun showQuestion() {
-        binding.tvGameScore.text = "⭐ $gameScore 分"
-        binding.tvGameProgress.text = "第 ${gameIndex + 1} / 10 题"
-        val (word, options) = gameQuestions[gameIndex]
+        if (gameProgress >= 100) {
+            showGameComplete()
+            return
+        }
+        val word = gamePool[gameProgress % gamePool.size]
+        currentQuestionWord = word
+        val options = (gamePool.filter { it.word != word.word }.shuffled().take(3).map { it.word } + word.word).shuffled()
+        binding.tvGameScore.text = "⭐ 累计 $gameScore 分"
+        binding.tvGameProgress.text = "已通关 $gameProgress / 100 关"
         binding.tvGameEmoji.text = word.emoji
+        binding.tvGameTip.text = "第 ${gameProgress + 1} 关 · 听发音选单词"
         gameButtons.forEachIndexed { i, btn ->
             btn.text = options[i]
             btn.isEnabled = true
@@ -360,22 +357,23 @@ class EnglishActivity : AppCompatActivity() {
     }
 
     private fun speakCurrentQuestion() {
-        val word = gameQuestions.getOrNull(gameIndex)?.first ?: return
-        KidsTts.speakEnglish(word.word)
+        currentQuestionWord?.let { KidsTts.speakEnglish(it.word) }
     }
 
     private fun onAnswer(index: Int) {
-        val (word, _) = gameQuestions[gameIndex]
+        val word = currentQuestionWord ?: return
         val btn = gameButtons[index]
         if (btn.text.toString() == word.word) {
-            // 答对：加分 + 绿色反馈
-            gameScore++
+            // 答对：+10 分、通关 +1，进度持久化
+            gameScore += 10
+            gameProgress++
+            KidsProgressStore.setEnglishGameScore(this, gameScore)
+            KidsProgressStore.setEnglishGameProgress(this, gameProgress)
             btn.backgroundTintList = ContextCompat.getColorStateList(this, R.color.kids_grass)
             KidsTts.speakEnglish(word.word)
-            binding.tvGameScore.text = "⭐ $gameScore 分"
-            gameIndex++
+            binding.tvGameScore.text = "⭐ 累计 $gameScore 分"
             binding.root.postDelayed({
-                if (gameIndex >= 10) finishGame() else showQuestion()
+                if (gameProgress >= 100) showGameComplete() else showQuestion()
             }, 650)
         } else {
             // 答错：按钮变红禁用，可重试
@@ -385,27 +383,41 @@ class EnglishActivity : AppCompatActivity() {
         }
     }
 
-    private fun finishGame() {
-        binding.tvGameResult.text = if (gameScore >= 8) {
-            "🎉 太棒了！10 题答对 $gameScore 题，你是英语小天才！"
-        } else if (gameScore >= 5) {
-            "😊 不错哦！10 题答对 $gameScore 题，继续加油！"
-        } else {
-            "💪 10 题答对 $gameScore 题，再练一练就会更好！"
-        }
-        KidsTts.speakEnglish("Game over! You got $gameScore.")
+    private fun showGameComplete() {
+        currentQuestionWord = null
+        binding.tvGameResult.text = "🎉 恭喜通关全部 100 关！累计得分 $gameScore 分，你是英语小天才！"
+        KidsTts.speakEnglish("Congratulations! You are an English star!")
         binding.btnGameRestart.visibility = View.VISIBLE
-        binding.tvGameProgress.text = "第 10 / 10 题"
+        binding.tvGameProgress.text = "已通关 100 / 100 关"
+        binding.tvGameTip.text = "太棒了，全部通关！"
     }
 
     // ==================== 通用控件 ====================
 
-    /** 圆形圆角 chip（选中深色底白字 / 未选中半透明底白字） */
+    /** 闪卡 RecyclerView：一次一张，滑动吸附 + 指示器更新 */
+    private fun attachSnap(rv: RecyclerView, formatter: (Int, Int) -> String) {
+        val helper = LinearSnapHelper()
+        helper.attachToRecyclerView(rv)
+        rv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(rv: RecyclerView, newState: Int) {
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    val lm = rv.layoutManager as? LinearLayoutManager ?: return
+                    val snap = helper.findSnapView(lm) ?: return
+                    val total = rv.adapter?.itemCount ?: 0
+                    val indicator = if (rv === binding.recyclerWords) binding.tvWordsIndicator
+                    else binding.tvCheckinIndicator
+                    indicator.text = formatter(lm.getPosition(snap) + 1, total)
+                }
+            }
+        })
+    }
+
+    /** 圆角 chip：选中白底深字 / 未选中半透明深底白字 */
     private fun createChip(text: String, selected: Boolean): TextView {
         val tv = TextView(this)
         tv.text = text
         tv.textSize = 15f
-        tv.setTextColor(Color.WHITE)
+        tv.setTextColor(if (selected) 0xFF7A3C00.toInt() else Color.WHITE)
         tv.gravity = Gravity.CENTER
         tv.background = chipBackground(selected)
         tv.setPadding(22, 12, 22, 12)
@@ -420,14 +432,17 @@ class EnglishActivity : AppCompatActivity() {
 
     private fun chipBackground(selected: Boolean): GradientDrawable = GradientDrawable().apply {
         cornerRadius = 22f
-        setColor(if (selected) 0x99FFFFFF.toInt() else 0x33000000)
-        if (!selected) {
+        if (selected) {
+            setColor(Color.WHITE)
+        } else {
+            setColor(0x33000000)
             setStroke(1, 0x66FFFFFF.toInt())
         }
     }
 
     // ==================== Adapters ====================
 
+    /** 单词闪卡 adapter（卡片含 2 个例句） */
     inner class WordAdapter : RecyclerView.Adapter<WordAdapter.VH>() {
 
         private var list = listOf<EnglishWord>()
@@ -435,27 +450,22 @@ class EnglishActivity : AppCompatActivity() {
         fun submitList(newList: List<EnglishWord>) {
             list = newList
             notifyDataSetChanged()
+            binding.tvWordsIndicator.text = "第 1 / ${newList.size} 张"
         }
 
-        inner class VH(val b: ItemEnglishWordBinding) : RecyclerView.ViewHolder(b.root)
+        inner class VH(val b: ItemEnglishFlashcardBinding) : RecyclerView.ViewHolder(b.root)
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH =
-            VH(ItemEnglishWordBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            VH(ItemEnglishFlashcardBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
         override fun getItemCount(): Int = list.size
 
         override fun onBindViewHolder(holder: VH, position: Int) {
-            val word = list[position]
-            val b = holder.b
-            b.tvWord.text = word.word
-            b.tvWordPhonetic.text = word.phonetic
-            b.tvWordChinese.text = word.chinese
-            b.tvWordEmoji.text = word.emoji
-            b.root.setOnClickListener { KidsTts.speakEnglish(word.word) }
-            b.btnSpeakWord.setOnClickListener { KidsTts.speak(word.chinese) }
+            bindFlashcard(holder.b, list[position])
         }
     }
 
+    /** 句子闪卡 adapter */
     inner class SentenceAdapter : RecyclerView.Adapter<SentenceAdapter.VH>() {
 
         private var list = listOf<Sentence>()
@@ -463,6 +473,7 @@ class EnglishActivity : AppCompatActivity() {
         fun submitList(newList: List<Sentence>) {
             list = newList
             notifyDataSetChanged()
+            binding.tvWordsIndicator.text = "第 1 / ${newList.size} 张"
         }
 
         inner class VH(val b: ItemEnglishSentenceBinding) : RecyclerView.ViewHolder(b.root)
@@ -482,6 +493,7 @@ class EnglishActivity : AppCompatActivity() {
         }
     }
 
+    /** 打卡日历网格 adapter */
     inner class CheckinAdapter : RecyclerView.Adapter<CheckinAdapter.VH>() {
 
         private var list = listOf<Int>()
@@ -504,25 +516,73 @@ class EnglishActivity : AppCompatActivity() {
             val today = Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
             val done = (checkinMask and (1 shl (day - 1))) != 0
             b.tvCheckinDay.text = day.toString()
-            b.tvCheckinDay.textSize = if (day == today) 20f else 17f
-            if (done) {
-                b.root.setCardBackgroundColor(ContextCompat.getColor(this@EnglishActivity, R.color.kids_grass))
-                b.tvCheckinStatus.text = "✓"
-                b.tvCheckinStatus.setTextColor(Color.WHITE)
-            } else if (day == today) {
-                b.root.setCardBackgroundColor(ContextCompat.getColor(this@EnglishActivity, R.color.kids_orange))
-                b.tvCheckinStatus.text = "今天"
-                b.tvCheckinStatus.setTextColor(0xE6FFFFFF.toInt())
-            } else if (day < today) {
-                b.root.setCardBackgroundColor(ContextCompat.getColor(this@EnglishActivity, R.color.kids_coral))
-                b.tvCheckinStatus.text = "✗"
-                b.tvCheckinStatus.setTextColor(Color.WHITE)
-            } else {
-                b.root.setCardBackgroundColor(0x33000000)
-                b.tvCheckinStatus.text = ""
+            b.tvCheckinDay.textSize = if (day == today) 16f else 14f
+            // 选中日高亮描边
+            val border = if (day == selectedCheckinDay) 3 else 0
+            when {
+                done -> {
+                    b.root.setCardBackgroundColor(ContextCompat.getColor(this@EnglishActivity, R.color.kids_grass))
+                    b.tvCheckinStatus.text = "✓"
+                    b.tvCheckinStatus.setTextColor(Color.WHITE)
+                }
+                day == today -> {
+                    b.root.setCardBackgroundColor(ContextCompat.getColor(this@EnglishActivity, R.color.kids_orange))
+                    b.tvCheckinStatus.text = "今天"
+                    b.tvCheckinStatus.setTextColor(0xE6FFFFFF.toInt())
+                }
+                day < today -> {
+                    b.root.setCardBackgroundColor(ContextCompat.getColor(this@EnglishActivity, R.color.kids_coral))
+                    b.tvCheckinStatus.text = "✗"
+                    b.tvCheckinStatus.setTextColor(Color.WHITE)
+                }
+                else -> {
+                    b.root.setCardBackgroundColor(0x33000000)
+                    b.tvCheckinStatus.text = ""
+                }
             }
+            b.root.strokeWidth = border
+            b.root.strokeColor = Color.WHITE
             b.root.setOnClickListener { showCheckinContent(day) }
         }
+    }
+
+    /** 打卡内容闪卡 adapter：viewType 0=单词（flashcard 带 2 例句） 1=句子 */
+    inner class CheckinContentAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+        private var list = listOf<Any>()
+
+        fun submitList(newList: List<Any>) {
+            list = newList
+            notifyDataSetChanged()
+        }
+
+        override fun getItemViewType(position: Int): Int =
+            if (list[position] is EnglishWord) 0 else 1
+
+        override fun getItemCount(): Int = list.size
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder =
+            if (viewType == 0) {
+                VH(ItemEnglishFlashcardBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            } else {
+                VHS(ItemEnglishSentenceBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            }
+
+        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+            when (val item = list[position]) {
+                is EnglishWord -> bindFlashcard((holder as VH).b, item)
+                is Sentence -> {
+                    val b = (holder as VHS).b
+                    b.tvSentenceEn.text = item.en
+                    b.tvSentenceCn.text = item.cn
+                    b.root.setOnClickListener { KidsTts.speakEnglish(item.en) }
+                    b.btnSpeakSentence.setOnClickListener { KidsTts.speakEnglish(item.en) }
+                }
+            }
+        }
+
+        inner class VH(val b: ItemEnglishFlashcardBinding) : RecyclerView.ViewHolder(b.root)
+        inner class VHS(val b: ItemEnglishSentenceBinding) : RecyclerView.ViewHolder(b.root)
     }
 
     companion object {

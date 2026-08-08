@@ -2,55 +2,52 @@
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_margin="5dp"
+    android:layout_height="match_parent"
+    android:layout_margin="4dp"
     android:clickable="true"
     android:focusable="true"
     android:foreground="?attr/selectableItemBackground"
-    app:cardBackgroundColor="#F2FFFFFF"
-    app:cardCornerRadius="22dp"
-    app:cardElevation="2dp">
+    app:cardBackgroundColor="#FFFFFFFF"
+    app:cardCornerRadius="28dp"
+    app:cardElevation="10dp"
+    app:strokeColor="@color/kids_sky_blue_deep"
+    app:strokeWidth="2dp">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="12dp">
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="20dp">
 
         <TextView
             android:id="@+id/tvSentenceEn"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
+            android:gravity="center"
             android:text="Hello! How are you?"
             android:textColor="@color/kids_text_deep"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toStartOf="@id/btnSpeakSentence"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:textSize="26sp"
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/tvSentenceCn"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
             android:text="你好！你好吗？"
             android:textColor="@color/kids_text"
-            android:textSize="15sp"
-            app:layout_constraintEnd_toStartOf="@id/btnSpeakSentence"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvSentenceEn" />
+            android:textSize="18sp" />
 
         <Button
             android:id="@+id/btnSpeakSentence"
-            android:layout_width="52dp"
+            android:layout_width="wrap_content"
             android:layout_height="52dp"
+            android:layout_marginTop="16dp"
             android:backgroundTint="@color/kids_sky_blue_deep"
-            android:text="🔊"
+            android:text="🔊 听句子"
             android:textColor="@color/white"
-            android:textSize="18sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            android:textSize="16sp" />
+    </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

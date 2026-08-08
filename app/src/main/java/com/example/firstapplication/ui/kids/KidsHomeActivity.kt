@@ -101,12 +101,13 @@ class KidsHomeActivity : AppCompatActivity() {
     /** 卡片点击回弹动画（按压缩小 → 弹起放大 → 恢复） */
     private fun bindCardClick(card: MaterialCardView, action: () -> Unit) {
         card.setOnClickListener {
-            card.animate().scaleX(0.94f).scaleY(0.94f).setDuration(50).withEndAction {
-                card.animate().scaleX(1.04f).scaleY(1.04f).setDuration(60).withEndAction {
-                    card.animate().scaleX(1f).scaleY(1f).setDuration(50).start()
-                    action()
-                }.start()
-            }.start()
+//            card.animate().scaleX(0.94f).scaleY(0.94f).setDuration(10).withEndAction {
+                action()
+//                card.animate().scaleX(1.04f).scaleY(1.04f).setDuration(60).withEndAction {
+//                    card.animate().scaleX(1f).scaleY(1f).setDuration(50).start()
+//                    action()
+//                }.start()
+//            }.start()
         }
     }
 

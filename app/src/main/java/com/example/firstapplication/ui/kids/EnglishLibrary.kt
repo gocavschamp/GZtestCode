@@ -383,4 +383,53 @@ object EnglishLibrary {
             sentences = SENTENCES.subList(day * 2, day * 2 + 2)
         )
     }
+
+    // ==================== 单词例句（每个打卡单词自动配 2 句） ====================
+
+    /** 动词类单词（用 can/let's 模板） */
+    private val ACTION_WORDS = setOf(
+        "run", "jump", "walk", "sit", "stand", "swim", "fly", "dance", "sing", "read",
+        "write", "draw", "eat", "drink", "sleep", "play", "laugh", "cry", "clap", "open",
+        "close", "clean", "wash", "smile", "count", "answer"
+    )
+
+    /** 颜色类单词 */
+    private val COLOR_WORDS = setOf(
+        "red", "yellow", "blue", "green", "orange", "purple", "pink",
+        "black", "white", "brown", "gray", "gold", "silver"
+    )
+
+    /** 数字类单词 */
+    private val NUMBER_WORDS = setOf(
+        "one", "two", "three", "four", "five", "six", "seven",
+        "eight", "nine", "ten", "zero", "hundred"
+    )
+
+    /** 元音开头用 an，否则用 a */
+    private fun withArticle(word: String): String =
+        if (word.firstOrNull()?.let { it in "aeiou" } == true) "an" else "a"
+
+    /** 为单词生成 2 个例句（按词性选择模板，中文同步翻译） */
+    fun exampleSentencesFor(word: EnglishWord): List<Sentence> {
+        val w = word.word.lowercase()
+        val cn = word.chinese
+        return when {
+            w in ACTION_WORDS -> listOf(
+                Sentence("I can $w.", "我会$cn。"),
+                Sentence("Let's $w!", "我们一起来${cn}吧！")
+            )
+            w in COLOR_WORDS -> listOf(
+                Sentence("It is $w.", "它是${cn}的。"),
+                Sentence("I like the color $w.", "我喜欢${cn}。")
+            )
+            w in NUMBER_WORDS -> listOf(
+                Sentence("I can count to $w.", "我能数到$w。"),
+                Sentence("Number $w is my lucky number.", "数字${w}是我的幸运数字。")
+            )
+            else -> listOf(
+                Sentence("This is ${withArticle(w)} $w.", "这是一个$cn。"),
+                Sentence("I see ${withArticle(w)} $w.", "我看见一个$cn。")
+            )
+        }
+    }
 }
