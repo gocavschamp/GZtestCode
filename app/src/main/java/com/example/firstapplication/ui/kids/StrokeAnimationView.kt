@@ -335,7 +335,21 @@ class StrokeAnimationView @JvmOverloads constructor(
             "点" to listOf(stroke(arrayOf(50f to 25f, 45f to 60f))),
             "提" to listOf(stroke(arrayOf(20f to 70f, 80f to 30f))),
             "横折" to listOf(stroke(arrayOf(15f to 50f, 70f to 50f, 70f to 75f))),
-            "竖钩" to listOf(stroke(arrayOf(50f to 15f, 50f to 70f, 62f to 65f)))
+            "竖钩" to listOf(stroke(arrayOf(50f to 15f, 50f to 70f, 62f to 65f))),
+            "横钩" to listOf(stroke(arrayOf(15f to 50f, 70f to 50f, 76f to 38f))),
+            "横折钩" to listOf(stroke(arrayOf(15f to 50f, 70f to 50f, 70f to 72f, 78f to 66f))),
+            "横撇" to listOf(stroke(arrayOf(15f to 50f, 70f to 50f, 48f to 88f))),
+            "横折弯钩" to listOf(stroke(arrayOf(15f to 40f, 70f to 40f, 70f to 62f, 85f to 70f))),
+            "横折提" to listOf(stroke(arrayOf(15f to 65f, 62f to 65f, 62f to 50f, 76f to 42f))),
+            "竖提" to listOf(stroke(arrayOf(50f to 15f, 50f to 72f, 66f to 62f))),
+            "竖弯" to listOf(stroke(arrayOf(50f to 15f, 50f to 62f, 80f to 62f))),
+            "竖弯钩" to listOf(stroke(arrayOf(50f to 15f, 50f to 62f, 80f to 62f, 86f to 50f))),
+            "竖折" to listOf(stroke(arrayOf(50f to 15f, 50f to 60f, 85f to 60f))),
+            "撇折" to listOf(stroke(arrayOf(60f to 15f, 32f to 55f, 68f to 72f))),
+            "撇点" to listOf(stroke(arrayOf(62f to 12f, 34f to 55f, 58f to 75f))),
+            "斜钩" to listOf(stroke(arrayOf(42f to 12f, 58f to 48f, 50f to 85f))),
+            "卧钩" to listOf(stroke(arrayOf(28f to 72f, 52f to 74f, 64f to 62f))),
+            "弯钩" to listOf(stroke(arrayOf(52f to 15f, 42f to 50f, 52f to 82f)))
         )
     }
 }

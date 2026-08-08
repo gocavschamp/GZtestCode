@@ -7,6 +7,7 @@ import android.view.animation.DecelerateInterpolator
 import android.view.animation.LinearInterpolator
 import android.view.animation.OvershootInterpolator
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.alibaba.android.arouter.facade.annotation.Route
 import com.alibaba.android.arouter.launcher.ARouter
@@ -24,6 +25,18 @@ class KidsHomeActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityKidsHomeBinding
     private var isActive = true
+    private var lastBackPressTime = 0L
+
+    /** 首页按返回键：2 秒内连续按两次才真正退出（防止误触直接退出 App） */
+    override fun onBackPressed() {
+        val now = System.currentTimeMillis()
+        if (now - lastBackPressTime > 2000) {
+            lastBackPressTime = now
+            Toast.makeText(this, "再按一次返回键退出", Toast.LENGTH_SHORT).show()
+        } else {
+            super.onBackPressed()
+        }
+    }
 
     override fun onDestroy() {
         super.onDestroy()

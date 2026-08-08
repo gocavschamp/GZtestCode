@@ -132,6 +132,31 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Kids"/>
         <activity
+            android:name=".ui.kids.ChineseStrokeActivity"
+            android:configChanges="keyboardHidden|orientation"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Kids"/>
+        <activity
+            android:name=".ui.kids.ChineseDemoActivity"
+            android:configChanges="keyboardHidden|orientation"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Kids"/>
+        <activity
+            android:name=".ui.kids.ChineseReadingActivity"
+            android:configChanges="keyboardHidden|orientation"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Kids"/>
+        <activity
+            android:name=".ui.kids.ChineseTracingActivity"
+            android:configChanges="keyboardHidden|orientation"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Kids"/>
+        <activity
+            android:name=".ui.kids.ChineseDailyActivity"
+            android:configChanges="keyboardHidden|orientation"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Kids"/>
+        <activity
             android:name=".ui.GameActivity"
             android:configChanges="orientation|screenSize|keyboardHidden|screenLayout"
             android:hardwareAccelerated="true"

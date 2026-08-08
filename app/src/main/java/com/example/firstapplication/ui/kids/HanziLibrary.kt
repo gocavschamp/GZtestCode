@@ -53,7 +53,7 @@ object HanziLibrary {
         HanziInfo("头", "tóu", "脑袋", 5)
     )
 
-    /** 8 种基础笔画（配合 StrokeData.charStrokes 中的同名数据演示） */
+    /** 22 种基础笔画（配合 StrokeData.charStrokes 中的同名数据演示） */
     val BASIC_STROKES = listOf(
         StrokeInfo("横", "héng", "一 二 三"),
         StrokeInfo("竖", "shù", "十 中 土"),
@@ -62,7 +62,21 @@ object HanziLibrary {
         StrokeInfo("点", "diǎn", "六 火 头"),
         StrokeInfo("提", "tí", "江 河 习"),
         StrokeInfo("横折", "héng zhé", "口 日 田"),
-        StrokeInfo("竖钩", "shù gōu", "小 手 水")
+        StrokeInfo("竖钩", "shù gōu", "小 手 水"),
+        StrokeInfo("横钩", "héng gōu", "买 皮 写"),
+        StrokeInfo("横折钩", "héng zhé gōu", "力 月 同"),
+        StrokeInfo("横撇", "héng piě", "又 夕 水"),
+        StrokeInfo("横折弯钩", "héng zhé wān gōu", "九 几 风"),
+        StrokeInfo("横折提", "héng zhé tí", "说 计 认"),
+        StrokeInfo("竖提", "shù tí", "民 衣 长"),
+        StrokeInfo("竖弯", "shù wān", "四 西 洒"),
+        StrokeInfo("竖弯钩", "shù wān gōu", "儿 七 毛"),
+        StrokeInfo("竖折", "shù zhé", "山 出 医"),
+        StrokeInfo("撇折", "piě zhé", "云 么 去"),
+        StrokeInfo("撇点", "piě diǎn", "女 好 如"),
+        StrokeInfo("斜钩", "xié gōu", "我 戈 成"),
+        StrokeInfo("卧钩", "wò gōu", "心 必 思"),
+        StrokeInfo("弯钩", "wān gōu", "狗 家 猫")
     )
 
     /** 每日一句句子库 */

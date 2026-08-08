@@ -56,7 +56,13 @@ app/src/main/java/com/example/firstapplication/ui/kids/
 ├── KidsHomeActivity.kt          # 幼儿教育首页（App 启动页 LAUNCHER，六张彩色卡片：数字/加减法/汉字/H5小游戏/古诗学堂/英语乐园 + 演示中心入口，进度上限 数字50/汉字500；动画：太阳旋转/云朵漂移/星星飘落/气球上升/卡片滑入入场/点击回弹/进度条平滑滚动，onDestroy 时 isActive 停循环）
 ├── NumberLearningActivity.kt    # 数字乐园（认识数字 0-999 四级：3-5岁0-200/5-7岁0-500/7-9岁0-999/🎲随机0-999，含中文读法/朗读；认识数字进度本地记录：级别切换从上一级别结束数字继续、下次进入恢复、↺从0重置按钮；找数字"听音选数"；数一数"多彩图标点数"16种图标）
 ├── NumberArithmeticActivity.kt  # 加减法（难度分级 ≤10 / ≤20 / ≤100，统计卡片：得分/连胜/最佳 + 10题一局进度条，出题朗读🔊按钮、10 题一局统计、连胜解锁）
-├── ChineseWordActivity.kt       # 汉字乐园（TabLayout 五页：基础笔画/笔画演示/汉字识字500/仿写描红/每日一句，点击朗读并标记学会）
+├── ChineseWordActivity.kt       # 汉字乐园入口页（五张模块卡片：基础笔画/笔画演示/汉字识字500/仿写描红/每日一句，分别跳转五个二级页；companion 提供 CHAR_TOTAL 供首页进度条）
+├── ChineseBaseActivity.kt       # 汉字二级页基类：共享 dp 换算、圆角 chip、chip 选中/未选中背景
+├── ChineseStrokeActivity.kt     # 汉字二级页①基础笔画（22 种笔画动画 + 发音只读笔画名不读拼音，◀上一个/下一个▶ 切换，位置本地记录续学）
+├── ChineseDemoActivity.kt       # 汉字二级页②笔画演示（34 精细教学字笔画动画，切换只读汉字本身不读拼音，◀▶切换 + 再看一遍，位置续学）
+├── ChineseReadingActivity.kt    # 汉字二级页③汉字识字（500 字 8 列网格，点击朗读并标记学会，scrollToPositionWithOffset 续学定位）
+├── ChineseTracingActivity.kt    # 汉字二级页④仿写描红（34 字 TracingView 描红，清空/保存 PNG，◀▶切换，位置续学）
+├── ChineseDailyActivity.kt      # 汉字二级页⑤每日一句（44 句大卡片 + 朗读，◀▶切换，位置续学）
 ├── KidsH5Activity.kt            # H5 小游戏容器（WebView 加载本地 assets/h5，三个游戏切换按钮）
 ├── PoetryActivity.kt            # 古诗学堂（列表页 50 首中小学课本古诗 → 详情页：整首朗读 / 每字点击朗读字+拼音，每首诗意渐变背景 + 内容相关 emoji 装饰 + 释义解说）
 ├── EnglishActivity.kt           # 英语乐园入口页（四张模块卡片：字母表/单词句子/每日打卡/互动游戏，分别跳转四个二级页）
@@ -66,12 +72,12 @@ app/src/main/java/com/example/firstapplication/ui/kids/
 ├── EnglishCheckinActivity.kt    # 英语二级页③每日打卡（30 天日历 + 每天 10 词×2 例句 + 2 句内容闪卡，◀上一个/下一个▶ 按钮，本地打卡掩码、今天可打卡）
 ├── EnglishGameActivity.kt       # 英语二级页④互动游戏（100 关听音选词闯关：答对 +10 分并通关 +1，进度/得分 Room 持久化，内容超屏可上下滚动查看，通关后可重玩）
 ├── KidsStatusBar.kt             # 沉浸式状态栏工具（透明状态栏 + 内容延伸到状态栏 + 根布局自动避让）
-├── HanziLibrary.kt              # 汉字数据源：34 精细教学字 + 500 常用字（EXTENDED_HANZI）+ 8 基础笔画 + 44 条每日句子
+├── HanziLibrary.kt              # 汉字数据源：34 精细教学字 + 500 常用字（EXTENDED_HANZI）+ 22 基础笔画（BASIC_STROKES）+ 44 条每日句子
 ├── PoetryLibrary.kt             # 古诗数据源：50 首中小学课本古诗（标题/作者/逐字拼音/释义/主题渐变配色/背景 emoji）
 ├── EnglishLibrary.kt            # 英语数据源：26 字母（ALPHABET，各含 2 示例单词）+ 15 类 330 词（CATEGORIES/ALL_WORDS）+ 60 条句子（SENTENCES）+ 30 天打卡（CHECK_IN_DAYS，前 300 词每 10 词一天 + 每天 2 句）+ exampleSentencesFor() 按词性模板为每词生成 2 例句（动词 can/let's、颜色 it is、数字 count、默认 this is a/an）
-├── StrokeAnimationView.kt       # 自定义 View：田字格笔画顺序动画（内置 34 个汉字 + 8 个基础笔画数据）
+├── StrokeAnimationView.kt       # 自定义 View：田字格笔画顺序动画（内置 34 个汉字 + 22 个基础笔画数据）
 ├── TracingView.kt               # 自定义 View：仿写描红，触摸笔迹，PNG 本地保存
-├── KidsProgressStore.kt         # Room 数据门面（同步 API + runBlocking 包装），含第一版 SharedPreferences 迁移；英语模块：打卡掩码（english_checkin_month/mask，跨月归零）+ 游戏进度（english_game_progress 0..100 / english_game_score）
+├── KidsProgressStore.kt         # Room 数据门面（同步 API + runBlocking 包装），含第一版 SharedPreferences 迁移；英语模块：打卡掩码（english_checkin_month/mask，跨月归零）+ 游戏进度（english_game_progress 0..100 / english_game_score）；汉字乐园：5 个二级页学习位置键（chinese_stroke/demo/reading/tracing/daily_index，下次进入续学）
 ├── KidsTts.kt                   # 本地语音朗读（系统 TextToSpeech：中文 speak + 英文 speakEnglish 临时切 Locale.US）
 └── db/KidsDatabase.kt           # Room：Database + 3 个 DAO（进度键值 / 已学汉字 / 答题记录）
     db/KidsEntities.kt           # Entity：StudyProgressEntity / LearnedCharEntity / ArithmeticRecordEntity
@@ -79,22 +85,23 @@ app/src/main/java/com/example/firstapplication/ui/kids/
 
 ### 布局 & 资源
 
-- `res/layout/activity_kids_home.xml`（启动页，含五张进度卡片 + 演示中心入口）、`activity_number_learning.xml`（三模式切换：认识/找数字/数一数 + 四级难度chip）、`activity_number_arithmetic.xml`（统计卡片 + 进度条 + 朗读喇叭）、`activity_chinese_word.xml`（五页：基础笔画/笔画演示/识字网格/仿写/每日一句）、`activity_kids_h5.xml`（H5 游戏容器：三按钮 + WebView）、`activity_poetry.xml`（古诗学堂：列表页 RecyclerView + 详情页 FrameLayout 双页切换，bgLayer 渐变背景层 + decorLayer emoji 装饰层 + 逐字诗句容器）、`activity_english.xml`（英语乐园入口页：四张模块卡片，bg_card_blue/green/pink/purple 渐变）、`activity_english_alphabet.xml`（字母表：返回栏 + 横向字母 chip + 字母卡（大字+音标+ScrollView 示例词区）+ ◀/🔊/▶ 按钮行）、`activity_english_words.xml`（单词句子：返回栏 + 分类 chip + 闪卡 + 指示器 + ◀上一个/下一个▶ 按钮）、`activity_english_checkin.xml`（每日打卡：返回栏 + 30 天网格 + 内容闪卡 + 指示器 + ◀上一个/下一个▶ 按钮 + 打卡按钮）、`activity_english_game.xml`（互动游戏：返回栏 + ScrollView 内容区可上下滚动 + 得分/进度 + 听音选词 + 重玩按钮）、`item_poetry.xml`（古诗列表 item）、`item_kids_char_grid.xml`（识字网格 item，含 ✅ 学会标记）、`item_english_flashcard.xml`（单词闪卡：emoji 圆底 + 单词/音标/中文 + ScrollView 例句区 + 🔊，例句滚动不溢出）、`item_english_letter_word.xml`（字母表示例单词紧凑卡：emoji 上 + 英文/中文下，解决卡片过大显示不下）、`item_english_sentence.xml`（句子卡片：英文/中文 + 🔊）、`item_english_checkin_day.xml`（打卡日期格：✓/今天/✗/未来状态）
+- `res/layout/activity_kids_home.xml`（启动页，含五张进度卡片 + 演示中心入口）、`activity_number_learning.xml`（三模式切换：认识/找数字/数一数 + 四级难度chip）、`activity_number_arithmetic.xml`（统计卡片 + 进度条 + 朗读喇叭）、`activity_chinese_word.xml`（汉字入口页：五张模块卡片 bg_card_blue/green/pink/purple/teal）、`activity_chinese_stroke.xml`（基础笔画：返回栏 + 笔画 chip 横滚 + 田字格笔画动画卡 + 名称/示例/指示器 + ◀/🔊/▶）、`activity_chinese_demo.xml`（笔画演示：返回栏 + 34 字 chip + 笔画动画卡 + 拼音意思笔画数 + ◀/🔄/▶）、`activity_chinese_reading.xml`（汉字识字：返回栏 + 进度 + 8 列网格 + ✅学会标记）、`activity_chinese_tracing.xml`（仿写描红：返回栏 + 34 字 chip + TracingView + ◀/🧹/💾/▶）、`activity_chinese_daily.xml`（每日一句：返回栏 + 大句卡片 + 指示器 + ◀/🔊/▶）、`activity_kids_h5.xml`（H5 游戏容器：三按钮 + WebView）、`activity_poetry.xml`（古诗学堂：列表页 RecyclerView + 详情页 FrameLayout 双页切换，bgLayer 渐变背景层 + decorLayer emoji 装饰层 + 逐字诗句容器）、`activity_english.xml`（英语乐园入口页：四张模块卡片，bg_card_blue/green/pink/purple 渐变）、`activity_english_alphabet.xml`（字母表：返回栏 + 横向字母 chip + 字母卡（大字+音标+ScrollView 示例词区）+ ◀/🔊/▶ 按钮行）、`activity_english_words.xml`（单词句子：返回栏 + 分类 chip + 闪卡 + 指示器 + ◀上一个/下一个▶ 按钮）、`activity_english_checkin.xml`（每日打卡：返回栏 + 30 天网格 + 内容闪卡 + 指示器 + ◀上一个/下一个▶ 按钮 + 打卡按钮）、`activity_english_game.xml`（互动游戏：返回栏 + ScrollView 内容区可上下滚动 + 得分/进度 + 听音选词 + 重玩按钮）、`item_poetry.xml`（古诗列表 item）、`item_kids_char_grid.xml`（识字网格 item，含 ✅ 学会标记）、`item_english_flashcard.xml`（单词闪卡：emoji 圆底 + 单词/音标/中文 + ScrollView 例句区 + 🔊，例句滚动不溢出）、`item_english_letter_word.xml`（字母表示例单词紧凑卡：emoji 上 + 英文/中文下，解决卡片过大显示不下）、`item_english_sentence.xml`（句子卡片：英文/中文 + 🔊）、`item_english_checkin_day.xml`（打卡日期格：✓/今天/✗/未来状态）
 - `assets/h5/number_match.html`（数字翻牌记忆配对，纯 HTML/JS 本地小游戏）、`assets/h5/hanzi_link.html`（汉字连连看，经典 0/1/2 拐点连通判定，可绕外圈，提示时高亮闪烁标记待连字）、`assets/h5/puzzle.html`（3x3 emoji 滑动拼图，随机滑动保证有解，步数统计）
-- **沉浸式**：幼儿教育 11 个 Activity 使用 `Theme.Kids`（透明状态栏）+ `KidsStatusBar.immersive()`（内容延伸到状态栏，根布局顶部自动避开状态栏高度）
+- **沉浸式**：幼儿教育 16 个 Activity 使用 `Theme.Kids`（透明状态栏）+ `KidsStatusBar.immersive()`（内容延伸到状态栏，根布局顶部自动避开状态栏高度）
 - `res/drawable/bg_kids_*.xml`（渐变背景）、`bg_card_poetry.xml`（古诗卡片橙金渐变）、`bg_card_english.xml`（英语卡片橙粉渐变）、`bg_home_icon.xml`（圆形图标底）、`bg_speak_btn.xml`（喇叭按钮）、`bg_char_cell.xml`（汉字卡片格）
 - `res/values/colors.xml` 中 `kids_*` 前缀的儿童清新色板
 - 入口：**App 启动即 KidsHomeActivity**（Manifest LAUNCHER），内部卡片跳六个子页（数字/加减法/汉字/H5/古诗/英语）；`cardDemo` → ARouter `/module/main` 进演示中心（原 MainActivity）
-- Manifest 已注册全部 7 个 Activity（竖屏 portrait），MainActivity 不再是 launcher
+- Manifest 已注册全部 16 个幼儿 Activity（竖屏 portrait，Theme.Kids）
 
 ### 设计约定（第二版）
 
 - **主入口**：KidsHomeActivity = LAUNCHER；MainActivity（`/module/main`）仅作为演示中心，通过首页底部卡片进入
 - **数据存储**：Room 数据库 `kids_learning.db`（Room 2.8.x，kapt），见 `db/`。`KidsProgressStore` 对外保持同步 API
-- **语音**：`KidsTts` 系统 TextToSpeech 引擎（本地播放）。中文朗读 `speak()`；英文朗读 `speakEnglish()`（临时切 Locale.US，说完恢复中文）。数字页切换/出题、加减法出题/答对/🔊喇叭、汉字卡片点击、每日一句、英语字母/单词/句子均触发朗读
+- **语音**：`KidsTts` 系统 TextToSpeech 引擎（本地播放）。中文朗读 `speak()`；英文朗读 `speakEnglish()`（临时切 Locale.US，说完恢复中文）。数字页切换/出题、加减法出题/答对/🔊喇叭、汉字卡片点击、每日一句、英语字母/单词/句子均触发朗读。汉字二级页朗读约定：**只读汉字本身/笔画名/句子，拼音仅文本展示不朗读**（避免读两遍）
 - **风格**：渐变背景 + emoji 装饰 + 圆角 MaterialCardView + LinearProgressIndicator 进度条，无网络图片离线运行
 - **动画**：纯原生 ValueAnimator/属性动画（数字弹跳、笔画 Path 绘制、描红实时笔迹、分数缩放）
-- **汉字笔画数据**：`StrokeAnimationView.StrokeData.charStrokes`，坐标为 0-100 归一化，新增汉字只需追加笔画点数组；基础笔画页复用同名"横/竖/撇/捺/点/提/横折/竖钩"数据
+- **汉字笔画数据**：`StrokeAnimationView.StrokeData.charStrokes`，坐标为 0-100 归一化，新增汉字只需追加笔画点数组；基础笔画页复用同名"横/竖/撇/捺/点/提/横折/竖钩/横钩/横折钩/横撇/横折弯钩/横折提/竖提/竖弯/竖弯钩/竖折/撇折/撇点/斜钩/卧钩/弯钩"22 种数据
+- **汉字二级页续学**：5 个二级页位置分别记录 `chinese_stroke/demo/reading/tracing/daily_index`；首载用 `selectXxx(index, save=false)` 不重复保存；识字网格续学用 `scrollToPositionWithOffset(pos,0)`（scrollToPosition 会跳过中间项）
 - **仿写保存**：`TracingView.saveToLocal()` 输出 PNG 到 `filesDir/kids_tracing/`，保存时自动 markCharLearned
 - **趣味性**：数字乐园 3 种玩法（认识 0-999 四级难度 + 🎲随机 + 找数字 + 数一数 16 种图标）+ 加减法 10 题一局统计、连胜解锁更高难度、答对随机鼓励语 + TTS 播报；每日一句按时间取模定位、可切换并朗读；H5 本地小游戏（数字翻牌 / 汉字连连看 / emoji 拼图，WebView 加载 assets）；英语乐园 4 页（字母表选字母学发音、分类单词/句子点读、30 天打卡每天 10 词 + 2 句、听音选词 10 题游戏 4 选 1）
 

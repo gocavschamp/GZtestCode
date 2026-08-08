@@ -147,6 +147,41 @@ object KidsProgressStore {
         }
     }
 
+    // ==================== 汉字乐园学习位置（二级页续学） ====================
+
+    private const val KEY_CH_STROKE_INDEX = "chinese_stroke_index"
+    private const val KEY_CH_DEMO_INDEX = "chinese_demo_index"
+    private const val KEY_CH_READING_INDEX = "chinese_reading_index"
+    private const val KEY_CH_TRACING_INDEX = "chinese_tracing_index"
+    private const val KEY_CH_DAILY_INDEX = "chinese_daily_index"
+
+    private fun getInt(context: Context, key: String): Int =
+        runBlocking { db(context).progressDao().getValue(key) ?: 0 }
+
+    private fun setInt(context: Context, key: String, value: Int) {
+        runBlocking { db(context).progressDao().put(StudyProgressEntity(key, value)) }
+    }
+
+    /** 基础笔画当前学习位置（下次进入从上一次笔画继续） */
+    fun getChineseStrokeIndex(context: Context): Int = getInt(context, KEY_CH_STROKE_INDEX)
+    fun setChineseStrokeIndex(context: Context, index: Int) = setInt(context, KEY_CH_STROKE_INDEX, index)
+
+    /** 笔画演示当前学习位置 */
+    fun getChineseDemoIndex(context: Context): Int = getInt(context, KEY_CH_DEMO_INDEX)
+    fun setChineseDemoIndex(context: Context, index: Int) = setInt(context, KEY_CH_DEMO_INDEX, index)
+
+    /** 汉字识字最后练习位置（下次进入直接续学） */
+    fun getChineseReadingIndex(context: Context): Int = getInt(context, KEY_CH_READING_INDEX)
+    fun setChineseReadingIndex(context: Context, index: Int) = setInt(context, KEY_CH_READING_INDEX, index)
+
+    /** 仿写描红当前学习位置 */
+    fun getChineseTracingIndex(context: Context): Int = getInt(context, KEY_CH_TRACING_INDEX)
+    fun setChineseTracingIndex(context: Context, index: Int) = setInt(context, KEY_CH_TRACING_INDEX, index)
+
+    /** 每日一句当前学习位置 */
+    fun getChineseDailyIndex(context: Context): Int = getInt(context, KEY_CH_DAILY_INDEX)
+    fun setChineseDailyIndex(context: Context, index: Int) = setInt(context, KEY_CH_DAILY_INDEX, index)
+
     // ==================== 第一版 SharedPreferences 数据迁移 ====================
 
     /** 首次运行时把旧版 SharedPreferences 里的进度迁移进数据库（幂等） */
