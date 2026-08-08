@@ -64,6 +64,10 @@ dependencies {
     implementation (libs.android.flexbox)
     implementation(libs.skeleton)
     implementation(libs.shimmerlayout)
+    // Room 数据库（幼儿教育模块本地存储）
+    implementation("androidx.room:room-runtime:${libs.versions.room.get()}")
+    implementation("androidx.room:room-ktx:${libs.versions.room.get()}")
+    kapt("androidx.room:room-compiler:${libs.versions.room.get()}")
     
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -43,18 +43,11 @@
 
     <activity
             android:name=".ui.MainActivity"
-            android:exported="true"
+            android:exported="false"
         android:launchMode="singleTask"
             android:configChanges="keyboardHidden|orientation"
             android:windowSoftInputMode="adjustResize"
-            android:screenOrientation="portrait">
-
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ui.PagActivity"
             android:configChanges="keyboardHidden|orientation"
@@ -74,6 +67,31 @@
         <activity android:name=".ui.ScaleDemoActivity" android:screenOrientation="portrait"/>
         <activity android:name=".ui.DialogDemoActivity" android:screenOrientation="portrait"/>
         <activity android:name=".ui.ScoreViewActivity" android:screenOrientation="portrait"/>
+        <!-- 幼儿教育模块（App 主入口） -->
+        <activity
+            android:name=".ui.kids.KidsHomeActivity"
+            android:exported="true"
+            android:configChanges="keyboardHidden|orientation"
+            android:screenOrientation="portrait">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ui.kids.NumberLearningActivity"
+            android:configChanges="keyboardHidden|orientation"
+            android:screenOrientation="portrait"/>
+        <activity
+            android:name=".ui.kids.NumberArithmeticActivity"
+            android:configChanges="keyboardHidden|orientation"
+            android:screenOrientation="portrait"/>
+        <activity
+            android:name=".ui.kids.ChineseWordActivity"
+            android:configChanges="keyboardHidden|orientation"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".ui.GameActivity"
             android:configChanges="orientation|screenSize|keyboardHidden|screenLayout"

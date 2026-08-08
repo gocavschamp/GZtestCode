@@ -54,8 +54,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/recyclerView"
-        app:layout_constraintRight_toRightOf="@id/recyclerView"
+        app:layout_constraintBottom_toBottomOf="@id/swipeLayout"
+        app:layout_constraintRight_toRightOf="@id/swipeLayout"
         android:layout_marginStart="8dp"
         android:text="新消息" />
     <ImageView
@@ -166,6 +166,15 @@
                 android:text="countdown"
                 app:layout_constraintLeft_toLeftOf="@id/dialogUtils"
                 app:layout_constraintTop_toBottomOf="@id/scoreview" />
+            <Button
+                android:id="@+id/kidsHome"
+                android:layout_width="100dp"
+                android:layout_height="40dp"
+                android:background="@color/kids_orange"
+                android:text="幼儿教育"
+                android:textColor="@color/white"
+                app:layout_constraintLeft_toLeftOf="@id/dialogUtils"
+                app:layout_constraintTop_toBottomOf="@id/countdown" />
         </LinearLayout>
     </com.google.android.flexbox.FlexboxLayout>
 

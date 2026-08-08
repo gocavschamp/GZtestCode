@@ -61,16 +61,6 @@ class ScoreViewActivity : AppCompatActivity() {
         // 初始化日志
         // 设置状态栏颜色
         window.statusBarColor = ContextCompat.getColor(this, R.color.purple_700)
-        binding.picker.setOnClickListener {
-// 方式1：使用工具类
-        }
-        binding.picker1.setOnClickListener {
-// 方式2：使用Activity扩展函数
-
-        }
-        binding.picker2.setOnClickListener {
-// 方式3：使用View扩展函数
-        }
         simulateScoreChange()
     }
     override fun onDestroy() {

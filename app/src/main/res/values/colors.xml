@@ -7,6 +7,7 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="transparent">#00000000</color>
     <color name="text_secondary">#99000000</color>
     <color name="toolbar_overlay">#80000000</color>
     <color name="status_bar_overlay">#40000000</color>
@@ -17,4 +18,19 @@
     <color name="purple">#FF7B1FA2</color>
     <color name="green">#FF388E3C</color>
     <color name="gold">#FFFFD700</color>
+
+    <!-- 幼儿教育清新色板 -->
+    <color name="kids_sky_blue">#FF87CEEB</color>
+    <color name="kids_sky_blue_deep">#FF4FC3F7</color>
+    <color name="kids_mint">#FF7CF8C0</color>
+    <color name="kids_lemon">#FFFFF59D</color>
+    <color name="kids_orange">#FFFFB74D</color>
+    <color name="kids_coral">#FFFF8A80</color>
+    <color name="kids_pink">#FFF8BBD0</color>
+    <color name="kids_lavender">#FFD1C4E9</color>
+    <color name="kids_grass">#FFAED581</color>
+    <color name="kids_cyan">#FF80DEEA</color>
+    <color name="kids_purple">#FFBA68C8</color>
+    <color name="kids_text">#FF546E7A</color>
+    <color name="kids_text_deep">#FF37474F</color>
 </resources>

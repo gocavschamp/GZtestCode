@@ -266,6 +266,11 @@ class MainActivity : AppCompatActivity() {
                 .build("/module/countdown") // 构建跳转
                 .navigation()
         }
+        binding.kidsHome.setOnClickListener {
+            ARouter.getInstance()
+                .build("/module/kids/home")
+                .navigation()
+        }
         val circleCrop: Transformation<Bitmap?> = CircleCrop()
         Glide.with(this)
             .load(R.raw.ic_room_bottom_gift)
