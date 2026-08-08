@@ -52,13 +52,15 @@ description: "FirstApplication 项目架构速查：模块划分、技术栈、A
 
 ```
 app/src/main/java/com/example/firstapplication/ui/kids/
-├── KidsHomeActivity.kt          # 幼儿教育首页（App 启动页 LAUNCHER，四张彩色卡片：数字/加减法/汉字/H5小游戏 + 演示中心入口，进度上限 数字50/汉字500；动画：太阳旋转/云朵漂移/星星飘落/气球上升/卡片滑入入场/点击回弹/进度条平滑滚动，onDestroy 时 isActive 停循环）
+├── KidsHomeActivity.kt          # 幼儿教育首页（App 启动页 LAUNCHER，五张彩色卡片：数字/加减法/汉字/H5小游戏/古诗学堂 + 演示中心入口，进度上限 数字50/汉字500；动画：太阳旋转/云朵漂移/星星飘落/气球上升/卡片滑入入场/点击回弹/进度条平滑滚动，onDestroy 时 isActive 停循环）
 ├── NumberLearningActivity.kt    # 数字乐园（认识数字 0-999 四级：3-5岁0-200/5-7岁0-500/7-9岁0-999/🎲随机0-999，含中文读法/朗读；找数字"听音选数"；数一数"多彩图标点数"16种图标）
 ├── NumberArithmeticActivity.kt  # 加减法（难度分级 ≤10 / ≤20 / ≤100，统计卡片：得分/连胜/最佳 + 10题一局进度条，出题朗读🔊按钮、10 题一局统计、连胜解锁）
 ├── ChineseWordActivity.kt       # 汉字乐园（TabLayout 五页：基础笔画/笔画演示/汉字识字500/仿写描红/每日一句，点击朗读并标记学会）
 ├── KidsH5Activity.kt            # H5 小游戏容器（WebView 加载本地 assets/h5，三个游戏切换按钮）
+├── PoetryActivity.kt            # 古诗学堂（列表页 50 首中小学课本古诗 → 详情页：整首朗读 / 每字点击朗读字+拼音，每首诗意渐变背景 + 内容相关 emoji 装饰 + 释义解说）
 ├── KidsStatusBar.kt             # 沉浸式状态栏工具（透明状态栏 + 内容延伸到状态栏 + 根布局自动避让）
 ├── HanziLibrary.kt              # 汉字数据源：34 精细教学字 + 500 常用字（EXTENDED_HANZI）+ 8 基础笔画 + 44 条每日句子
+├── PoetryLibrary.kt             # 古诗数据源：50 首中小学课本古诗（标题/作者/逐字拼音/释义/主题渐变配色/背景 emoji）
 ├── StrokeAnimationView.kt       # 自定义 View：田字格笔画顺序动画（内置 34 个汉字 + 8 个基础笔画数据）
 ├── TracingView.kt               # 自定义 View：仿写描红，触摸笔迹，PNG 本地保存
 ├── KidsProgressStore.kt         # Room 数据门面（同步 API + runBlocking 包装），含第一版 SharedPreferences 迁移
@@ -69,13 +71,13 @@ app/src/main/java/com/example/firstapplication/ui/kids/
 
 ### 布局 & 资源
 
-- `res/layout/activity_kids_home.xml`（启动页，含四张进度卡片 + 演示中心入口）、`activity_number_learning.xml`（三模式切换：认识/找数字/数一数 + 四级难度chip）、`activity_number_arithmetic.xml`（统计卡片 + 进度条 + 朗读喇叭）、`activity_chinese_word.xml`（五页：基础笔画/笔画演示/识字网格/仿写/每日一句）、`activity_kids_h5.xml`（H5 游戏容器：三按钮 + WebView）、`item_kids_char_grid.xml`（识字网格 item，含 ✅ 学会标记）
+- `res/layout/activity_kids_home.xml`（启动页，含四张进度卡片 + 演示中心入口）、`activity_number_learning.xml`（三模式切换：认识/找数字/数一数 + 四级难度chip）、`activity_number_arithmetic.xml`（统计卡片 + 进度条 + 朗读喇叭）、`activity_chinese_word.xml`（五页：基础笔画/笔画演示/识字网格/仿写/每日一句）、`activity_kids_h5.xml`（H5 游戏容器：三按钮 + WebView）、`activity_poetry.xml`（古诗学堂：列表页 RecyclerView + 详情页 FrameLayout 双页切换，bgLayer 渐变背景层 + decorLayer emoji 装饰层 + 逐字诗句容器）、`item_poetry.xml`（古诗列表 item：诗意渐变圆底 emoji + 标题/作者/首句预览）、`item_kids_char_grid.xml`（识字网格 item，含 ✅ 学会标记）
 - `assets/h5/number_match.html`（数字翻牌记忆配对，纯 HTML/JS 本地小游戏）、`assets/h5/hanzi_link.html`（汉字连连看，经典 0/1/2 拐点连通判定，可绕外圈，提示时高亮闪烁标记待连字）、`assets/h5/puzzle.html`（3x3 emoji 滑动拼图，随机滑动保证有解，步数统计）
-- **沉浸式**：幼儿教育 5 个 Activity 使用 `Theme.Kids`（透明状态栏）+ `KidsStatusBar.immersive()`（内容延伸到状态栏，根布局顶部自动避开状态栏高度）
-- `res/drawable/bg_kids_*.xml`（渐变背景）、`bg_home_icon.xml`（圆形图标底）、`bg_speak_btn.xml`（喇叭按钮）、`bg_char_cell.xml`（汉字卡片格）
+- **沉浸式**：幼儿教育 6 个 Activity 使用 `Theme.Kids`（透明状态栏）+ `KidsStatusBar.immersive()`（内容延伸到状态栏，根布局顶部自动避开状态栏高度）
+- `res/drawable/bg_kids_*.xml`（渐变背景）、`bg_card_poetry.xml`（古诗卡片橙金渐变）、`bg_home_icon.xml`（圆形图标底）、`bg_speak_btn.xml`（喇叭按钮）、`bg_char_cell.xml`（汉字卡片格）
 - `res/values/colors.xml` 中 `kids_*` 前缀的儿童清新色板
-- 入口：**App 启动即 KidsHomeActivity**（Manifest LAUNCHER），内部卡片跳三个子页；`cardDemo` → ARouter `/module/main` 进演示中心（原 MainActivity）
-- Manifest 已注册全部 4 个 Activity（竖屏 portrait），MainActivity 不再是 launcher
+- 入口：**App 启动即 KidsHomeActivity**（Manifest LAUNCHER），内部卡片跳五个子页（数字/加减法/汉字/H5/古诗）；`cardDemo` → ARouter `/module/main` 进演示中心（原 MainActivity）
+- Manifest 已注册全部 6 个 Activity（竖屏 portrait），MainActivity 不再是 launcher
 
 ### 设计约定（第二版）
 

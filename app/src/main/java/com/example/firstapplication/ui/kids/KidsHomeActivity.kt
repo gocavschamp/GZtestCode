@@ -90,6 +90,7 @@ class KidsHomeActivity : AppCompatActivity() {
         bindCardClick(binding.cardArithmetic) { NumberArithmeticActivity.start(this) }
         bindCardClick(binding.cardChinese) { ChineseWordActivity.start(this) }
         bindCardClick(binding.cardH5) { KidsH5Activity.start(this) }
+        bindCardClick(binding.cardPoetry) { PoetryActivity.start(this) }
         bindCardClick(binding.cardDemo) {
             // 原 MainActivity 演示中心入口
             ARouter.getInstance().build("/module/main").navigation()
@@ -127,7 +128,7 @@ class KidsHomeActivity : AppCompatActivity() {
         // 卡片从下方依次滑入
         val cards = listOf(
             binding.cardNumber, binding.cardArithmetic,
-            binding.cardChinese, binding.cardH5, binding.cardDemo
+            binding.cardChinese, binding.cardH5, binding.cardPoetry, binding.cardDemo
         )
         cards.forEachIndexed { index, card ->
             card.alpha = 0f
