@@ -21,7 +21,7 @@
 <body>
 <div class="overlay" id="overlay">
   <h2>🐸 跳跳闯关</h2>
-  <p>轻点屏幕 = 小跳<br>按住屏幕 = 大跳<br>跳到下一个平台，别掉下去！</p>
+  <p>按住屏幕 = 蹲下蓄力<br>松手 = 起跳！按越久跳得越高<br>跳到下一个平台，别掉下去！</p>
   <button class="btn" id="startBtn">🎮 开始游戏</button>
 </div>
 <canvas id="game"></canvas>
@@ -43,16 +43,20 @@
   window.addEventListener('resize',resize);resize();
 
   // 手感参数：跳跃更高、速度更慢，适合小朋友
-  var GRAV=1500, JUMP=-680, VX=235;
-  var HOLD_FACTOR=0.45;
+  var GRAV=1500, VX=235;
+  // 蓄力跳跃：按住越久，起跳越猛（上升初速度越大），跳得越高越远
+  var JUMP_MIN=520, JUMP_MAX=920, MAX_HOLD=600;
   var MINY,HMAXY;
 
   var state='ready';
   var level=1,score=0,elapsed=0,last=0;
-  var player={x:0,y:0,w:34,h:36,vx:VX,vy:0,holding:false};
+  var player={x:0,y:0,w:34,h:36,vx:VX,vy:0,holding:false,charging:false};
   var camX=0,goalX=0;
   var platforms=[];
   var banner='',bannerT=0;
+  // 屏幕反馈：蓄力进度 / 跳跃弧线 / 尘土粒子
+  var charge=0,holdT=0,launchVy=0;
+  var dust=[];
 
   function reset(){
     level=1;score=0;elapsed=0;
@@ -62,9 +66,10 @@
     genPlatforms(camX+W*2);
     player.x=platforms[0].x+platforms[0].w*0.55;
     player.y=platforms[0].y-player.h;player.vy=0;
+    player.charging=false;charge=0;holdT=0;
     camX=player.x-W*0.28;
     goalX=player.x+1500;
-    banner='';bannerT=0;
+    banner='';bannerT=0;dust=[];
   }
 
   function genPlatforms(worldX){
@@ -92,6 +97,7 @@
 
   function gameOver(){
     state='over';
+    player.charging=false;
     overlay.innerHTML=
       '<h2>😵 掉下去啦</h2>'+
       '<p class="final">到达 第 '+level+' 关 · 得分 '+score+'</p>'+
@@ -106,12 +112,24 @@
     elapsed+=dt;
     var sdt=dt/1000; // 毫秒转秒：物理计算统一按秒（修复跳跃一帧飞出屏幕的 bug）
     var prevY=player.y;
-    var factor=(player.holding&&player.vy<0)?HOLD_FACTOR:1;
-    player.vy+=GRAV*factor*sdt;
-    player.y+=player.vy*sdt;
-    player.x+=player.vx*sdt;
+    if(player.charging){
+      // 蹲下蓄力：原地不动，蓄力条上涨
+      holdT+=dt;
+      charge=Math.min(1,holdT/MAX_HOLD);
+    }else{
+      player.vy+=GRAV*sdt;
+      player.y+=player.vy*sdt;
+      player.x+=player.vx*sdt;
+    }
     camX=player.x-W*0.28;
     score+=dt*0.12;
+
+    // 尘土粒子更新
+    for(var i=dust.length-1;i>=0;i--){
+      var d=dust[i];
+      d.x+=d.vx;d.y+=d.vy;d.vy+=0.09;d.life-=dt;
+      if(d.life<=0)dust.splice(i,1);
+    }
 
     // 落地检测（判定放宽：玩家中心落到平台左右扩展 12px 内即算站住）
     if(player.vy>=0){
@@ -121,6 +139,10 @@
           if(prevY+player.h<=pl.y&&player.y+player.h>=pl.y){
             player.y=pl.y-player.h;
             player.vy=0;
+            // 从上方落下 → 溅起尘土（屏幕反馈）
+            if(prevY+player.h<pl.y-0.5){
+              for(var k=0;k<8;k++)dust.push({x:player.x+4,y:player.y+player.h,vx:(Math.random()-0.5)*2.2,vy:-Math.random()*1.6,life:360});
+            }
             break;
           }
         }
@@ -175,10 +197,45 @@
       ctx.font='38px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
       ctx.fillText('🚩',fx+16,MINY-46);
     }
-    // 玩家
+    // 尘土粒子
+    for(var i=0;i<dust.length;i++){
+      var d=dust[i];
+      ctx.globalAlpha=Math.max(0,d.life/360);
+      ctx.fillStyle='#A1887F';
+      ctx.fillRect(d.x-camX-2,d.y-2,4,4);
+    }
+    ctx.globalAlpha=1;
+    // 跳跃弧线（上升时显示，提示跳跃高度与落点）
+    if(player.vy<0&&!player.charging){
+      var base=player.x-camX;
+      ctx.strokeStyle='rgba(255,255,255,.6)';ctx.lineWidth=3;ctx.setLineDash([6,8]);
+      ctx.beginPath();ctx.moveTo(base,player.y);
+      for(var k=1;k<=22;k++){
+        var tt=k*32/1000;
+        ctx.lineTo(base+player.vx*tt,player.y+launchVy*tt+0.5*GRAV*tt*tt);
+      }
+      ctx.stroke();ctx.setLineDash([]);
+    }
+    // 玩家（蓄力时压低身姿，有画面反馈）
     var sx=player.x-camX;
-    ctx.font='40px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText('🐸',sx,player.y);
+    ctx.font=(player.charging?'30px':'40px')+' sans-serif';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('🐸',sx,player.y+(player.charging?4:0));
+    // 蓄力条（按住时显示，进度从绿到红）
+    if(player.charging){
+      var bw=Math.min(220,W*0.6),bh=16,bx=W/2-bw/2,by=H-52;
+      ctx.fillStyle='rgba(255,255,255,.3)';
+      ctx.fillRect(bx,by,bw,bh);
+      var grad=ctx.createLinearGradient(bx,0,bx+bw,0);
+      grad.addColorStop(0,'#66BB6A');grad.addColorStop(0.6,'#FFEB3B');grad.addColorStop(1,'#EF5350');
+      ctx.fillStyle=grad;
+      ctx.fillRect(bx,by,bw*charge,bh);
+      ctx.strokeStyle='#FFFFFF';ctx.lineWidth=2;
+      ctx.strokeRect(bx,by,bw,bh);
+      ctx.fillStyle='#33691E';ctx.font='bold 15px sans-serif';
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(Math.round(charge*100)+'%',W/2,by+bh+15);
+    }
     // HUD
     ctx.textAlign='left';ctx.textBaseline='top';
     ctx.font='bold 20px sans-serif';ctx.fillStyle='#33691E';
@@ -201,27 +258,38 @@
     requestAnimationFrame(frame);
   }
 
+  // 蓄力起跳：按下开始蓄力，松手按蓄力大小起跳
+  function startCharge(){
+    if(state!=='play')return;
+    if(player.vy===0&&!player.charging){
+      player.charging=true;holdT=0;charge=0;
+    }
+  }
+
+  function launchJump(){
+    if(!player.charging)return;
+    player.charging=false;
+    player.vy=-(JUMP_MIN+(JUMP_MAX-JUMP_MIN)*charge);
+    launchVy=player.vy;
+    // 起跳溅起尘土
+    for(var i=0;i<5;i++)dust.push({x:player.x+4,y:player.y+player.h,vx:(Math.random()-0.5)*1.8,vy:-Math.random()*1.2,life:320});
+  }
+
   canvas.addEventListener('touchstart',function(e){
     e.preventDefault();
-    if(state!=='play')return;
-    player.holding=true;
-    if(player.vy===0){
-      player.vy=JUMP;
-    }
+    startCharge();
   },{passive:false});
   canvas.addEventListener('touchend',function(e){
     e.preventDefault();
-    player.holding=false;
+    launchJump();
   },{passive:false});
-  canvas.addEventListener('touchcancel',function(){
-    player.holding=false;
-  });
+  canvas.addEventListener('touchcancel',function(){launchJump();});
   canvas.addEventListener('mousedown',function(e){
-    if(state!=='play')return;
-    player.holding=true;
-    if(player.vy===0)player.vy=JUMP;
+    e.preventDefault();
+    startCharge();
   });
-  canvas.addEventListener('mouseup',function(){player.holding=false;});
+  canvas.addEventListener('mouseup',function(){launchJump();});
+  canvas.addEventListener('mouseleave',function(){launchJump();});
 
   document.getElementById('startBtn').onclick=function(){
     reset();state='play';overlay.className='overlay hide';

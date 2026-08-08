@@ -42,7 +42,7 @@
   window.addEventListener('resize',resize);resize();
 
   var state='ready';
-  var score=0,lives=3,elapsed=0,last=0;
+  var score=0,lives=10,elapsed=0,last=0;
   var LANES=3,laneW=0,laneX=[];
   var player={lane:1,x:0,y:0,w:54,h:84,invincible:0,blink:0};
   var cars=[];
@@ -50,7 +50,7 @@
   var touchSide=0,touchFlash=0;
 
   function reset(){
-    score=0;lives=3;elapsed=0;
+    score=0;lives=10;elapsed=0;
     cars=[];spawnTimer=700;
     player.lane=1;player.invincible=0;player.blink=0;
     laneW=W/LANES;
@@ -68,9 +68,148 @@
     ctx.closePath();
   }
 
-  function drawCar(x,y,w,h,body,cabin){
-    rr(x-w/2,y-h/2,w,h,10);ctx.fillStyle=body;ctx.fill();
-    rr(x-w/2+7,y-h/2+h*0.3,w-14,h*0.42,7);ctx.fillStyle=cabin;ctx.fill();
+  // 通用轮胎
+  function wheel(x,y){
+    ctx.fillStyle='#212121';
+    ctx.beginPath();ctx.arc(x,y,7,0,6.283);ctx.fill();
+    ctx.fillStyle='#90A4AE';
+    ctx.beginPath();ctx.arc(x,y,3,0,6.283);ctx.fill();
+  }
+
+  // 玩家赛车：车头朝上，流线型车身 + 渐变涂装 + 白色条纹
+  function drawPlayerCar(x,y,w,h){
+    var hw=w/2,hh=h/2;
+    // 轮胎
+    wheel(x-hw*0.62,y-hh*0.55);wheel(x+hw*0.62,y-hh*0.55);
+    wheel(x-hw*0.62,y+hh*0.55);wheel(x+hw*0.62,y+hh*0.55);
+    // 车身：上半收窄成车头
+    ctx.beginPath();
+    ctx.moveTo(x-hw*0.34,y-hh*0.98);
+    ctx.quadraticCurveTo(x-hw*0.9,y-hh*0.1,x-hw*0.78,y+hh*0.98);
+    ctx.lineTo(x+hw*0.78,y+hh*0.98);
+    ctx.quadraticCurveTo(x+hw*0.9,y-hh*0.1,x+hw*0.34,y-hh*0.98);
+    ctx.closePath();
+    var g=ctx.createLinearGradient(x-hw,0,x+hw,0);
+    g.addColorStop(0,'#01579B');g.addColorStop(0.5,'#29B6F6');g.addColorStop(1,'#01427A');
+    ctx.fillStyle=g;ctx.fill();
+    // 白色赛车条纹
+    ctx.fillStyle='rgba(255,255,255,.9)';
+    ctx.fillRect(x-4,y-hh*0.85,8,h*0.55);
+    // 挡风玻璃
+    ctx.fillStyle='#0D47A1';
+    ctx.beginPath();
+    ctx.moveTo(x-hw*0.30,y-hh*0.60);
+    ctx.lineTo(x+hw*0.30,y-hh*0.60);
+    ctx.lineTo(x+hw*0.38,y-hh*0.26);
+    ctx.lineTo(x-hw*0.38,y-hh*0.26);
+    ctx.closePath();ctx.fill();
+    // 侧窗
+    ctx.fillStyle='rgba(13,71,161,.85)';
+    ctx.fillRect(x-hw*0.74,y-hh*0.06,w*0.2,h*0.24);
+    ctx.fillRect(x+hw*0.54,y-hh*0.06,w*0.2,h*0.24);
+    // 前灯（车头）
+    ctx.fillStyle='#FFF59D';
+    ctx.fillRect(x-hw*0.30,y-hh*0.99,9,4);
+    ctx.fillRect(x+hw*0.30-9,y-hh*0.99,9,4);
+    // 尾灯（车尾）
+    ctx.fillStyle='#FF5252';
+    ctx.fillRect(x-hw*0.68,y+hh*0.90,8,4);
+    ctx.fillRect(x+hw*0.68-8,y+hh*0.90,8,4);
+    // 尾翼
+    ctx.fillStyle='#01427A';
+    rr(x-hw*0.62,y+hh*0.58,w*0.4,7,3);ctx.fill();
+  }
+
+  // 通用来车车身：车头朝下（迎面驶来）
+  function carBody(x,y,w,h,top,mid,glass){
+    var hw=w/2,hh=h/2;
+    ctx.beginPath();
+    ctx.moveTo(x-hw*0.34,y-hh*0.98);
+    ctx.quadraticCurveTo(x-hw*0.9,y-hh*0.1,x-hw*0.78,y+hh*0.98);
+    ctx.lineTo(x+hw*0.78,y+hh*0.98);
+    ctx.quadraticCurveTo(x+hw*0.9,y-hh*0.1,x+hw*0.34,y-hh*0.98);
+    ctx.closePath();
+    var g=ctx.createLinearGradient(x-hw,0,x+hw,0);
+    g.addColorStop(0,top);g.addColorStop(0.5,mid);g.addColorStop(1,top);
+    ctx.fillStyle=g;ctx.fill();
+    // 前挡风（偏下，朝向玩家）
+    ctx.fillStyle=glass;
+    ctx.beginPath();
+    ctx.moveTo(x-hw*0.30,y+hh*0.28);
+    ctx.lineTo(x+hw*0.30,y+hh*0.28);
+    ctx.lineTo(x+hw*0.38,y+hh*0.62);
+    ctx.lineTo(x-hw*0.38,y+hh*0.62);
+    ctx.closePath();ctx.fill();
+    // 后窗（偏上）
+    ctx.beginPath();
+    ctx.moveTo(x-hw*0.30,y-hh*0.62);
+    ctx.lineTo(x+hw*0.30,y-hh*0.62);
+    ctx.lineTo(x+hw*0.38,y-hh*0.30);
+    ctx.lineTo(x-hw*0.38,y-hh*0.30);
+    ctx.closePath();ctx.fill();
+    // 侧窗
+    ctx.fillRect(x-hw*0.74,y-hh*0.14,w*0.2,h*0.26);
+    ctx.fillRect(x+hw*0.54,y-hh*0.14,w*0.2,h*0.26);
+    // 前灯（下方车头）
+    ctx.fillStyle='#FFF59D';
+    ctx.fillRect(x-hw*0.32,y+hh*0.92,9,4);
+    ctx.fillRect(x+hw*0.32-9,y+hh*0.92,9,4);
+    // 尾灯（上方车尾）
+    ctx.fillStyle='#FF5252';
+    ctx.fillRect(x-hw*0.66,y-hh*0.97,8,4);
+    ctx.fillRect(x+hw*0.66-8,y-hh*0.97,8,4);
+  }
+
+  // 敌方车辆：多种车型，精致矢量绘制
+  function drawEnemyCar(c){
+    var x=c.x,y=c.y,w=c.w,h=c.h,hw=w/2,hh=h/2;
+    // 轮胎
+    wheel(x-hw*0.62,y-hh*0.55);wheel(x+hw*0.62,y-hh*0.55);
+    wheel(x-hw*0.62,y+hh*0.55);wheel(x+hw*0.62,y+hh*0.55);
+    if(c.type==='truck'){
+      // 货车：下方车头 + 上方大货箱
+      carBody(x,y+h*0.22,w,h*0.66,c.dark,c.color,'#263238');
+      ctx.fillStyle=c.color;
+      rr(x-hw*0.72,y-hh*0.92,w*1.12,h*0.52,6);ctx.fill();
+      ctx.strokeStyle='rgba(0,0,0,.25)';ctx.lineWidth=2;
+      ctx.strokeRect(x-hw*0.72,y-hh*0.92,w*1.12,h*0.52);
+      ctx.fillStyle='rgba(255,255,255,.5)';
+      ctx.fillRect(x-hw*0.46,y-hh*0.80,w*0.4,5);
+      ctx.fillRect(x-hw*0.46,y-hh*0.62,w*0.4,5);
+    }else if(c.type==='taxi'){
+      // 出租车：黄黑渐变 + 黑白格纹 + 顶灯
+      carBody(x,y,w,h,'#F57F17','#FFCA28','#37474F');
+      ctx.fillStyle='#212121';
+      ctx.fillRect(x-hw*0.78,y-hh*0.02,w*1.56,7);
+      ctx.fillStyle='#ECEFF1';
+      for(var k=-3;k<=3;k++)ctx.fillRect(x+k*8-3,y-hh*0.02,4,7);
+      ctx.fillStyle='#FFD54F';
+      rr(x-7,y-hh*0.98,14,9,3);ctx.fill();
+      ctx.fillStyle='#212121';ctx.fillRect(x-3,y-hh*0.98,6,9);
+    }else if(c.type==='police'){
+      // 警车：白色 + 蓝色条纹 + 闪烁警灯
+      carBody(x,y,w,h,'#ECEFF1','#FFFFFF','#37474F');
+      ctx.fillStyle='#1E88E5';
+      ctx.fillRect(x-hw*0.78,y-hh*0.42,w*1.56,h*0.11);
+      ctx.fillRect(x-hw*0.78,y-hh*0.05,w*1.56,h*0.11);
+      ctx.fillStyle=(Math.floor(elapsed/200)%2===0)?'#EF5350':'#039BE5';
+      rr(x-7,y-hh*0.98,14,8,3);ctx.fill();
+    }else if(c.type==='van'){
+      // 面包车：圆头大车身 + 大侧窗
+      var g=ctx.createLinearGradient(x-hw,0,x+hw,0);
+      g.addColorStop(0,c.dark);g.addColorStop(0.5,c.color);g.addColorStop(1,c.dark);
+      ctx.fillStyle=g;
+      rr(x-hw*0.78,y-hh*0.95,w*1.56,h*1.7,14);ctx.fill();
+      ctx.fillStyle='#B0BEC5';
+      rr(x-hw*0.62,y-hh*0.60,w*1.24,h*0.5,9);ctx.fill();
+      ctx.fillStyle='rgba(255,255,255,.35)';
+      ctx.fillRect(x-hw*0.6,y-hh*0.30,w*1.2,4);
+    }else{
+      // 普通轿车：渐变涂装 + 条纹
+      carBody(x,y,w,h,c.dark,c.color,'#E1F5FE');
+      ctx.fillStyle='rgba(255,255,255,.5)';
+      ctx.fillRect(x-4,y-hh*0.80,8,h*0.42);
+    }
   }
 
   // 虚拟手指引导：画在屏幕底部左右，提示小朋友点左/右变道
@@ -96,11 +235,23 @@
     var lane=Math.floor(Math.random()*LANES);
     if(lane===lastLane&&Math.random()<0.5)lane=(lane+1+Math.floor(Math.random()*2))%LANES;
     lastLane=lane;
-    var colors=['#EF5350','#FFCA28','#AB47BC','#66BB6A','#FF7043'];
+    // 多种车型：轿车为主，混入出租车/货车/警车/面包车
+    var types=['car','car','car','taxi','truck','police','van'];
+    var carColors=[
+      {m:'#EF5350',d:'#B71C1C'},
+      {m:'#FFCA28',d:'#F57F17'},
+      {m:'#AB47BC',d:'#6A1B9A'},
+      {m:'#66BB6A',d:'#2E7D32'},
+      {m:'#FF7043',d:'#D84315'},
+      {m:'#7E57C2',d:'#4527A0'},
+      {m:'#26A69A',d:'#00695C'}
+    ];
+    var pc=carColors[Math.floor(Math.random()*carColors.length)];
     cars.push({
       lane:lane,x:laneX[lane],y:-100,
       w:54,h:84,vy:0,
-      color:colors[Math.floor(Math.random()*colors.length)],
+      type:types[Math.floor(Math.random()*types.length)],
+      color:pc.m,dark:pc.d,
       passed:false
     });
   }
@@ -131,9 +282,9 @@
 
   function update(dt){
     elapsed+=dt;
-    // 来车速度：比之前慢，留出反应时间
-    var speed=3.5+elapsed*0.0032;
-    if(speed>8.5)speed=8.5;
+    // 来车速度：再降一档，小朋友更有反应时间
+    var speed=3.0+elapsed*0.0026;
+    if(speed>7)speed=7;
     // 车道虚线滚动
     player.x+=(laneX[player.lane]-player.x)*Math.min(1,dt*0.012);
     player.invincible-=dt;
@@ -173,15 +324,11 @@
     ctx.stroke();ctx.setLineDash([]);
     // 来车
     for(var i=0;i<cars.length;i++){
-      drawCar(cars[i].x,cars[i].y,cars[i].w,cars[i].h,cars[i].color,'#E1F5FE');
+      drawEnemyCar(cars[i]);
     }
     // 玩家车（无敌闪烁）
     if(player.invincible<=0||Math.floor(player.blink/90)%2===0){
-      drawCar(player.x,player.y,player.w,player.h,'#29B6F6','#B3E5FC');
-      // 车灯
-      ctx.fillStyle='#FFF9C4';
-      ctx.fillRect(player.x-16,player.y-38,10,6);
-      ctx.fillRect(player.x+6,player.y-38,10,6);
+      drawPlayerCar(player.x,player.y,player.w,player.h);
     }
     player.blink+=16;
     // 虚拟手指引导（半透明，不挡视线）
@@ -191,10 +338,8 @@
     ctx.textAlign='left';ctx.textBaseline='top';
     ctx.font='bold 20px sans-serif';ctx.fillStyle='#FFD54F';
     ctx.fillText('🏆 '+Math.floor(score),14,14);
-    var hearts='';
-    for(var i=0;i<lives;i++)hearts+='❤️';
-    ctx.textAlign='right';ctx.font='24px sans-serif';
-    ctx.fillText(hearts,W-14,10);
+    ctx.textAlign='right';ctx.font='bold 22px sans-serif';ctx.fillStyle='#FF5252';
+    ctx.fillText('❤️ x'+lives,W-14,10);
   }
 
   function frame(t){

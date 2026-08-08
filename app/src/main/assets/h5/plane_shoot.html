@@ -21,7 +21,7 @@
 <body>
 <div class="overlay" id="overlay">
   <h2>✈️ 打飞机</h2>
-  <p>按住屏幕左右拖动飞机<br>飞机会自动开火<br>别让敌机溜到底部！</p>
+  <p>按住拖动飞机，自动开火<br>吃到 ⭐🔥❤️💎 会变厉害！<br>小心别让敌机撞到你！</p>
   <button class="btn" id="startBtn">🚀 开始游戏</button>
 </div>
 <canvas id="game"></canvas>
@@ -45,34 +45,54 @@
   var score=0,lives=3,elapsed=0;
   var player={x:0,y:0,w:54,h:54,tx:0};
   var bullets=[],enemies=[],booms=[],stars=[];
-  var fireTimer=0,spawnTimer=0;
+  var powerups=[],fireTimer=0,spawnTimer=0;
+  var power=0,fastTimer=0,powerSpawnTimer=0;
+  var tip='',tipT=0;
 
   for(var i=0;i<60;i++){
     stars.push({x:Math.random()*W,y:Math.random()*H,s:Math.random()*1.5+0.5});
   }
 
   function reset(){
-    score=0;lives=3;elapsed=0;
-    bullets=[];enemies=[];booms=[];
+    score=0;lives=10;elapsed=0;
+    bullets=[];enemies=[];booms=[];powerups=[];
+    power=0;fastTimer=0;powerSpawnTimer=2600;
     player.x=W/2;player.tx=W/2;player.y=H-100;
-    fireTimer=0;spawnTimer=800;
+    fireTimer=0;spawnTimer=900;
   }
 
   function spawnEnemy(){
     if(Math.random()<0.72){
-      // 敌机稍慢，小朋友更好瞄准
+      // 敌机速度放慢，小朋友也能坚持超过一分钟
       enemies.push({x:34+Math.random()*(W-68),y:-56,w:46,h:46,
-        vy:1.1+Math.random()*1.0+elapsed*0.0008,hp:1,pts:10,emoji:'🛩️'});
+        vy:0.8+Math.random()*0.7+elapsed*0.0006,hp:1,pts:10,emoji:'🛩️'});
     }else{
       enemies.push({x:34+Math.random()*(W-68),y:-56,w:52,h:52,
-        vy:0.85+Math.random()*0.55+elapsed*0.0006,hp:2,pts:25,emoji:'🛸',phase:Math.random()*6.28});
+        vy:0.6+Math.random()*0.4+elapsed*0.0004,hp:2,pts:25,emoji:'🛸',phase:Math.random()*6.28});
     }
+  }
+
+  // 彩蛋道具：吃到会变厉害
+  function spawnPowerup(){
+    var kinds=['⭐','🔥','❤️','💎'];
+    var k=kinds[Math.floor(Math.random()*kinds.length)];
+    powerups.push({x:34+Math.random()*(W-68),y:-40,r:22,k:k,vy:1.0,phase:Math.random()*6.28});
+  }
+
+  function applyPowerup(k){
+    if(k==='⭐'){power=Math.min(2,power+1);tip='⭐ 火力升级！';}
+    else if(k==='🔥'){fastTimer=8000;tip='🔥 急速射击！';}
+    else if(k==='❤️'){lives=Math.min(10,lives+1);tip='❤️ 生命 +1！';}
+    else{score+=100;tip='💎 +100 分！';}
+    tipT=1000;
   }
 
   function boom(x,y){booms.push({x:x,y:y,t:0});}
 
   function damage(){
     lives--;
+    // 被撞后强化重置，更平衡
+    power=0;fastTimer=0;
     boom(player.x,player.y);
     if(lives<=0){
       state='over';
@@ -98,13 +118,33 @@
     if(player.x>W-player.w/2)player.x=W-player.w/2;
 
     fireTimer+=dt;
-    if(fireTimer>360){
+    var interval=fastTimer>0?200:360;
+    if(fireTimer>interval){
       fireTimer=0;
-      bullets.push({x:player.x,y:player.y-32,w:6,h:18,vy:15});
+      // 火力升级后一次多发子弹
+      var n=1+power;
+      for(var k=0;k<n;k++){
+        bullets.push({x:player.x+(k-(n-1)/2)*16,y:player.y-32,w:6,h:18,vy:15});
+      }
     }
     spawnTimer+=dt;
-    var interval=Math.max(380,920-elapsed*0.02);
-    if(spawnTimer>interval){spawnTimer=0;spawnEnemy();}
+    var interval2=Math.max(420,1050-elapsed*0.02);
+    if(spawnTimer>interval2){spawnTimer=0;spawnEnemy();}
+    if(fastTimer>0)fastTimer-=dt;
+    if(tipT>0)tipT-=dt;
+
+    // 道具生成与移动
+    powerSpawnTimer+=dt;
+    if(powerSpawnTimer>4800){powerSpawnTimer=0;spawnPowerup();}
+    for(var i=powerups.length-1;i>=0;i--){
+      var pu=powerups[i];
+      pu.y+=pu.vy;
+      if(pu.y>H+40){powerups.splice(i,1);continue;}
+      if(Math.abs(pu.x-player.x)<(pu.r+player.w/2)&&Math.abs(pu.y-player.y)<(pu.r+player.h/2)){
+        powerups.splice(i,1);
+        applyPowerup(pu.k);
+      }
+    }
 
     for(var i=bullets.length-1;i>=0;i--){
       bullets[i].y-=bullets[i].vy;
@@ -125,8 +165,11 @@
         }
       }
       if(removed)continue;
-      if(e.y-e.h/2>H+20){enemies.splice(i,1);damage();continue;}
-      if(Math.abs(e.x-player.x)<(e.w+player.w)/2&&Math.abs(e.y-player.y)<(e.h+player.h)/2){
+      // 敌机溜走到底部不扣血：只有撞到我方才扣血
+      if(e.y-e.h/2>H+20){enemies.splice(i,1);continue;}
+      // 碰撞判定：用视觉缩小后的碰撞盒，避免“看着没碰到却扣血”
+      var ew=e.w*0.65,eh=e.h*0.65,pw=player.w*0.6,ph=player.h*0.6;
+      if(Math.abs(e.x-player.x)<(ew+pw)/2&&Math.abs(e.y-player.y)<(eh+ph)/2){
         enemies.splice(i,1);damage();
       }
     }
@@ -154,6 +197,14 @@
       ctx.font='46px sans-serif';
       ctx.fillText(enemies[i].emoji,enemies[i].x,enemies[i].y);
     }
+    // 道具：只绘制 emoji，不画半透明白底，避免遮挡敌机使其“变浅色”
+    for(var i=0;i<powerups.length;i++){
+      var pu=powerups[i];
+      ctx.globalAlpha=0.8+0.2*Math.sin(elapsed*0.008+pu.phase);
+      ctx.font='36px sans-serif';
+      ctx.fillText(pu.k,pu.x,pu.y);
+    }
+    ctx.globalAlpha=1;
     ctx.font='54px sans-serif';
     ctx.fillText('✈️',player.x,player.y);
     for(var i=0;i<booms.length;i++){
@@ -166,10 +217,21 @@
     ctx.textAlign='left';ctx.textBaseline='top';
     ctx.font='bold 20px sans-serif';ctx.fillStyle='#FFD54F';
     ctx.fillText('✈️ '+score,14,14);
-    var hearts='';
-    for(var i=0;i<lives;i++)hearts+='❤️';
-    ctx.textAlign='right';ctx.font='24px sans-serif';
-    ctx.fillText(hearts,W-14,10);
+    // 强化状态
+    var fireStr='';
+    for(var i=0;i<1+power;i++)fireStr+='🔫';
+    if(fastTimer>0)fireStr+=' 🔥';
+    if(fireStr!=='🔫')ctx.fillText(fireStr,14,42);
+    ctx.textAlign='right';ctx.font='bold 22px sans-serif';ctx.fillStyle='#FF5252';
+    ctx.fillText('❤️ x'+lives,W-14,10);
+    // 吃到道具提示
+    if(tipT>0){
+      ctx.globalAlpha=Math.min(1,tipT/350);
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.font='bold 26px sans-serif';ctx.fillStyle='#FFD54F';
+      ctx.fillText(tip,W/2,H*0.2);
+      ctx.globalAlpha=1;
+    }
   }
 
   var last=0;
