@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-            <string name="app_name">Litme</string>
+            <string name="app_name">儿童乐园</string>
             <string name="tab_home">Daring</string>
             <string name="app_tab_voice_room">Party</string>
             <string name="app_tab_message">Pesan</string>

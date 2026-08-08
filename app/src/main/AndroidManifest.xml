@@ -24,9 +24,9 @@
     <application
         android:name="com.example.firstapplication.MyApp"
         android:allowBackup="true"
-        android:icon="@drawable/ic_icon"
+        android:icon="@drawable/ic_kids_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@drawable/ic_icon"
+        android:roundIcon="@drawable/ic_kids_launcher"
         android:supportsRtl="true"
         android:requestLegacyExternalStorage = "true"
         tools:ignore="GoogleAppIndexingWarning"

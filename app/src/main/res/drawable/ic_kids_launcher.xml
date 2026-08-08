@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 儿童乐园主题图标：蓝天底 + 笑脸 + 太阳 + 星星 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- 圆角方块背景（天空蓝） -->
+    <path
+        android:fillColor="#4FC3F7"
+        android:pathData="M14,0 L94,0 A14,14 0 0 1 108,14 L108,94 A14,14 0 0 1 94,108 L14,108 A14,14 0 0 1 0,94 L0,14 A14,14 0 0 1 14,0 Z" />
+
+    <!-- 底部绿色草地 -->
+    <path
+        android:fillColor="#81C784"
+        android:pathData="M0,92 Q54,78 108,92 L108,108 L0,108 Z" />
+
+    <!-- 黄色笑脸 -->
+    <path
+        android:fillColor="#FFD54F"
+        android:pathData="M54,48 m-27,0 a27,27 0 1 1 54,0 a27,27 0 1 1 -54,0" />
+
+    <!-- 眼睛 -->
+    <path
+        android:fillColor="#4E342E"
+        android:pathData="M44,44 m-3.5,0 a3.5,3.5 0 1 1 7,0 a3.5,3.5 0 1 1 -7,0" />
+    <path
+        android:fillColor="#4E342E"
+        android:pathData="M64,44 m-3.5,0 a3.5,3.5 0 1 1 7,0 a3.5,3.5 0 1 1 -7,0" />
+
+    <!-- 微笑 -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#4E342E"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:pathData="M43,55 Q54,66 65,55" />
+
+    <!-- 腮红 -->
+    <path
+        android:fillColor="#FF8A80"
+        android:pathData="M35,53 m-4,0 a4,4 0 1 1 8,0 a4,4 0 1 1 -8,0" />
+    <path
+        android:fillColor="#FF8A80"
+        android:pathData="M73,53 m-4,0 a4,4 0 1 1 8,0 a4,4 0 1 1 -8,0" />
+
+    <!-- 右上角太阳 -->
+    <path
+        android:fillColor="#FFB74D"
+        android:pathData="M88,20 m-10,0 a10,10 0 1 1 20,0 a10,10 0 1 1 -20,0" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFB74D"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:pathData="M88,2 L88,8 M88,32 L88,38 M70,20 L76,20 M100,20 L106,20" />
+
+    <!-- 左下角星星 -->
+    <path
+        android:fillColor="#FFF176"
+        android:pathData="M22,88 L26,78 L30,88 L40,89 L32,95 L34,105 L26,100 L18,105 L20,95 L12,89 Z" />
+</vector>

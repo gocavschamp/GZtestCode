@@ -54,8 +54,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/swipeLayout"
-        app:layout_constraintRight_toRightOf="@id/swipeLayout"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
         android:layout_marginStart="8dp"
         android:text="新消息" />
     <ImageView
@@ -79,10 +79,6 @@
             android:layout_height="wrap_content">
             <com.ywm.baselibray.weiget.ShineViewWrapper
                 android:id="@+id/shineView"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintLeft_toLeftOf="@id/image"
-                app:layout_constraintTop_toBottomOf="@id/image"
                 android:layout_width="190dp"
                 android:layout_height="50dp">
                 <Button
@@ -92,9 +88,7 @@
                     android:text="选图片"
                     android:textColor="@color/white"
                     android:textSize="14sp"
-                    android:gravity="center"
-                    app:layout_constraintLeft_toLeftOf="@id/image"
-                    app:layout_constraintTop_toBottomOf="@id/image" />
+                    android:gravity="center" />
             </com.ywm.baselibray.weiget.ShineViewWrapper>
 
 
@@ -137,8 +131,6 @@
             android:layout_width="match_parent"
             android:orientation="vertical"
             android:gravity="center"
-            app:layout_constraintLeft_toLeftOf="@id/vap"
-            app:layout_constraintTop_toBottomOf="@id/vap"
             android:layout_height="wrap_content">
             <Button
                 android:id="@+id/scale"
@@ -149,32 +141,24 @@
                 android:id="@+id/dialogUtils"
                 android:layout_width="100dp"
                 android:layout_height="40dp"
-                android:text="dialog utils"
-                app:layout_constraintLeft_toLeftOf="@id/vap"
-                app:layout_constraintTop_toBottomOf="@id/vap" />
+                android:text="dialog utils" />
             <Button
                 android:id="@+id/scoreview"
                 android:layout_width="100dp"
                 android:layout_height="40dp"
-                android:text="scoreview"
-                app:layout_constraintLeft_toLeftOf="@id/dialogUtils"
-                app:layout_constraintTop_toBottomOf="@id/dialogUtils" />
+                android:text="scoreview" />
             <Button
                 android:id="@+id/countdown"
                 android:layout_width="100dp"
                 android:layout_height="40dp"
-                android:text="countdown"
-                app:layout_constraintLeft_toLeftOf="@id/dialogUtils"
-                app:layout_constraintTop_toBottomOf="@id/scoreview" />
+                android:text="countdown" />
             <Button
                 android:id="@+id/kidsHome"
                 android:layout_width="100dp"
                 android:layout_height="40dp"
                 android:background="@color/kids_orange"
                 android:text="幼儿教育"
-                android:textColor="@color/white"
-                app:layout_constraintLeft_toLeftOf="@id/dialogUtils"
-                app:layout_constraintTop_toBottomOf="@id/countdown" />
+                android:textColor="@color/white" />
         </LinearLayout>
     </com.google.android.flexbox.FlexboxLayout>
 
