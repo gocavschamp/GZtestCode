@@ -6,6 +6,12 @@ plugins {
 
 import java.util.Properties
 import java.io.FileInputStream
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
+// 构建日期（用于 APK 文件名）
+val buildDate = SimpleDateFormat("yyyyMMdd", Locale.US).format(Date())
 
 // 从根目录 keystore.properties 读取签名信息（该文件不进版本库）
 val keystoreProperties = Properties().apply {
@@ -49,6 +55,14 @@ android {
                 "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("release")
+        }
+    }
+
+    // APK 文件名带版本和构建日期：kidgarden_1.0_20260808_debug.apk / kidgarden_1.0_20260808_release.apk
+    applicationVariants.all {
+        outputs.all {
+            val outputImpl = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+            outputImpl.outputFileName = "kidgarden_${versionName}_${buildDate}_${name}.apk"
         }
     }
     compileOptions {
