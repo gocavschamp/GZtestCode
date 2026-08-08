@@ -42,13 +42,20 @@ class PoetryActivity : AppCompatActivity() {
                 (Color.blue(color) + (255 - Color.blue(color)) * factor).toInt()
             )
         }
+
+        /** 颜色是否偏浅（浅色背景应使用深色状态栏图标） */
+        private fun isLightColor(color: Int): Boolean {
+            val lum = (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color.blue(color)) / 255.0
+            return lum > 0.55
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityPoetryBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        KidsStatusBar.immersive(this, binding.root)
+        // 列表页为浅蓝渐变背景 → 深色状态栏图标
+        KidsStatusBar.immersive(this, binding.root, lightStatusBar = true)
         KidsTts.init(this)
 
         setupList()
@@ -125,12 +132,15 @@ class PoetryActivity : AppCompatActivity() {
 
     private fun showDetail(poem: Poem) {
         currentPoem = poem
-        // 1. 诗意渐变背景
+        // 1. 诗意渐变背景（根布局背景也同步，覆盖状态栏区域）
         val gradient = GradientDrawable(
             GradientDrawable.Orientation.TL_BR,
             intArrayOf(poem.startColor, poem.endColor)
         )
         binding.bgLayer.background = gradient
+        binding.root.background = gradient
+        // 背景偏浅时用深色状态栏图标，深色背景用白色图标，保证状态栏始终可见
+        KidsStatusBar.setLightStatusBar(this, isLightColor(poem.startColor))
 
         // 2. 背景元素装饰：贴合诗意的大号半透明 emoji
         binding.decorLayer.removeAllViews()
@@ -234,5 +244,10 @@ class PoetryActivity : AppCompatActivity() {
         binding.pageDetail.visibility = View.GONE
         binding.pageList.visibility = View.VISIBLE
         currentPoem = null
+        // 恢复列表页浅蓝背景与深色状态栏图标
+        binding.root.background = androidx.core.content.ContextCompat.getDrawable(
+            this, com.example.firstapplication.R.drawable.bg_kids_home
+        )
+        KidsStatusBar.setLightStatusBar(this, true)
     }
 }
