@@ -40,7 +40,7 @@ class TracingView @JvmOverloads constructor(
     private val inkPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = 0xFFFF7043.toInt()
         style = Paint.Style.STROKE
-        strokeWidth = 14f
+        strokeWidth = 22f
         strokeCap = Paint.Cap.ROUND
         strokeJoin = Paint.Join.ROUND
     }

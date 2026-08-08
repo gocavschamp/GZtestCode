@@ -19,6 +19,10 @@ object KidsTts {
         tts = TextToSpeech(context.applicationContext) { status ->
             ready = if (status == TextToSpeech.SUCCESS) {
                 val result = tts?.setLanguage(Locale.CHINESE) ?: TextToSpeech.LANG_NOT_SUPPORTED
+                if (result != TextToSpeech.LANG_MISSING_DATA && result != TextToSpeech.LANG_NOT_SUPPORTED) {
+                    // 幼儿语速稍慢，更清晰
+                    tts?.setSpeechRate(0.85f)
+                }
                 result != TextToSpeech.LANG_MISSING_DATA && result != TextToSpeech.LANG_NOT_SUPPORTED
             } else {
                 false

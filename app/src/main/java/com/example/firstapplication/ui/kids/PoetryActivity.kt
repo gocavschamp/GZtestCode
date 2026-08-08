@@ -70,6 +70,12 @@ class PoetryActivity : AppCompatActivity() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        // 关闭页面时停止语音播放
+        KidsTts.stop()
+    }
+
     // ==================== 列表页 ====================
 
     private fun setupList() {
@@ -171,6 +177,8 @@ class PoetryActivity : AppCompatActivity() {
         binding.tvPoemTitle.text = poem.title
         binding.tvPoemAuthor.text = poem.author
         binding.tvMeaning.text = poem.meaning
+        // 进入详情自动播报诗名和作者
+        KidsTts.speak("${poem.title}，${poem.author}")
 
         // 4. 逐字渲染诗句：每行一行，每字一列（大字 + 小号拼音），点击朗读
         binding.poemContainer.removeAllViews()

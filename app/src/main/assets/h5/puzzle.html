@@ -47,6 +47,7 @@
     display: flex; align-items: center; justify-content: center;
     font-size: 22px;
   }
+  .ref div.empty { visibility: hidden; }
   /* 拼图板 */
   .puzzle {
     display: grid;
@@ -105,8 +106,8 @@
 <script>
   var SIZE = 3;
   var N = SIZE * SIZE;
-  // 完整图案：9 个动物 emoji
-  var FLAT = ['🐰','🐱','🐶','🐼','🐸','🦊','🐻','🐨','🐯'];
+  // 完整图案：8 个动物 emoji（8-puzzle 只有 8 块，第 9 格为空格）
+  var FLAT = ['🐰','🐱','🐶','🐼','🐸','🦊','🐻','🐨'];
   var board = [];   // 0 为空，1..8 对应 FLAT 下标 0..7
   var blank = 0;    // 空格所在位置
   var moves = 0;
@@ -153,11 +154,15 @@
   function renderRef() {
     var ref = document.getElementById('ref');
     ref.innerHTML = '';
-    FLAT.forEach(function (e) {
+    for (var i = 0; i < N; i++) {
       var d = document.createElement('div');
-      d.textContent = e;
+      if (i < FLAT.length) {
+        d.textContent = FLAT[i];
+      } else {
+        d.className = 'empty'; // 最后 1 格为空格，与拼好的图一致
+      }
       ref.appendChild(d);
-    });
+    }
   }
 
   function render() {
