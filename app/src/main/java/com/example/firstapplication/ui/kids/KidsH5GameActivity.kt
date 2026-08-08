@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.webkit.WebViewClient
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.firstapplication.databinding.ActivityKidsH5GameBinding
 
@@ -31,7 +32,7 @@ class KidsH5GameActivity : AppCompatActivity() {
         binding.webGame.settings.allowFileAccess = true
         binding.webGame.webViewClient = WebViewClient()
 
-        binding.btnBack.setOnClickListener { finish() }
+        binding.btnBack.setOnClickListener { showExitConfirm() }
         binding.webGame.loadUrl("file:///android_asset/h5/$file")
     }
 
@@ -39,8 +40,18 @@ class KidsH5GameActivity : AppCompatActivity() {
         if (binding.webGame.canGoBack()) {
             binding.webGame.goBack()
         } else {
-            finish()
+            showExitConfirm()
         }
+    }
+
+    /** 退出确认弹窗：避免小朋友误触退出 */
+    private fun showExitConfirm() {
+        AlertDialog.Builder(this)
+            .setTitle("退出游戏")
+            .setMessage("确定要退出小游戏吗？")
+            .setPositiveButton("退出") { _, _ -> finish() }
+            .setNegativeButton("继续玩", null)
+            .show()
     }
 
     companion object {

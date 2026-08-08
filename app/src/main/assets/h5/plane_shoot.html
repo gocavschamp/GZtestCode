@@ -62,13 +62,19 @@
   }
 
   function spawnEnemy(){
+    // 敌机速度有上限，后期也不会过快；配合曲线机动（类似雷霆战机）
     if(Math.random()<0.72){
-      // 敌机速度放慢，小朋友也能坚持超过一分钟
-      enemies.push({x:34+Math.random()*(W-68),y:-56,w:46,h:46,
-        vy:0.8+Math.random()*0.7+elapsed*0.0006,hp:1,pts:10,emoji:'🛩️'});
+      // 普通敌机：小幅曲线摆动
+      var px=34+Math.random()*(W-68);
+      enemies.push({x:px,bx:px,y:-56,w:46,h:46,
+        vy:Math.min(2.0,0.7+Math.random()*0.6+elapsed*0.0005),hp:1,pts:10,emoji:'🛩️',
+        phase:Math.random()*6.28,amp:0.8+Math.random()*1.0,freq:0.004+Math.random()*0.004});
     }else{
-      enemies.push({x:34+Math.random()*(W-68),y:-56,w:52,h:52,
-        vy:0.6+Math.random()*0.4+elapsed*0.0004,hp:2,pts:25,emoji:'🛸',phase:Math.random()*6.28});
+      // 幽浮：大幅曲线摆动，速度更慢
+      var px=34+Math.random()*(W-68);
+      enemies.push({x:px,bx:px,y:-56,w:52,h:52,
+        vy:Math.min(1.5,0.5+Math.random()*0.4+elapsed*0.0003),hp:2,pts:25,emoji:'🛸',
+        phase:Math.random()*6.28,amp:2.0+Math.random()*1.8,freq:0.004+Math.random()*0.004});
     }
   }
 
@@ -153,7 +159,8 @@
     for(var i=enemies.length-1;i>=0;i--){
       var e=enemies[i];
       e.y+=e.vy;
-      if(e.emoji==='🛸')e.x+=Math.sin(elapsed*0.003+e.phase)*1.2;
+      // 曲线机动：沿出生点做正弦摆动，路线多变但速度可控
+      e.x=e.bx+e.amp*Math.sin(elapsed*e.freq+e.phase);
       var removed=false;
       for(var j=bullets.length-1;j>=0;j--){
         var b=bullets[j];
