@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>✈️ 打飞机</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;}
+  html,body{overflow:hidden;background:#0b1f33;font-family:"PingFang SC","Microsoft YaHei",sans-serif;}
+  body{touch-action:none;}
+  canvas{display:block;}
+  .overlay{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(8,25,42,.85);z-index:20;color:#fff;text-align:center;padding:0 24px;}
+  .overlay.hide{display:none;}
+  .overlay h2{font-size:40px;margin-bottom:12px;}
+  .overlay p{font-size:18px;line-height:1.7;margin-bottom:22px;color:#B3E5FC;}
+  .overlay .final{font-size:28px;color:#FFD54F;margin-bottom:10px;}
+  .btn{border:none;border-radius:28px;padding:14px 44px;font-size:20px;font-weight:bold;color:#fff;background:linear-gradient(135deg,#FFB74D,#F4511E);box-shadow:0 5px 14px rgba(0,0,0,.4);cursor:pointer;}
+  .btn:active{transform:scale(.94);}
+</style>
+</head>
+<body>
+<div class="overlay" id="overlay">
+  <h2>✈️ 打飞机</h2>
+  <p>按住屏幕左右拖动飞机<br>飞机会自动开火<br>别让敌机溜到底部！</p>
+  <button class="btn" id="startBtn">🚀 开始游戏</button>
+</div>
+<canvas id="game"></canvas>
+<script>
+(function(){
+  var canvas=document.getElementById('game');
+  var ctx=canvas.getContext('2d');
+  var overlay=document.getElementById('overlay');
+  var W=0,H=0,DPR=1;
+
+  function resize(){
+    DPR=window.devicePixelRatio||1;
+    W=window.innerWidth;H=window.innerHeight;
+    canvas.width=W*DPR;canvas.height=H*DPR;
+    canvas.style.width=W+'px';canvas.style.height=H+'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+  window.addEventListener('resize',resize);resize();
+
+  var state='ready';
+  var score=0,lives=3,elapsed=0;
+  var player={x:0,y:0,w:54,h:54,tx:0};
+  var bullets=[],enemies=[],booms=[],stars=[];
+  var fireTimer=0,spawnTimer=0;
+
+  for(var i=0;i<60;i++){
+    stars.push({x:Math.random()*W,y:Math.random()*H,s:Math.random()*1.5+0.5});
+  }
+
+  function reset(){
+    score=0;lives=3;elapsed=0;
+    bullets=[];enemies=[];booms=[];
+    player.x=W/2;player.tx=W/2;player.y=H-100;
+    fireTimer=0;spawnTimer=800;
+  }
+
+  function spawnEnemy(){
+    if(Math.random()<0.72){
+      // 敌机稍慢，小朋友更好瞄准
+      enemies.push({x:34+Math.random()*(W-68),y:-56,w:46,h:46,
+        vy:1.1+Math.random()*1.0+elapsed*0.0008,hp:1,pts:10,emoji:'🛩️'});
+    }else{
+      enemies.push({x:34+Math.random()*(W-68),y:-56,w:52,h:52,
+        vy:0.85+Math.random()*0.55+elapsed*0.0006,hp:2,pts:25,emoji:'🛸',phase:Math.random()*6.28});
+    }
+  }
+
+  function boom(x,y){booms.push({x:x,y:y,t:0});}
+
+  function damage(){
+    lives--;
+    boom(player.x,player.y);
+    if(lives<=0){
+      state='over';
+      overlay.innerHTML=
+        '<h2>💥 游戏结束</h2>'+
+        '<p class="final">得分：'+score+'</p>'+
+        '<button class="btn" id="startBtn">🔁 再来一局</button>';
+      overlay.className='overlay';
+      document.getElementById('startBtn').onclick=function(){
+        reset();state='play';overlay.className='overlay hide';
+      };
+    }
+  }
+
+  function update(dt){
+    elapsed+=dt;
+    for(var i=0;i<stars.length;i++){
+      stars[i].y+=stars[i].s*dt*0.02;
+      if(stars[i].y>H){stars[i].y=-5;stars[i].x=Math.random()*W;}
+    }
+    player.x+=(player.tx-player.x)*Math.min(1,dt*0.02);
+    if(player.x<player.w/2)player.x=player.w/2;
+    if(player.x>W-player.w/2)player.x=W-player.w/2;
+
+    fireTimer+=dt;
+    if(fireTimer>360){
+      fireTimer=0;
+      bullets.push({x:player.x,y:player.y-32,w:6,h:18,vy:15});
+    }
+    spawnTimer+=dt;
+    var interval=Math.max(380,920-elapsed*0.02);
+    if(spawnTimer>interval){spawnTimer=0;spawnEnemy();}
+
+    for(var i=bullets.length-1;i>=0;i--){
+      bullets[i].y-=bullets[i].vy;
+      if(bullets[i].y<-20)bullets.splice(i,1);
+    }
+    for(var i=enemies.length-1;i>=0;i--){
+      var e=enemies[i];
+      e.y+=e.vy;
+      if(e.emoji==='🛸')e.x+=Math.sin(elapsed*0.003+e.phase)*1.2;
+      var removed=false;
+      for(var j=bullets.length-1;j>=0;j--){
+        var b=bullets[j];
+        if(Math.abs(b.x-e.x)<(b.w+e.w)/2&&Math.abs(b.y-e.y)<(b.h+e.h)/2){
+          bullets.splice(j,1);
+          e.hp--;
+          if(e.hp<=0){boom(e.x,e.y);score+=e.pts;enemies.splice(i,1);removed=true;}
+          break;
+        }
+      }
+      if(removed)continue;
+      if(e.y-e.h/2>H+20){enemies.splice(i,1);damage();continue;}
+      if(Math.abs(e.x-player.x)<(e.w+player.w)/2&&Math.abs(e.y-player.y)<(e.h+player.h)/2){
+        enemies.splice(i,1);damage();
+      }
+    }
+    for(var i=booms.length-1;i>=0;i--){
+      booms[i].t+=dt;
+      if(booms[i].t>350)booms.splice(i,1);
+    }
+  }
+
+  function draw(){
+    var g=ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#0b1f33');g.addColorStop(1,'#123a5c');
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#fff';
+    for(var i=0;i<stars.length;i++){
+      ctx.globalAlpha=0.35+0.55*Math.abs(Math.sin(stars[i].x+stars[i].y));
+      ctx.fillRect(stars[i].x,stars[i].y,2,2);
+    }
+    ctx.globalAlpha=1;
+    ctx.fillStyle='#FFEB3B';
+    for(var i=0;i<bullets.length;i++)ctx.fillRect(bullets[i].x-3,bullets[i].y-9,6,18);
+
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    for(var i=0;i<enemies.length;i++){
+      ctx.font='46px sans-serif';
+      ctx.fillText(enemies[i].emoji,enemies[i].x,enemies[i].y);
+    }
+    ctx.font='54px sans-serif';
+    ctx.fillText('✈️',player.x,player.y);
+    for(var i=0;i<booms.length;i++){
+      ctx.globalAlpha=Math.max(0,1-booms[i].t/350);
+      ctx.font='42px sans-serif';
+      ctx.fillText('💥',booms[i].x,booms[i].y);
+    }
+    ctx.globalAlpha=1;
+
+    ctx.textAlign='left';ctx.textBaseline='top';
+    ctx.font='bold 20px sans-serif';ctx.fillStyle='#FFD54F';
+    ctx.fillText('✈️ '+score,14,14);
+    var hearts='';
+    for(var i=0;i<lives;i++)hearts+='❤️';
+    ctx.textAlign='right';ctx.font='24px sans-serif';
+    ctx.fillText(hearts,W-14,10);
+  }
+
+  var last=0;
+  function frame(t){
+    var dt=Math.min(50,last?t-last:16);last=t;
+    if(state==='play')update(dt);
+    draw();
+    requestAnimationFrame(frame);
+  }
+
+  canvas.addEventListener('touchstart',function(e){
+    e.preventDefault();
+    if(state==='play')player.tx=e.touches[0].clientX;
+  },{passive:false});
+  canvas.addEventListener('touchmove',function(e){
+    e.preventDefault();
+    if(state==='play')player.tx=e.touches[0].clientX;
+  },{passive:false});
+  canvas.addEventListener('mousemove',function(e){
+    if(state==='play')player.tx=e.clientX;
+  });
+
+  document.getElementById('startBtn').onclick=function(){
+    reset();state='play';overlay.className='overlay hide';
+  };
+
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

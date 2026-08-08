@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>🏎️ 赛车</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;}
+  html,body{overflow:hidden;background:#0e2a3a;font-family:"PingFang SC","Microsoft YaHei",sans-serif;}
+  body{touch-action:none;}
+  canvas{display:block;}
+  .overlay{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(10,28,38,.88);z-index:20;color:#fff;text-align:center;padding:0 24px;}
+  .overlay.hide{display:none;}
+  .overlay h2{font-size:40px;margin-bottom:12px;}
+  .overlay p{font-size:18px;line-height:1.8;margin-bottom:22px;color:#B2EBF2;}
+  .overlay .final{font-size:28px;color:#FFD54F;margin-bottom:10px;}
+  .btn{border:none;border-radius:28px;padding:14px 44px;font-size:20px;font-weight:bold;color:#fff;background:linear-gradient(135deg,#4DD0E1,#0288D1);box-shadow:0 5px 14px rgba(0,0,0,.4);cursor:pointer;}
+  .btn:active{transform:scale(.94);}
+</style>
+</head>
+<body>
+<div class="overlay" id="overlay">
+  <h2>🏎️ 赛车</h2>
+  <p>👈 点屏幕左边 = 向左变道<br>👉 点屏幕右边 = 向右变道<br>躲避来车，坚持越久分越高！</p>
+  <button class="btn" id="startBtn">🚗 开始游戏</button>
+</div>
+<canvas id="game"></canvas>
+<script>
+(function(){
+  var canvas=document.getElementById('game');
+  var ctx=canvas.getContext('2d');
+  var overlay=document.getElementById('overlay');
+  var W=0,H=0,DPR=1;
+
+  function resize(){
+    DPR=window.devicePixelRatio||1;
+    W=window.innerWidth;H=window.innerHeight;
+    canvas.width=W*DPR;canvas.height=H*DPR;
+    canvas.style.width=W+'px';canvas.style.height=H+'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+  window.addEventListener('resize',resize);resize();
+
+  var state='ready';
+  var score=0,lives=3,elapsed=0,last=0;
+  var LANES=3,laneW=0,laneX=[];
+  var player={lane:1,x:0,y:0,w:54,h:84,invincible:0,blink:0};
+  var cars=[];
+  var spawnTimer=0,lastLane=-1;
+  var touchSide=0,touchFlash=0;
+
+  function reset(){
+    score=0;lives=3;elapsed=0;
+    cars=[];spawnTimer=700;
+    player.lane=1;player.invincible=0;player.blink=0;
+    laneW=W/LANES;
+    for(var i=0;i<LANES;i++)laneX[i]=laneW*(i+0.5);
+    player.x=laneX[1];player.y=H-130;
+  }
+
+  function rr(x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);
+    ctx.arcTo(x,y,x+w,y,r);
+    ctx.closePath();
+  }
+
+  function drawCar(x,y,w,h,body,cabin){
+    rr(x-w/2,y-h/2,w,h,10);ctx.fillStyle=body;ctx.fill();
+    rr(x-w/2+7,y-h/2+h*0.3,w-14,h*0.42,7);ctx.fillStyle=cabin;ctx.fill();
+  }
+
+  // 虚拟手指引导：画在屏幕底部左右，提示小朋友点左/右变道
+  function drawHint(side){
+    var x=side<0?64:W-64,y=H-64;
+    var active=(touchFlash>0&&touchSide===side);
+    var r=active?46:38;
+    var pulse=0.45+0.22*Math.sin(elapsed*0.006+(side<0?0:Math.PI));
+    ctx.globalAlpha=active?0.95:pulse;
+    ctx.fillStyle=active?'#FFD54F':'#29B6F6';
+    ctx.beginPath();ctx.arc(x,y,r,0,6.283);ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=3;
+    ctx.beginPath();ctx.arc(x,y,r,0,6.283);ctx.stroke();
+    ctx.globalAlpha=1;
+    ctx.font=(active?'52px':'44px')+' sans-serif';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(side<0?'👈':'👉',x,y+2);
+    ctx.font='bold 16px sans-serif';ctx.fillStyle='#E0F7FA';
+    ctx.fillText(side<0?'向左':'向右',x,y+72);
+  }
+
+  function spawnCar(){
+    var lane=Math.floor(Math.random()*LANES);
+    if(lane===lastLane&&Math.random()<0.5)lane=(lane+1+Math.floor(Math.random()*2))%LANES;
+    lastLane=lane;
+    var colors=['#EF5350','#FFCA28','#AB47BC','#66BB6A','#FF7043'];
+    cars.push({
+      lane:lane,x:laneX[lane],y:-100,
+      w:54,h:84,vy:0,
+      color:colors[Math.floor(Math.random()*colors.length)],
+      passed:false
+    });
+  }
+
+  function moveLane(d){
+    var nl=player.lane+d;
+    if(nl<0||nl>=LANES)return;
+    player.lane=nl;
+  }
+
+  function damage(carIdx){
+    lives--;
+    if(lives<=0){
+      state='over';
+      overlay.innerHTML=
+        '<h2>💥 撞车啦</h2>'+
+        '<p class="final">得分：'+score+'</p>'+
+        '<button class="btn" id="startBtn">🔁 再来一局</button>';
+      overlay.className='overlay';
+      document.getElementById('startBtn').onclick=function(){
+        reset();state='play';overlay.className='overlay hide';
+      };
+    }else{
+      player.invincible=1500;
+      if(carIdx>=0)cars.splice(carIdx,1);
+    }
+  }
+
+  function update(dt){
+    elapsed+=dt;
+    // 来车速度：比之前慢，留出反应时间
+    var speed=3.5+elapsed*0.0032;
+    if(speed>8.5)speed=8.5;
+    // 车道虚线滚动
+    player.x+=(laneX[player.lane]-player.x)*Math.min(1,dt*0.012);
+    player.invincible-=dt;
+    // 生成来车
+    spawnTimer+=dt;
+    var interval=Math.max(420,980-elapsed*0.03);
+    if(spawnTimer>interval){spawnTimer=0;spawnCar();}
+    if(touchFlash>0)touchFlash-=dt;
+    // 来车移动
+    for(var i=cars.length-1;i>=0;i--){
+      var c=cars[i];
+      c.vy=speed;
+      c.y+=c.vy;
+      if(!c.passed&&c.y>player.y+40){c.passed=true;score+=10;}
+      if(c.y>H+120){cars.splice(i,1);continue;}
+      // 碰撞检测（无敌时忽略）
+      if(player.invincible<=0&&c.lane===player.lane&&Math.abs(c.y-player.y)<78){
+        damage(i);
+      }
+    }
+    // 按存活时间加分
+    score+=dt*0.01;
+  }
+
+  function draw(){
+    // 路面
+    ctx.fillStyle='#263238';ctx.fillRect(0,0,W,H);
+    // 路肩
+    ctx.fillStyle='#1b2a33';ctx.fillRect(0,0,W,8);ctx.fillRect(0,H-8,W,8);
+    // 车道分隔线（虚线）
+    ctx.strokeStyle='#FFEB3B';ctx.lineWidth=4;ctx.setLineDash([24,22]);
+    ctx.lineDashOffset=-elapsed*0.12;
+    ctx.beginPath();
+    for(var i=1;i<LANES;i++){
+      ctx.moveTo(laneW*i,0);ctx.lineTo(laneW*i,H);
+    }
+    ctx.stroke();ctx.setLineDash([]);
+    // 来车
+    for(var i=0;i<cars.length;i++){
+      drawCar(cars[i].x,cars[i].y,cars[i].w,cars[i].h,cars[i].color,'#E1F5FE');
+    }
+    // 玩家车（无敌闪烁）
+    if(player.invincible<=0||Math.floor(player.blink/90)%2===0){
+      drawCar(player.x,player.y,player.w,player.h,'#29B6F6','#B3E5FC');
+      // 车灯
+      ctx.fillStyle='#FFF9C4';
+      ctx.fillRect(player.x-16,player.y-38,10,6);
+      ctx.fillRect(player.x+6,player.y-38,10,6);
+    }
+    player.blink+=16;
+    // 虚拟手指引导（半透明，不挡视线）
+    drawHint(-1);
+    drawHint(1);
+    // HUD
+    ctx.textAlign='left';ctx.textBaseline='top';
+    ctx.font='bold 20px sans-serif';ctx.fillStyle='#FFD54F';
+    ctx.fillText('🏆 '+Math.floor(score),14,14);
+    var hearts='';
+    for(var i=0;i<lives;i++)hearts+='❤️';
+    ctx.textAlign='right';ctx.font='24px sans-serif';
+    ctx.fillText(hearts,W-14,10);
+  }
+
+  function frame(t){
+    var dt=Math.min(50,last?t-last:16);last=t;
+    if(state==='play')update(dt);
+    draw();
+    requestAnimationFrame(frame);
+  }
+
+  canvas.addEventListener('touchstart',function(e){
+    e.preventDefault();
+    if(state==='play'){
+      touchSide=e.touches[0].clientX<W/2?-1:1;
+      touchFlash=320;
+      moveLane(touchSide);
+    }
+  },{passive:false});
+  canvas.addEventListener('mousedown',function(e){
+    if(state==='play'){
+      touchSide=e.clientX<W/2?-1:1;
+      touchFlash=320;
+      moveLane(touchSide);
+    }
+  });
+
+  document.getElementById('startBtn').onclick=function(){
+    reset();state='play';overlay.className='overlay hide';
+  };
+
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

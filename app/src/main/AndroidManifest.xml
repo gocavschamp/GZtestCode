@@ -102,6 +102,11 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Kids"/>
         <activity
+            android:name=".ui.kids.KidsH5GameActivity"
+            android:configChanges="keyboardHidden|orientation"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Kids"/>
+        <activity
             android:name=".ui.kids.PoetryActivity"
             android:configChanges="keyboardHidden|orientation"
             android:screenOrientation="portrait"

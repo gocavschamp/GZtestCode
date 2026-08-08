@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>🐸 跳跳闯关</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;}
+  html,body{overflow:hidden;background:#E8F5E9;font-family:"PingFang SC","Microsoft YaHei",sans-serif;}
+  body{touch-action:none;}
+  canvas{display:block;}
+  .overlay{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(46,90,66,.82);z-index:20;color:#fff;text-align:center;padding:0 24px;}
+  .overlay.hide{display:none;}
+  .overlay h2{font-size:40px;margin-bottom:12px;}
+  .overlay p{font-size:18px;line-height:1.8;margin-bottom:22px;color:#DCEDC8;}
+  .overlay .final{font-size:26px;color:#FFD54F;margin-bottom:10px;}
+  .btn{border:none;border-radius:28px;padding:14px 44px;font-size:20px;font-weight:bold;color:#fff;background:linear-gradient(135deg,#66BB6A,#2E7D32);box-shadow:0 5px 14px rgba(0,0,0,.35);cursor:pointer;}
+  .btn:active{transform:scale(.94);}
+</style>
+</head>
+<body>
+<div class="overlay" id="overlay">
+  <h2>🐸 跳跳闯关</h2>
+  <p>轻点屏幕 = 小跳<br>按住屏幕 = 大跳<br>跳到下一个平台，别掉下去！</p>
+  <button class="btn" id="startBtn">🎮 开始游戏</button>
+</div>
+<canvas id="game"></canvas>
+<script>
+(function(){
+  var canvas=document.getElementById('game');
+  var ctx=canvas.getContext('2d');
+  var overlay=document.getElementById('overlay');
+  var W=0,H=0,DPR=1;
+
+  function resize(){
+    DPR=window.devicePixelRatio||1;
+    W=window.innerWidth;H=window.innerHeight;
+    canvas.width=W*DPR;canvas.height=H*DPR;
+    canvas.style.width=W+'px';canvas.style.height=H+'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    if(typeof MINY==='undefined'){MINY=H*0.30;HMAXY=H*0.82;}
+  }
+  window.addEventListener('resize',resize);resize();
+
+  // 手感参数：跳跃更高、速度更慢，适合小朋友
+  var GRAV=1500, JUMP=-680, VX=235;
+  var HOLD_FACTOR=0.45;
+  var MINY,HMAXY;
+
+  var state='ready';
+  var level=1,score=0,elapsed=0,last=0;
+  var player={x:0,y:0,w:34,h:36,vx:VX,vy:0,holding:false};
+  var camX=0,goalX=0;
+  var platforms=[];
+  var banner='',bannerT=0;
+
+  function reset(){
+    level=1;score=0;elapsed=0;
+    MINY=H*0.30;HMAXY=H*0.82;
+    // 起步平台更宽，青蛙出生在平台中央偏右，有充足反应时间
+    platforms=[{x:-320,y:H*0.62,w:340}];
+    genPlatforms(camX+W*2);
+    player.x=platforms[0].x+platforms[0].w*0.55;
+    player.y=platforms[0].y-player.h;player.vy=0;
+    camX=player.x-W*0.28;
+    goalX=player.x+1500;
+    banner='';bannerT=0;
+  }
+
+  function genPlatforms(worldX){
+    while(true){
+      var pl=platforms[platforms.length-1];
+      if(pl.x+pl.w>worldX)break;
+      // 平台更宽、间距更小、高低差更平缓，第一关好上手
+      var w=Math.max(96,152-level*4);
+      var gap=40+Math.random()*(45+level*6);
+      var dy=(Math.random()-0.5)*(80+level*8);
+      var y=pl.y+dy;
+      if(y<MINY)y=MINY;
+      if(y>HMAXY)y=HMAXY;
+      platforms.push({x:pl.x+pl.w+gap,y:y,w:w});
+    }
+  }
+
+  function levelUp(){
+    level++;
+    score+=1000;
+    banner='🎉 第 '+level+' 关！';
+    bannerT=1400;
+    goalX=player.x+1500+(level-1)*150;
+  }
+
+  function gameOver(){
+    state='over';
+    overlay.innerHTML=
+      '<h2>😵 掉下去啦</h2>'+
+      '<p class="final">到达 第 '+level+' 关 · 得分 '+score+'</p>'+
+      '<button class="btn" id="startBtn">🔁 再来一次</button>';
+    overlay.className='overlay';
+    document.getElementById('startBtn').onclick=function(){
+      reset();state='play';overlay.className='overlay hide';
+    };
+  }
+
+  function update(dt){
+    elapsed+=dt;
+    var sdt=dt/1000; // 毫秒转秒：物理计算统一按秒（修复跳跃一帧飞出屏幕的 bug）
+    var prevY=player.y;
+    var factor=(player.holding&&player.vy<0)?HOLD_FACTOR:1;
+    player.vy+=GRAV*factor*sdt;
+    player.y+=player.vy*sdt;
+    player.x+=player.vx*sdt;
+    camX=player.x-W*0.28;
+    score+=dt*0.12;
+
+    // 落地检测（判定放宽：玩家中心落到平台左右扩展 12px 内即算站住）
+    if(player.vy>=0){
+      for(var i=0;i<platforms.length;i++){
+        var pl=platforms[i];
+        if(player.x>pl.x-12&&player.x<pl.x+pl.w+12){
+          if(prevY+player.h<=pl.y&&player.y+player.h>=pl.y){
+            player.y=pl.y-player.h;
+            player.vy=0;
+            break;
+          }
+        }
+      }
+    }
+
+    // 移除身后平台并向前生成
+    while(platforms.length&&platforms[0].x+platforms[0].w<camX-150)platforms.shift();
+    genPlatforms(camX+W*1.6);
+
+    // 过关判定
+    if(player.x>=goalX)levelUp();
+
+    // 掉落判定
+    if(player.y>H+90)gameOver();
+
+    if(bannerT>0)bannerT-=dt;
+  }
+
+  function draw(){
+    // 天空
+    var g=ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#B3E5FC');g.addColorStop(1,'#E1F5FE');
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    // 太阳
+    ctx.fillStyle='#FFF59D';ctx.beginPath();
+    ctx.arc(W-70,70,34,0,6.283);ctx.fill();
+    // 云（视差）
+    ctx.fillStyle='rgba(255,255,255,.85)';
+    for(var i=0;i<5;i++){
+      var sx=((i*W/4+30-camX*0.35)%(W+140)+(W+140))%(W+140)-70;
+      var sy=[60,120,95,150,70][i];
+      ctx.beginPath();
+      ctx.arc(sx,sy,22,0,6.283);
+      ctx.arc(sx+24,sy-6,16,0,6.283);
+      ctx.arc(sx+46,sy,20,0,6.283);
+      ctx.fill();
+    }
+    // 平台
+    for(var i=0;i<platforms.length;i++){
+      var pl=platforms[i];
+      var sx=pl.x-camX,sy=pl.y;
+      if(sx<-200||sx>W+200)continue;
+      ctx.fillStyle='#8D6E63';ctx.fillRect(sx,sy-14,pl.w,16);
+      ctx.fillStyle='#66BB6A';ctx.fillRect(sx,sy-26,pl.w,12);
+    }
+    // 终点旗
+    var fx=goalX-camX;
+    if(fx>-100&&fx<W+100){
+      ctx.strokeStyle='#5D4037';ctx.lineWidth=4;
+      ctx.beginPath();ctx.moveTo(fx,HMAXY+20);ctx.lineTo(fx,MINY-40);ctx.stroke();
+      ctx.font='38px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText('🚩',fx+16,MINY-46);
+    }
+    // 玩家
+    var sx=player.x-camX;
+    ctx.font='40px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('🐸',sx,player.y);
+    // HUD
+    ctx.textAlign='left';ctx.textBaseline='top';
+    ctx.font='bold 20px sans-serif';ctx.fillStyle='#33691E';
+    ctx.fillText('第 '+level+' 关',14,14);
+    ctx.fillText('🏆 '+Math.floor(score),14,44);
+    // 过关横幅
+    if(bannerT>0){
+      ctx.globalAlpha=Math.min(1,bannerT/400);
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.font='bold 34px sans-serif';ctx.fillStyle='#E65100';
+      ctx.fillText(banner,W/2,H*0.3);
+      ctx.globalAlpha=1;
+    }
+  }
+
+  function frame(t){
+    var dt=Math.min(50,last?t-last:16);last=t;
+    if(state==='play')update(dt);
+    draw();
+    requestAnimationFrame(frame);
+  }
+
+  canvas.addEventListener('touchstart',function(e){
+    e.preventDefault();
+    if(state!=='play')return;
+    player.holding=true;
+    if(player.vy===0){
+      player.vy=JUMP;
+    }
+  },{passive:false});
+  canvas.addEventListener('touchend',function(e){
+    e.preventDefault();
+    player.holding=false;
+  },{passive:false});
+  canvas.addEventListener('touchcancel',function(){
+    player.holding=false;
+  });
+  canvas.addEventListener('mousedown',function(e){
+    if(state!=='play')return;
+    player.holding=true;
+    if(player.vy===0)player.vy=JUMP;
+  });
+  canvas.addEventListener('mouseup',function(){player.holding=false;});
+
+  document.getElementById('startBtn').onclick=function(){
+    reset();state='play';overlay.className='overlay hide';
+  };
+
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
