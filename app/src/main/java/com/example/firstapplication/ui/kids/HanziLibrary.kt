@@ -20,7 +20,7 @@ object HanziLibrary {
         HanziInfo("一", "yī", "数字 1", 1),
         HanziInfo("二", "èr", "数字 2", 2),
         HanziInfo("三", "sān", "数字 3", 3),
-        HanziInfo("四", "sì", "数字 4", 4),
+        HanziInfo("四", "sì", "数字 4", 5),
         HanziInfo("五", "wǔ", "数字 5", 4),
         HanziInfo("六", "liù", "数字 6", 4),
         HanziInfo("七", "qī", "数字 7", 2),
@@ -44,7 +44,7 @@ object HanziLibrary {
         HanziInfo("天", "tiān", "天空", 4),
         HanziInfo("上", "shàng", "上面", 3),
         HanziInfo("下", "xià", "下面", 3),
-        HanziInfo("中", "zhōng", "中间", 3),
+        HanziInfo("中", "zhōng", "中间", 4),
         HanziInfo("王", "wáng", "大王", 4),
         HanziInfo("门", "mén", "大门", 3),
         HanziInfo("目", "mù", "眼睛 / 目", 5),
@@ -53,7 +53,7 @@ object HanziLibrary {
         HanziInfo("头", "tóu", "脑袋", 5)
     )
 
-    /** 22 种基础笔画（配合 StrokeData.charStrokes 中的同名数据演示） */
+    /** 22 种基础笔画（笔画数据来自 assets/hanzi_strokes.json 的真实字体笔画数据） */
     val BASIC_STROKES = listOf(
         StrokeInfo("横", "héng", "一 二 三"),
         StrokeInfo("竖", "shù", "十 中 土"),

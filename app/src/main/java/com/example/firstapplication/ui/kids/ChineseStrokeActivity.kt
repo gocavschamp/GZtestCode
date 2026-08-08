@@ -49,6 +49,8 @@ class ChineseStrokeActivity : ChineseBaseActivity() {
         val info = HanziLibrary.BASIC_STROKES[index]
         // 演示该笔画写法，同时显示包含该笔画的字（当前笔画高亮，其余笔画灰色轮廓）
         binding.strokeView.showStrokeInChar(info.name)
+        // 写笔画时同步朗读笔画名
+        KidsTts.speak(info.name)
         binding.tvStrokeName.text = "${info.name} ${info.pinyin}"
         val target = StrokeAnimationView.StrokeData.exampleChars[info.name]
         binding.tvStrokeExample.text = if (target != null) {
