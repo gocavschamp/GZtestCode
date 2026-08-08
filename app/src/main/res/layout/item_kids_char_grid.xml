@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="5dp"
+    android:layout_margin="6dp"
     android:clickable="true"
     android:focusable="true"
     android:foreground="?attr/selectableItemBackground"
@@ -14,16 +14,16 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="10dp">
+        android:padding="6dp">
 
         <TextView
             android:id="@+id/tvGridChar"
             android:layout_width="match_parent"
-            android:layout_height="64dp"
+            android:layout_height="72dp"
             android:gravity="center"
             android:text="一"
             android:textColor="@color/kids_text_deep"
-            android:textSize="34sp"
+            android:textSize="30sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />

@@ -75,7 +75,7 @@ app/src/main/java/com/example/firstapplication/ui/kids/
 ├── HanziLibrary.kt              # 汉字数据源：34 精细教学字 + 500 常用字（EXTENDED_HANZI）+ 22 基础笔画（BASIC_STROKES）+ 44 条每日句子
 ├── PoetryLibrary.kt             # 古诗数据源：50 首中小学课本古诗（标题/作者/逐字拼音/释义/主题渐变配色/背景 emoji）
 ├── EnglishLibrary.kt            # 英语数据源：26 字母（ALPHABET，各含 2 示例单词）+ 15 类 330 词（CATEGORIES/ALL_WORDS）+ 60 条句子（SENTENCES）+ 30 天打卡（CHECK_IN_DAYS，前 300 词每 10 词一天 + 每天 2 句）+ exampleSentencesFor() 按词性模板为每词生成 2 例句（动词 can/let's、颜色 it is、数字 count、默认 this is a/an）
-├── StrokeAnimationView.kt       # 自定义 View：田字格笔画顺序动画（内置 34 个汉字 + 22 个基础笔画数据）
+├── StrokeAnimationView.kt       # 自定义 View：田字格笔画顺序动画（内置 43 个汉字 + 22 个基础笔画数据；showStrokeInChar 对比字模式：演示笔画时所在字其余笔画灰色轮廓、当前笔画橙色高亮动画）
 ├── TracingView.kt               # 自定义 View：仿写描红，触摸笔迹，PNG 本地保存
 ├── KidsProgressStore.kt         # Room 数据门面（同步 API + runBlocking 包装），含第一版 SharedPreferences 迁移；英语模块：打卡掩码（english_checkin_month/mask，跨月归零）+ 游戏进度（english_game_progress 0..100 / english_game_score）；汉字乐园：5 个二级页学习位置键（chinese_stroke/demo/reading/tracing/daily_index，下次进入续学）
 ├── KidsTts.kt                   # 本地语音朗读（系统 TextToSpeech：中文 speak + 英文 speakEnglish 临时切 Locale.US）
@@ -100,7 +100,7 @@ app/src/main/java/com/example/firstapplication/ui/kids/
 - **语音**：`KidsTts` 系统 TextToSpeech 引擎（本地播放）。中文朗读 `speak()`；英文朗读 `speakEnglish()`（临时切 Locale.US，说完恢复中文）。数字页切换/出题、加减法出题/答对/🔊喇叭、汉字卡片点击、每日一句、英语字母/单词/句子均触发朗读。汉字二级页朗读约定：**只读汉字本身/笔画名/句子，拼音仅文本展示不朗读**（避免读两遍）
 - **风格**：渐变背景 + emoji 装饰 + 圆角 MaterialCardView + LinearProgressIndicator 进度条，无网络图片离线运行
 - **动画**：纯原生 ValueAnimator/属性动画（数字弹跳、笔画 Path 绘制、描红实时笔迹、分数缩放）
-- **汉字笔画数据**：`StrokeAnimationView.StrokeData.charStrokes`，坐标为 0-100 归一化，新增汉字只需追加笔画点数组；基础笔画页复用同名"横/竖/撇/捺/点/提/横折/竖钩/横钩/横折钩/横撇/横折弯钩/横折提/竖提/竖弯/竖弯钩/竖折/撇折/撇点/斜钩/卧钩/弯钩"22 种数据
+- **汉字笔画数据**：`StrokeAnimationView.StrokeData.charStrokes`，坐标为 0-100 归一化，新增汉字只需追加笔画点数组；基础笔画页复用同名"横/竖/撇/捺/点/提/横折/竖钩/横钩/横折钩/横撇/横折弯钩/横折提/竖提/竖弯/竖弯钩/竖折/撇折/撇点/斜钩/卧钩/弯钩"22 种数据；`StrokeData.exampleChars` 建立 22 笔画→对比字+笔画下标映射（9 个对比字习/买/计/长/云/女/戈/心/子为新增数据），`showStrokeInChar(name)` 演示该笔画时其余笔画灰色轮廓、当前笔画橙色高亮动画
 - **汉字二级页续学**：5 个二级页位置分别记录 `chinese_stroke/demo/reading/tracing/daily_index`；首载用 `selectXxx(index, save=false)` 不重复保存；识字网格续学用 `scrollToPositionWithOffset(pos,0)`（scrollToPosition 会跳过中间项）
 - **仿写保存**：`TracingView.saveToLocal()` 输出 PNG 到 `filesDir/kids_tracing/`，保存时自动 markCharLearned
 - **趣味性**：数字乐园 3 种玩法（认识 0-999 四级难度 + 🎲随机 + 找数字 + 数一数 16 种图标）+ 加减法 10 题一局统计、连胜解锁更高难度、答对随机鼓励语 + TTS 播报；每日一句按时间取模定位、可切换并朗读；H5 本地小游戏（数字翻牌 / 汉字连连看 / emoji 拼图，WebView 加载 assets）；英语乐园 4 页（字母表选字母学发音、分类单词/句子点读、30 天打卡每天 10 词 + 2 句、听音选词 10 题游戏 4 选 1）

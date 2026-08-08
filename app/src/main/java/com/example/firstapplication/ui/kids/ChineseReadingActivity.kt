@@ -31,7 +31,7 @@ class ChineseReadingActivity : ChineseBaseActivity() {
         binding.btnBack.setOnClickListener { finish() }
 
         learned.addAll(KidsProgressStore.getLearnedChars(this))
-        binding.charGrid.layoutManager = GridLayoutManager(this, 8)
+        binding.charGrid.layoutManager = GridLayoutManager(this, 6)
         binding.charGrid.adapter = readingAdapter
         readingAdapter.submitList(HanziLibrary.EXTENDED_HANZI)
 

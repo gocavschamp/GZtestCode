@@ -33,10 +33,28 @@ class StrokeAnimationView @JvmOverloads constructor(
         strokeCap = Paint.Cap.ROUND
         strokeJoin = Paint.Join.ROUND
     }
+    /** 基础笔画对比字模式：当前笔画高亮色 */
+    private val highlightPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = 0xFFFF7043.toInt()
+        style = Paint.Style.STROKE
+        strokeWidth = 10f
+        strokeCap = Paint.Cap.ROUND
+        strokeJoin = Paint.Join.ROUND
+    }
+    /** 基础笔画对比字模式：字中其余笔画灰色轮廓 */
+    private val outlinePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = 0xFFCFD8DC.toInt()
+        style = Paint.Style.STROKE
+        strokeWidth = 7f
+        strokeCap = Paint.Cap.ROUND
+        strokeJoin = Paint.Join.ROUND
+    }
     private val animator = ValueAnimator.ofFloat(0f, 1f)
     private var currentChar: String = "一"
     private var strokeProgress = 0f
     private var activeStrokeIndex = 0
+    /** 基础笔画对比字模式下高亮的笔画下标；-1 表示普通模式 */
+    private var compareStrokeIndex = -1
 
     private val fullPaths = mutableListOf<Path>()
     private val drawPaths = mutableListOf<Path>()
@@ -53,13 +71,26 @@ class StrokeAnimationView @JvmOverloads constructor(
     }
 
     fun setCharacter(char: String) {
-        if (char == currentChar) return
+        if (char == currentChar && compareStrokeIndex < 0) return
+        compareStrokeIndex = -1
         currentChar = char
         buildChar(char)
         startAnimation()
     }
 
     fun getCharacter(): String = currentChar
+
+    /**
+     * 基础笔画教学：演示笔画写法的同时显示一个包含该笔画的字。
+     * 字中当前笔画用高亮色动画绘制，其余笔画灰色轮廓（不高亮），便于理解笔画在字中的位置。
+     */
+    fun showStrokeInChar(strokeName: String) {
+        val target = StrokeData.exampleChars[strokeName]
+        currentChar = if (target != null) target.first else strokeName
+        compareStrokeIndex = target?.second ?: -1
+        buildChar(currentChar)
+        startAnimation()
+    }
 
     fun startAnimation() {
         animator.cancel()
@@ -108,34 +139,58 @@ class StrokeAnimationView @JvmOverloads constructor(
         val scale = size / 100f
         canvas.scale(scale, scale)
 
-        // 已完成的笔画 + 当前动画笔画
-        for (i in fullPaths.indices) {
-            val target = if (i < activeStrokeIndex) 1f
-            else if (i == activeStrokeIndex) strokeProgress
-            else 0f
-            if (target <= 0f) continue
-            val pm = pathMeasures[i]
-            val len = pm.length
-            val draw = drawPaths[i]
-            draw.reset()
-            if (target >= 1f) {
-                draw.addPath(fullPaths[i])
-            } else {
-                pm.getSegment(0f, len * target, draw, true)
+        if (compareStrokeIndex >= 0) {
+            // 对比字模式：其余笔画灰色轮廓，当前笔画橙色高亮动画
+            for (i in fullPaths.indices) {
+                if (i == compareStrokeIndex) continue
+                canvas.drawPath(fullPaths[i], outlinePaint)
             }
-            canvas.drawPath(draw, strokePaint)
+            val pm = pathMeasures[compareStrokeIndex]
+            val draw = drawPaths[compareStrokeIndex]
+            draw.reset()
+            if (strokeProgress >= 1f) {
+                draw.addPath(fullPaths[compareStrokeIndex])
+            } else {
+                pm.getSegment(0f, pm.length * strokeProgress, draw, true)
+            }
+            canvas.drawPath(draw, highlightPaint)
+        } else {
+            // 已完成的笔画 + 当前动画笔画
+            for (i in fullPaths.indices) {
+                val target = if (i < activeStrokeIndex) 1f
+                else if (i == activeStrokeIndex) strokeProgress
+                else 0f
+                if (target <= 0f) continue
+                val pm = pathMeasures[i]
+                val len = pm.length
+                val draw = drawPaths[i]
+                draw.reset()
+                if (target >= 1f) {
+                    draw.addPath(fullPaths[i])
+                } else {
+                    pm.getSegment(0f, len * target, draw, true)
+                }
+                canvas.drawPath(draw, strokePaint)
+            }
         }
         canvas.restore()
 
-        // 当前笔画完成后自动进入下一笔画
-        if (strokeProgress >= 1f && activeStrokeIndex < fullPaths.size - 1) {
-            activeStrokeIndex++
-            strokeProgress = 0f
-            animator.start()
-        }
-        if (strokeProgress >= 1f && activeStrokeIndex == fullPaths.size - 1) {
-            // 全部完成，停止
-            animator.cancel()
+        if (compareStrokeIndex >= 0) {
+            // 对比字模式只动画高亮的那一笔，画完即停
+            if (strokeProgress >= 1f) {
+                animator.cancel()
+            }
+        } else {
+            // 当前笔画完成后自动进入下一笔画
+            if (strokeProgress >= 1f && activeStrokeIndex < fullPaths.size - 1) {
+                activeStrokeIndex++
+                strokeProgress = 0f
+                animator.start()
+            }
+            if (strokeProgress >= 1f && activeStrokeIndex == fullPaths.size - 1) {
+                // 全部完成，停止
+                animator.cancel()
+            }
         }
     }
 
@@ -349,7 +404,86 @@ class StrokeAnimationView @JvmOverloads constructor(
             "撇点" to listOf(stroke(arrayOf(62f to 12f, 34f to 55f, 58f to 75f))),
             "斜钩" to listOf(stroke(arrayOf(42f to 12f, 58f to 48f, 50f to 85f))),
             "卧钩" to listOf(stroke(arrayOf(28f to 72f, 52f to 74f, 64f to 62f))),
-            "弯钩" to listOf(stroke(arrayOf(52f to 15f, 42f to 50f, 52f to 82f)))
+            "弯钩" to listOf(stroke(arrayOf(52f to 15f, 42f to 50f, 52f to 82f))),
+            // —— 基础笔画对比字（习/买/计/长/云/女/戈/心/子）——
+            "习" to listOf(
+                stroke(arrayOf(15f to 55f, 70f to 55f, 70f to 78f)),
+                stroke(arrayOf(72f to 28f, 64f to 42f)),
+                stroke(arrayOf(20f to 86f, 70f to 72f))
+            ),
+            "买" to listOf(
+                stroke(arrayOf(15f to 28f, 72f to 28f, 78f to 18f)),
+                stroke(arrayOf(45f to 38f, 40f to 52f)),
+                stroke(arrayOf(62f to 38f, 66f to 52f)),
+                stroke(arrayOf(45f to 38f, 78f to 86f))
+            ),
+            "计" to listOf(
+                stroke(arrayOf(24f to 18f, 18f to 34f)),
+                stroke(arrayOf(32f to 46f, 66f to 46f, 66f to 62f, 80f to 54f)),
+                stroke(arrayOf(72f to 46f, 72f to 86f))
+            ),
+            "长" to listOf(
+                stroke(arrayOf(36f to 10f, 26f to 38f)),
+                stroke(arrayOf(26f to 42f, 78f to 42f)),
+                stroke(arrayOf(46f to 42f, 46f to 80f, 60f to 70f)),
+                stroke(arrayOf(62f to 55f, 82f to 84f))
+            ),
+            "云" to listOf(
+                stroke(arrayOf(15f to 24f, 85f to 24f)),
+                stroke(arrayOf(20f to 50f, 80f to 50f)),
+                stroke(arrayOf(40f to 50f, 30f to 80f, 72f to 80f))
+            ),
+            "女" to listOf(
+                stroke(arrayOf(50f to 10f, 25f to 55f, 48f to 70f)),
+                stroke(arrayOf(52f to 10f, 78f to 62f)),
+                stroke(arrayOf(20f to 80f, 82f to 80f))
+            ),
+            "戈" to listOf(
+                stroke(arrayOf(15f to 34f, 70f to 34f)),
+                stroke(arrayOf(28f to 34f, 48f to 55f, 58f to 84f, 68f to 76f)),
+                stroke(arrayOf(42f to 34f, 22f to 84f)),
+                stroke(arrayOf(72f to 28f, 84f to 40f))
+            ),
+            "心" to listOf(
+                stroke(arrayOf(26f to 26f, 20f to 40f)),
+                stroke(arrayOf(28f to 62f, 52f to 68f, 70f to 56f)),
+                stroke(arrayOf(56f to 46f, 64f to 58f)),
+                stroke(arrayOf(72f to 50f, 80f to 60f))
+            ),
+            "子" to listOf(
+                stroke(arrayOf(28f to 20f, 74f to 20f, 52f to 48f)),
+                stroke(arrayOf(52f to 48f, 42f to 74f, 56f to 86f)),
+                stroke(arrayOf(14f to 86f, 86f to 86f))
+            )
+        )
+
+        /**
+         * 基础笔画 → 对比字 + 该字中对应笔画下标（基础笔画教学页动画演示并高亮该笔画）
+         * 对比字必须存在于 charStrokes 中
+         */
+        val exampleChars: Map<String, Pair<String, Int>> = mapOf(
+            "横" to ("二" to 0),
+            "竖" to ("十" to 1),
+            "撇" to ("人" to 0),
+            "捺" to ("人" to 1),
+            "点" to ("六" to 0),
+            "提" to ("习" to 2),
+            "横折" to ("口" to 0),
+            "竖钩" to ("小" to 0),
+            "横钩" to ("买" to 0),
+            "横折钩" to ("月" to 1),
+            "横撇" to ("水" to 1),
+            "横折弯钩" to ("九" to 1),
+            "横折提" to ("计" to 1),
+            "竖提" to ("长" to 2),
+            "竖弯" to ("四" to 2),
+            "竖弯钩" to ("七" to 1),
+            "竖折" to ("山" to 1),
+            "撇折" to ("云" to 2),
+            "撇点" to ("女" to 0),
+            "斜钩" to ("戈" to 1),
+            "卧钩" to ("心" to 1),
+            "弯钩" to ("子" to 1)
         )
     }
 }

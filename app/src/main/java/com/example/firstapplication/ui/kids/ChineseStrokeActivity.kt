@@ -47,10 +47,15 @@ class ChineseStrokeActivity : ChineseBaseActivity() {
         if (index !in 0 until HanziLibrary.BASIC_STROKES.size) return
         currentIndex = index
         val info = HanziLibrary.BASIC_STROKES[index]
-        binding.strokeView.setCharacter(info.name)
-        binding.strokeView.startAnimation()
+        // 演示该笔画写法，同时显示包含该笔画的字（当前笔画高亮，其余笔画灰色轮廓）
+        binding.strokeView.showStrokeInChar(info.name)
         binding.tvStrokeName.text = "${info.name} ${info.pinyin}"
-        binding.tvStrokeExample.text = "示例字：${info.example}"
+        val target = StrokeAnimationView.StrokeData.exampleChars[info.name]
+        binding.tvStrokeExample.text = if (target != null) {
+            "对比字「${target.first}」第 ${target.second + 1} 画 · 示例字：${info.example}"
+        } else {
+            "示例字：${info.example}"
+        }
         binding.tvStrokeIndicator.text = "第 ${index + 1} / ${HanziLibrary.BASIC_STROKES.size} 个笔画"
         refreshChips()
         scrollChipIntoView()
