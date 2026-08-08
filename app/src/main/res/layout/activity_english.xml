@@ -64,6 +64,7 @@
             android:padding="16dp">
 
             <HorizontalScrollView
+                android:id="@+id/alphabetScroll"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:scrollbars="none">
@@ -132,17 +133,44 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <Button
-                android:id="@+id/btnSpeakLetter"
-                android:layout_width="wrap_content"
-                android:layout_height="52dp"
-                android:layout_gravity="center_horizontal"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="12dp"
-                android:backgroundTint="@color/kids_sky_blue_deep"
-                android:text="🔊 听字母发音"
-                android:textColor="@color/white"
-                android:textSize="16sp" />
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnPrevLetter"
+                    android:layout_width="56dp"
+                    android:layout_height="52dp"
+                    android:backgroundTint="@color/kids_sky_blue_deep"
+                    android:text="◀"
+                    android:textColor="@color/white"
+                    android:textSize="18sp" />
+
+                <Button
+                    android:id="@+id/btnSpeakLetter"
+                    android:layout_width="0dp"
+                    android:layout_height="52dp"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginEnd="12dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/kids_orange"
+                    android:text="🔊 听字母发音"
+                    android:textColor="@color/white"
+                    android:textSize="16sp" />
+
+                <Button
+                    android:id="@+id/btnNextLetter"
+                    android:layout_width="56dp"
+                    android:layout_height="52dp"
+                    android:backgroundTint="@color/kids_sky_blue_deep"
+                    android:text="▶"
+                    android:textColor="@color/white"
+                    android:textSize="18sp" />
+            </LinearLayout>
         </LinearLayout>
 
         <!-- ============ 页面1：单词句子（闪卡切换） ============ -->
@@ -190,10 +218,39 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
                 android:gravity="center"
-                android:text="1 / 42"
+                android:text="第 1 / 42 张"
                 android:textColor="#FFFFFF"
                 android:textSize="14sp"
                 android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="4dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnPrevWord"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/kids_sky_blue_deep"
+                    android:text="◀ 上一个"
+                    android:textColor="@color/white"
+                    android:textSize="15sp" />
+
+                <Button
+                    android:id="@+id/btnNextWord"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/kids_grass"
+                    android:text="下一个 ▶"
+                    android:textColor="@color/white"
+                    android:textSize="15sp" />
+            </LinearLayout>
         </LinearLayout>
 
         <!-- ============ 页面2：每日打卡 ============ -->
@@ -261,6 +318,34 @@
                 android:textColor="#FFFFFF"
                 android:textSize="13sp"
                 android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnPrevCheckin"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/kids_sky_blue_deep"
+                    android:text="◀ 上一个"
+                    android:textColor="@color/white"
+                    android:textSize="14sp" />
+
+                <Button
+                    android:id="@+id/btnNextCheckin"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/kids_grass"
+                    android:text="下一个 ▶"
+                    android:textColor="@color/white"
+                    android:textSize="14sp" />
+            </LinearLayout>
 
             <Button
                 android:id="@+id/btnCheckinDone"

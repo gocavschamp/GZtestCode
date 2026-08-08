@@ -59,7 +59,7 @@ app/src/main/java/com/example/firstapplication/ui/kids/
 ├── ChineseWordActivity.kt       # 汉字乐园（TabLayout 五页：基础笔画/笔画演示/汉字识字500/仿写描红/每日一句，点击朗读并标记学会）
 ├── KidsH5Activity.kt            # H5 小游戏容器（WebView 加载本地 assets/h5，三个游戏切换按钮）
 ├── PoetryActivity.kt            # 古诗学堂（列表页 50 首中小学课本古诗 → 详情页：整首朗读 / 每字点击朗读字+拼音，每首诗意渐变背景 + 内容相关 emoji 装饰 + 释义解说）
-├── EnglishActivity.kt           # 英语乐园（TabLayout 四页：①字母表 26 字母含音标+示例单词 ②单词句子闪卡（15 类 330 词 + 60 句，一次一张滑动切换+指示器） ③每日打卡 30 天×10 词+2 句、每词自动配 2 例句、日历 6 列网格 + 内容闪卡、本地记录当月打卡掩码、今天可打卡 ④互动游戏"听音选词"100 关闯关：答对 +10 分并通关 +1，进度/得分 Room 持久化，全部通关后可从头开始）
+├── EnglishActivity.kt           # 英语乐园（TabLayout 四页：①字母表 26 字母含音标+示例单词，◀▶按钮切字母，示例卡 emoji 下显示英文单词 ②单词句子闪卡（15 类 330 词 + 60 句，一次一张滑动切换+指示器+◀上一个/下一个▶按钮，例句区 ScrollView 可滚动） ③每日打卡 30 天×10 词+2 句、每词自动配 2 例句、日历 6 列网格 + 内容闪卡（◀上一个/下一个▶按钮）、本地记录当月打卡掩码、今天可打卡 ④互动游戏"听音选词"100 关闯关：答对 +10 分并通关 +1，进度/得分 Room 持久化，全部通关后可从头开始）
 ├── KidsStatusBar.kt             # 沉浸式状态栏工具（透明状态栏 + 内容延伸到状态栏 + 根布局自动避让）
 ├── HanziLibrary.kt              # 汉字数据源：34 精细教学字 + 500 常用字（EXTENDED_HANZI）+ 8 基础笔画 + 44 条每日句子
 ├── PoetryLibrary.kt             # 古诗数据源：50 首中小学课本古诗（标题/作者/逐字拼音/释义/主题渐变配色/背景 emoji）
@@ -74,7 +74,7 @@ app/src/main/java/com/example/firstapplication/ui/kids/
 
 ### 布局 & 资源
 
-- `res/layout/activity_kids_home.xml`（启动页，含五张进度卡片 + 演示中心入口）、`activity_number_learning.xml`（三模式切换：认识/找数字/数一数 + 四级难度chip）、`activity_number_arithmetic.xml`（统计卡片 + 进度条 + 朗读喇叭）、`activity_chinese_word.xml`（五页：基础笔画/笔画演示/识字网格/仿写/每日一句）、`activity_kids_h5.xml`（H5 游戏容器：三按钮 + WebView）、`activity_poetry.xml`（古诗学堂：列表页 RecyclerView + 详情页 FrameLayout 双页切换，bgLayer 渐变背景层 + decorLayer emoji 装饰层 + 逐字诗句容器）、`activity_english.xml`（英语乐园四页：字母表/单词句子/每日打卡/互动游戏，30 天网格 + 当天学习内容区）、`item_poetry.xml`（古诗列表 item）、`item_kids_char_grid.xml`（识字网格 item，含 ✅ 学会标记）、`item_english_word.xml`（单词卡片：emoji 圆底 + 单词/音标/中文 + 🔊）、`item_english_sentence.xml`（句子卡片：英文/中文 + 🔊）、`item_english_checkin_day.xml`（打卡日期格：✓/今天/✗/未来状态）
+- `res/layout/activity_kids_home.xml`（启动页，含五张进度卡片 + 演示中心入口）、`activity_number_learning.xml`（三模式切换：认识/找数字/数一数 + 四级难度chip）、`activity_number_arithmetic.xml`（统计卡片 + 进度条 + 朗读喇叭）、`activity_chinese_word.xml`（五页：基础笔画/笔画演示/识字网格/仿写/每日一句）、`activity_kids_h5.xml`（H5 游戏容器：三按钮 + WebView）、`activity_poetry.xml`（古诗学堂：列表页 RecyclerView + 详情页 FrameLayout 双页切换，bgLayer 渐变背景层 + decorLayer emoji 装饰层 + 逐字诗句容器）、`activity_english.xml`（英语乐园四页：字母表（◀/🔊/▶ 按钮行 + 横向字母 chip）/单词句子（分类 chip + 闪卡 + ◀上一个/下一个▶ 按钮）/每日打卡（30 天网格 + 内容闪卡 + ◀上一个/下一个▶ 按钮 + 打卡按钮）/互动游戏）、`item_poetry.xml`（古诗列表 item）、`item_kids_char_grid.xml`（识字网格 item，含 ✅ 学会标记）、`item_english_flashcard.xml`（单词闪卡：emoji 圆底 + 单词/音标/中文 + ScrollView 例句区 + 🔊，例句滚动不溢出）、`item_english_sentence.xml`（句子卡片：英文/中文 + 🔊）、`item_english_checkin_day.xml`（打卡日期格：✓/今天/✗/未来状态）
 - `assets/h5/number_match.html`（数字翻牌记忆配对，纯 HTML/JS 本地小游戏）、`assets/h5/hanzi_link.html`（汉字连连看，经典 0/1/2 拐点连通判定，可绕外圈，提示时高亮闪烁标记待连字）、`assets/h5/puzzle.html`（3x3 emoji 滑动拼图，随机滑动保证有解，步数统计）
 - **沉浸式**：幼儿教育 7 个 Activity 使用 `Theme.Kids`（透明状态栏）+ `KidsStatusBar.immersive()`（内容延伸到状态栏，根布局顶部自动避开状态栏高度）
 - `res/drawable/bg_kids_*.xml`（渐变背景）、`bg_card_poetry.xml`（古诗卡片橙金渐变）、`bg_card_english.xml`（英语卡片橙粉渐变）、`bg_home_icon.xml`（圆形图标底）、`bg_speak_btn.xml`（喇叭按钮）、`bg_char_cell.xml`（汉字卡片格）

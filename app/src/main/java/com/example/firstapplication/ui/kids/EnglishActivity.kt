@@ -47,6 +47,10 @@ class EnglishActivity : AppCompatActivity() {
     // 打卡状态
     private var checkinMask = 0
     private var selectedCheckinDay = 0
+    private var currentCheckinPos = 0
+
+    // 闪卡位置
+    private var currentWordPos = 0
 
     // 游戏状态（100 关闯关，进度持久化）
     private val gamePool = EnglishLibrary.ALL_WORDS
@@ -113,7 +117,20 @@ class EnglishActivity : AppCompatActivity() {
         binding.btnSpeakLetter.setOnClickListener {
             speakLetter(EnglishLibrary.ALPHABET[currentLetterIndex])
         }
+        binding.btnPrevLetter.setOnClickListener { moveLetter(-1) }
+        binding.btnNextLetter.setOnClickListener { moveLetter(1) }
         showLetter(EnglishLibrary.ALPHABET[0])
+    }
+
+    /** 字母切换：上一个/下一个 */
+    private fun moveLetter(delta: Int) {
+        val next = (currentLetterIndex + delta).coerceIn(0, EnglishLibrary.ALPHABET.size - 1)
+        if (next == currentLetterIndex) return
+        currentLetterIndex = next
+        refreshLetterChips()
+        showLetter(EnglishLibrary.ALPHABET[next])
+        val child = binding.alphabetList.getChildAt(next)
+        binding.alphabetScroll.smoothScrollTo(child.left - 24, 0)
     }
 
     /** 刷新字母 chip 选中样式 */
@@ -142,11 +159,11 @@ class EnglishActivity : AppCompatActivity() {
         b.tvFlashChinese.text = chinese
         b.tvFlashEmoji.text = emoji
         b.viewFlashDivider.visibility = View.GONE
-        b.flashExampleList.visibility = View.GONE
+        b.flashExampleScroll.visibility = View.GONE
         b.btnSpeakFlash.visibility = View.GONE
         b.root.setOnClickListener { speakWord(word) }
         b.root.layoutParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT, dp(150)
+            LinearLayout.LayoutParams.MATCH_PARENT, dp(230)
         ).apply { topMargin = dp(10) }
         return b.root
     }
@@ -169,6 +186,7 @@ class EnglishActivity : AppCompatActivity() {
             val chip = createChip(category.name, index == 0)
             chip.setOnClickListener {
                 currentCategoryIndex = index
+                currentWordPos = 0
                 refreshCategoryChips()
                 binding.recyclerWords.adapter = wordAdapter
                 wordAdapter.submitList(EnglishLibrary.CATEGORIES[index].words)
@@ -179,6 +197,7 @@ class EnglishActivity : AppCompatActivity() {
         val sentenceChip = createChip("💬 常用句子", false)
         sentenceChip.setOnClickListener {
             currentCategoryIndex = -1
+            currentWordPos = 0
             refreshCategoryChips()
             binding.recyclerWords.adapter = sentenceAdapter
             sentenceAdapter.submitList(EnglishLibrary.SENTENCES)
@@ -190,6 +209,8 @@ class EnglishActivity : AppCompatActivity() {
         binding.recyclerWords.layoutManager = lm
         binding.recyclerWords.adapter = wordAdapter
         attachSnap(binding.recyclerWords) { pos, total -> "第 $pos / $total 张" }
+        binding.btnPrevWord.setOnClickListener { moveWord(-1) }
+        binding.btnNextWord.setOnClickListener { moveWord(1) }
         wordAdapter.submitList(EnglishLibrary.CATEGORIES[0].words)
         binding.tvWordsHint.text = "✨ 左右滑动切换卡片 · 共 ${EnglishLibrary.CATEGORIES[0].words.size} 个单词"
         binding.tvWordsIndicator.text = "第 1 / ${EnglishLibrary.CATEGORIES[0].words.size} 张"
@@ -201,6 +222,17 @@ class EnglishActivity : AppCompatActivity() {
             tv.background = chipBackground(i == currentCategoryIndex)
             tv.setTextColor(if (i == currentCategoryIndex) 0xFF7A3C00.toInt() else Color.WHITE)
         }
+    }
+
+    /** 单词/句子闪卡切换：上一个/下一个 */
+    private fun moveWord(delta: Int) {
+        val total = binding.recyclerWords.adapter?.itemCount ?: 0
+        if (total <= 0) return
+        val next = (currentWordPos + delta).coerceIn(0, total - 1)
+        if (next == currentWordPos) return
+        currentWordPos = next
+        binding.recyclerWords.smoothScrollToPosition(next)
+        binding.tvWordsIndicator.text = "第 ${next + 1} / $total 张"
     }
 
     // ==================== 页面2：每日打卡 ====================
@@ -216,6 +248,8 @@ class EnglishActivity : AppCompatActivity() {
             LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         binding.recyclerCheckinContent.adapter = checkinContentAdapter
         attachSnap(binding.recyclerCheckinContent) { pos, total -> "第 $pos / $total 张" }
+        binding.btnPrevCheckin.setOnClickListener { moveCheckin(-1) }
+        binding.btnNextCheckin.setOnClickListener { moveCheckin(1) }
 
         binding.btnCheckinDone.setOnClickListener {
             if (selectedCheckinDay <= 0) return@setOnClickListener
@@ -240,6 +274,7 @@ class EnglishActivity : AppCompatActivity() {
     /** 展示某天内容：10 个单词卡（各配 2 例句）+ 2 个句子卡，闪卡滑动切换 */
     private fun showCheckinContent(day: Int) {
         selectedCheckinDay = day
+        currentCheckinPos = 0
         val plan = EnglishLibrary.CHECK_IN_DAYS[day - 1]
         val cards: MutableList<Any> = mutableListOf()
         cards.addAll(plan.words)
@@ -248,6 +283,17 @@ class EnglishActivity : AppCompatActivity() {
         binding.recyclerCheckinContent.scrollToPosition(0)
         binding.tvCheckinIndicator.text = "第 1 / ${cards.size} 张"
         refreshCheckinContent()
+    }
+
+    /** 打卡内容闪卡切换：上一个/下一个 */
+    private fun moveCheckin(delta: Int) {
+        val total = binding.recyclerCheckinContent.adapter?.itemCount ?: 0
+        if (total <= 0) return
+        val next = (currentCheckinPos + delta).coerceIn(0, total - 1)
+        if (next == currentCheckinPos) return
+        currentCheckinPos = next
+        binding.recyclerCheckinContent.smoothScrollToPosition(next)
+        binding.tvCheckinIndicator.text = "第 ${next + 1} / $total 张"
     }
 
     /** 更新打卡按钮状态 */
@@ -403,10 +449,18 @@ class EnglishActivity : AppCompatActivity() {
                 if (newState == RecyclerView.SCROLL_STATE_IDLE) {
                     val lm = rv.layoutManager as? LinearLayoutManager ?: return
                     val snap = helper.findSnapView(lm) ?: return
+                    val pos = lm.getPosition(snap)
                     val total = rv.adapter?.itemCount ?: 0
-                    val indicator = if (rv === binding.recyclerWords) binding.tvWordsIndicator
-                    else binding.tvCheckinIndicator
-                    indicator.text = formatter(lm.getPosition(snap) + 1, total)
+                    when (rv) {
+                        binding.recyclerWords -> {
+                            currentWordPos = pos
+                            binding.tvWordsIndicator.text = formatter(pos + 1, total)
+                        }
+                        binding.recyclerCheckinContent -> {
+                            currentCheckinPos = pos
+                            binding.tvCheckinIndicator.text = formatter(pos + 1, total)
+                        }
+                    }
                 }
             }
         })
