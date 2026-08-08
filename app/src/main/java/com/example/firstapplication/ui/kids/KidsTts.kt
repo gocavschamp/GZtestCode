@@ -32,6 +32,14 @@ object KidsTts {
         tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "kids_tts_${System.currentTimeMillis()}")
     }
 
+    /** 英文朗读（临时切到美式英语，说完自动恢复中文，用于英语模块） */
+    fun speakEnglish(text: String) {
+        if (!ready || text.isBlank()) return
+        tts?.language = Locale.US
+        tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "kids_tts_en_${System.currentTimeMillis()}")
+        tts?.language = Locale.CHINESE
+    }
+
     /** 停止朗读 */
     fun stop() {
         tts?.stop()

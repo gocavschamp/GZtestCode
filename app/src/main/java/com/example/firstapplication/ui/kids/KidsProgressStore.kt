@@ -93,6 +93,33 @@ object KidsProgressStore {
         runBlocking { db(context).learnedCharDao().insert(LearnedCharEntity(hanzi = char, pinyin = pinyin)) }
     }
 
+    // ==================== 英语每日打卡 ====================
+
+    private const val KEY_EN_CHECKIN_MONTH = "english_checkin_month"
+    private const val KEY_EN_CHECKIN_MASK = "english_checkin_mask"
+
+    /** 当月英语打卡掩码（第 n 天打卡 → 第 n-1 位为 1；跨月自动归零） */
+    fun getEnglishCheckinMask(context: Context): Int = runBlocking {
+        val month = db(context).progressDao().getValue(KEY_EN_CHECKIN_MONTH) ?: 0
+        if (month != englishMonth()) 0
+        else db(context).progressDao().getValue(KEY_EN_CHECKIN_MASK) ?: 0
+    }
+
+    /** 标记某天打卡完成，返回新掩码 */
+    fun markEnglishCheckin(context: Context, day: Int): Int {
+        val mask = getEnglishCheckinMask(context) or (1 shl (day - 1))
+        runBlocking {
+            db(context).progressDao().put(StudyProgressEntity(KEY_EN_CHECKIN_MONTH, englishMonth()))
+            db(context).progressDao().put(StudyProgressEntity(KEY_EN_CHECKIN_MASK, mask))
+        }
+        return mask
+    }
+
+    private fun englishMonth(): Int {
+        val cal = java.util.Calendar.getInstance()
+        return cal.get(java.util.Calendar.YEAR) * 100 + (cal.get(java.util.Calendar.MONTH) + 1)
+    }
+
     // ==================== 第一版 SharedPreferences 数据迁移 ====================
 
     /** 首次运行时把旧版 SharedPreferences 里的进度迁移进数据库（幂等） */
