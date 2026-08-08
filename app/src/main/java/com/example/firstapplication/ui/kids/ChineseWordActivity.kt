@@ -34,6 +34,7 @@ class ChineseWordActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityChineseWordBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        KidsStatusBar.immersive(this, binding.root)
 
         learnedSet.addAll(KidsProgressStore.getLearnedChars(this))
         setupTabs()

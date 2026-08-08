@@ -72,7 +72,8 @@
             android:name=".ui.kids.KidsHomeActivity"
             android:exported="true"
             android:configChanges="keyboardHidden|orientation"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Kids">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -83,15 +84,23 @@
         <activity
             android:name=".ui.kids.NumberLearningActivity"
             android:configChanges="keyboardHidden|orientation"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Kids"/>
         <activity
             android:name=".ui.kids.NumberArithmeticActivity"
             android:configChanges="keyboardHidden|orientation"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Kids"/>
         <activity
             android:name=".ui.kids.ChineseWordActivity"
             android:configChanges="keyboardHidden|orientation"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Kids"/>
+        <activity
+            android:name=".ui.kids.KidsH5Activity"
+            android:configChanges="keyboardHidden|orientation"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Kids"/>
         <activity
             android:name=".ui.GameActivity"
             android:configChanges="orientation|screenSize|keyboardHidden|screenLayout"

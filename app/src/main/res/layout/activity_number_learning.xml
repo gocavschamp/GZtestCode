@@ -87,7 +87,7 @@
                     style="@style/Widget.MaterialComponents.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="3-5岁 (0-5)"
+                    android:text="3-5岁 (0-200)"
                     android:textColor="@color/white"
                     app:chipBackgroundColor="@color/kids_sky_blue_deep"
                     app:chipStrokeColor="@color/white"
@@ -98,7 +98,7 @@
                     style="@style/Widget.MaterialComponents.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="5-7岁 (0-10)"
+                    android:text="5-7岁 (0-500)"
                     android:textColor="@color/white"
                     app:chipBackgroundColor="@color/kids_grass"
                     app:chipStrokeColor="@color/white"
@@ -109,9 +109,20 @@
                     style="@style/Widget.MaterialComponents.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="7-9岁 (0-50)"
+                    android:text="7-9岁 (0-999)"
                     android:textColor="@color/white"
                     app:chipBackgroundColor="@color/kids_purple"
+                    app:chipStrokeColor="@color/white"
+                    app:chipStrokeWidth="2dp" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipLevel4"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🎲 随机数字"
+                    android:textColor="@color/white"
+                    app:chipBackgroundColor="@color/kids_pink"
                     app:chipStrokeColor="@color/white"
                     app:chipStrokeWidth="2dp" />
             </com.google.android.material.chip.ChipGroup>

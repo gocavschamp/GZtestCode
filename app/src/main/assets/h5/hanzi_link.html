@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>汉字连连看</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(160deg, #F8BBD0 0%, #FCE4EC 45%, #C5CAE9 100%);
+    min-height: 100vh;
+    padding: 16px;
+    user-select: none;
+  }
+  .header { text-align: center; margin-bottom: 8px; }
+  .header h1 { font-size: 26px; color: #fff; text-shadow: 0 2px 6px rgba(0,0,0,.25); }
+  .bar {
+    display: flex; justify-content: center; align-items: center; gap: 14px;
+    background: rgba(255,255,255,.65); border-radius: 24px;
+    padding: 10px 18px; margin: 10px auto 14px; max-width: 400px;
+    font-size: 15px; color: #37474F; font-weight: bold;
+  }
+  .btn {
+    border: none; border-radius: 20px; padding: 9px 18px;
+    font-size: 14px; font-weight: bold; color: #fff;
+    background: linear-gradient(135deg, #BA68C8, #8E24AA);
+    box-shadow: 0 4px 10px rgba(142,36,170,.4); cursor: pointer;
+  }
+  .btn.green { background: linear-gradient(135deg, #81C784, #43A047); box-shadow: 0 4px 10px rgba(67,160,71,.4); }
+  .btn:active { transform: scale(.94); }
+  .board {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 10px;
+    background: rgba(255,255,255,.4);
+    border-radius: 22px;
+  }
+  .cell {
+    aspect-ratio: 1 / 1;
+    background: linear-gradient(135deg, #FFE0B2, #FFCC80);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 34px; font-weight: bold; color: #E65100;
+    cursor: pointer;
+    transition: transform .2s, opacity .4s;
+    box-shadow: 0 3px 6px rgba(0,0,0,.15);
+    position: relative;
+  }
+  .cell.empty { background: transparent; box-shadow: none; cursor: default; }
+  .cell.selected { outline: 4px solid #FFB300; transform: scale(1.06); }
+  .cell.link-line { outline: 4px dashed #FFB300; }
+  /* 提示高亮：闪烁 + 放大 + 手指，方便小朋友找到要连的两个字 */
+  .cell.hint-highlight {
+    animation: hintPulse .7s ease-in-out infinite;
+    z-index: 2;
+  }
+  .cell.hint-highlight::after {
+    content: '👆';
+    position: absolute;
+    right: -4px; bottom: -6px;
+    font-size: 22px;
+    animation: hintJump .7s ease-in-out infinite;
+  }
+  @keyframes hintPulse {
+    0%, 100% { transform: scale(1.14); background: linear-gradient(135deg, #FF8A80, #FF5252); color: #fff; outline: 5px solid #FF1744; }
+    50% { transform: scale(1.03); background: linear-gradient(135deg, #FFD54F, #FFB300); color: #fff; outline: 5px solid #FF9100; }
+  }
+  @keyframes hintJump {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+  .msg {
+    text-align: center; margin-top: 12px;
+    font-size: 18px; font-weight: bold; color: #37474F;
+    min-height: 24px;
+  }
+  .footer { text-align: center; margin-top: 10px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+  <div class="header">
+    <h1>🈶 汉字连连看</h1>
+    <div class="bar">
+      <div>⭐ <span id="score">0</span></div>
+      <div>剩 <span id="left">36</span> 个</div>
+    </div>
+  </div>
+
+  <div class="board" id="board"></div>
+  <div class="msg" id="msg"></div>
+  <div class="footer">
+    <button class="btn" id="hint">💡 提示</button>
+    <button class="btn green" id="reshuffle">🔀 重排</button>
+    <button class="btn green" id="restart">🔄 重来</button>
+  </div>
+
+<script>
+  var ROWS = 6, COLS = 6;
+  // 18 对基础汉字
+  var WORDS = ['一','二','三','四','五','六','七','八','九','十','人','口','日','月','山','水','火','木'];
+  // 棋盘 + 外圈空边界
+  var grid = [];
+  var selected = null;
+  var score = 0;
+  var linkCells = [];
+
+  function initGrid() {
+    grid = [];
+    for (var i = 0; i <= ROWS + 1; i++) {
+      var row = [];
+      for (var j = 0; j <= COLS + 1; j++) row.push(0);
+      grid.push(row);
+    }
+    var pool = [];
+    WORDS.forEach(function (w) { pool.push(w, w); });
+    // Fisher-Yates 洗牌
+    for (var i = pool.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = pool[i]; pool[i] = pool[j]; pool[j] = t;
+    }
+    var idx = 0;
+    for (var r = 1; r <= ROWS; r++)
+      for (var c = 1; c <= COLS; c++)
+        grid[r][c] = pool[idx++];
+  }
+
+  function render() {
+    var board = document.getElementById('board');
+    board.innerHTML = '';
+    var left = 0;
+    for (var r = 1; r <= ROWS; r++) {
+      for (var c = 1; c <= COLS; c++) {
+        var div = document.createElement('div');
+        if (grid[r][c] === 0) {
+          div.className = 'cell empty';
+        } else {
+          div.className = 'cell';
+          div.textContent = grid[r][c];
+          div.dataset.r = r; div.dataset.c = c;
+          div.addEventListener('click', (function (r, c) {
+            return function () { tap(r, c); };
+          })(r, c));
+          left++;
+        }
+        board.appendChild(div);
+      }
+    }
+    document.getElementById('left').textContent = left;
+  }
+
+  function tap(r, c) {
+    if (grid[r][c] === 0) return;
+    if (selected) {
+      if (selected.r === r && selected.c === c) {
+        clearSelected(); render(); return;
+      }
+      if (grid[selected.r][selected.c] === grid[r][c]) {
+        var path = canConnect(selected.r, selected.c, r, c);
+        if (path) {
+          score += 10;
+          document.getElementById('score').textContent = score;
+          document.getElementById('msg').textContent = '🎉 消除成功！';
+          grid[selected.r][selected.c] = 0;
+          grid[r][c] = 0;
+          selected = null;
+          linkCells = [];
+          render();
+          if (countLeft() === 0) {
+            document.getElementById('msg').textContent = '🏆 全部消除！太厉害了！';
+          }
+          return;
+        }
+        document.getElementById('msg').textContent = '😅 连线不通，换个方向试试';
+        clearSelected(); render();
+        return;
+      }
+      document.getElementById('msg').textContent = '❌ 两个字不一样哦';
+      clearSelected(); render();
+      return;
+    }
+    selected = { r: r, c: c };
+    markSelected(r, c);
+    document.getElementById('msg').textContent = '再点一个相同的字消除';
+  }
+
+  function markSelected(r, c) {
+    var cells = document.querySelectorAll('.cell:not(.empty)');
+    cells.forEach(function (el) {
+      if (el.dataset.r == r && el.dataset.c == c) el.classList.add('selected');
+    });
+  }
+
+  function clearSelected() {
+    selected = null;
+    var cells = document.querySelectorAll('.cell.selected');
+    cells.forEach(function (el) { el.classList.remove('selected'); });
+  }
+
+  function countLeft() {
+    var n = 0;
+    for (var r = 1; r <= ROWS; r++)
+      for (var c = 1; c <= COLS; c++)
+        if (grid[r][c] !== 0) n++;
+    return n;
+  }
+
+  // ---------- 连通判定（经典：最多两个拐点，可绕外圈） ----------
+  function isEmpty(r, c) {
+    if (r < 0 || r > ROWS + 1 || c < 0 || c > COLS + 1) return false;
+    return grid[r][c] === 0;
+  }
+
+  function lineX(r, c1, c2) {
+    // 同一行 r，c1->c2 之间（不含两端）全为空
+    var lo = Math.min(c1, c2), hi = Math.max(c1, c2);
+    for (var c = lo + 1; c < hi; c++) if (!isEmpty(r, c)) return false;
+    return true;
+  }
+
+  function lineY(c, r1, r2) {
+    var lo = Math.min(r1, r2), hi = Math.max(r1, r2);
+    for (var r = lo + 1; r < hi; r++) if (!isEmpty(r, c)) return false;
+    return true;
+  }
+
+  function canConnect(r1, c1, r2, c2) {
+    if (r1 === r2 && c1 === c2) return false;
+    if (grid[r1][c1] === 0 || grid[r2][c2] === 0) return false;
+    if (grid[r1][c1] !== grid[r2][c2]) return false;
+
+    // 0 拐点：同行 / 同列
+    if (r1 === r2 && lineX(r1, c1, c2)) return true;
+    if (c1 === c2 && lineY(c1, r1, r2)) return true;
+
+    // 1 拐点：L 形
+    if (isEmpty(r1, c2) && lineX(r1, c1, c2) && lineY(c2, r1, r2)) return true;
+    if (isEmpty(r2, c1) && lineX(r2, c1, c2) && lineY(c1, r1, r2)) return true;
+
+    // 2 拐点：先垂直再水平再垂直（遍历中转行）
+    for (var r = 0; r <= ROWS + 1; r++) {
+      if (isEmpty(r, c1) && isEmpty(r, c2) &&
+          lineY(c1, r1, r) && lineX(r, c1, c2) && lineY(c2, r2, r)) return true;
+    }
+    // 2 拐点：先水平再垂直再水平（遍历中转列）
+    for (var c = 0; c <= COLS + 1; c++) {
+      if (isEmpty(r1, c) && isEmpty(r2, c) &&
+          lineX(r1, c1, c) && lineY(c, r1, r2) && lineX(r2, c, c2)) return true;
+    }
+    return false;
+  }
+
+  function hasAnyMove() {
+    for (var r1 = 1; r1 <= ROWS; r1++)
+      for (var c1 = 1; c1 <= COLS; c1++) {
+        if (grid[r1][c1] === 0) continue;
+        for (var r2 = 1; r2 <= ROWS; r2++)
+          for (var c2 = 1; c2 <= COLS; c2++) {
+            if (grid[r2][c2] === 0) continue;
+            if (r1 === r2 && c1 === c2) continue;
+            if (grid[r1][c1] === grid[r2][c2] && canConnect(r1, c1, r2, c2)) return true;
+          }
+      }
+    return false;
+  }
+
+  // ---------- 按钮 ----------
+  document.getElementById('hint').addEventListener('click', function () {
+    for (var r1 = 1; r1 <= ROWS; r1++)
+      for (var c1 = 1; c1 <= COLS; c1++) {
+        if (grid[r1][c1] === 0) continue;
+        for (var r2 = 1; r2 <= ROWS; r2++)
+          for (var c2 = 1; c2 <= COLS; c2++) {
+            if (grid[r2][c2] === 0) continue;
+            if (r1 === r2 && c1 === c2) continue;
+            if (grid[r1][c1] === grid[r2][c2] && canConnect(r1, c1, r2, c2)) {
+              document.getElementById('msg').textContent = '💡 试试 " ' + grid[r1][c1] + ' " 这一对';
+              return;
+            }
+          }
+      }
+    document.getElementById('msg').textContent = '😢 没有可消除的对了，点"重排"吧';
+  });
+
+  document.getElementById('reshuffle').addEventListener('click', function () {
+    // 重排剩余棋子
+    var left = [];
+    for (var r = 1; r <= ROWS; r++)
+      for (var c = 1; c <= COLS; c++)
+        if (grid[r][c] !== 0) left.push(grid[r][c]);
+    for (var i = left.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = left[i]; left[i] = left[j]; left[j] = t;
+    }
+    var idx = 0;
+    for (var r = 1; r <= ROWS; r++)
+      for (var c = 1; c <= COLS; c++)
+        if (grid[r][c] !== 0) grid[r][c] = left[idx++];
+    selected = null;
+    render();
+    document.getElementById('msg').textContent = '🔀 已重新排列';
+  });
+
+  document.getElementById('restart').addEventListener('click', function () {
+    score = 0; selected = null; linkCells = [];
+    document.getElementById('score').textContent = 0;
+    document.getElementById('msg').textContent = '';
+    initGrid();
+    render();
+  });
+
+  // 启动
+  initGrid();
+  render();
+</script>
+</body>
+</html>

@@ -19,6 +19,7 @@ class KidsHomeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityKidsHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        KidsStatusBar.immersive(this, binding.root)
 
         // 数据迁移（第一版 SharedPreferences → Room，幂等）与语音初始化
         KidsProgressStore.migrateFromPrefs(this)
@@ -65,6 +66,9 @@ class KidsHomeActivity : AppCompatActivity() {
         }
         binding.cardChinese.setOnClickListener {
             ChineseWordActivity.start(this)
+        }
+        binding.cardH5.setOnClickListener {
+            KidsH5Activity.start(this)
         }
         binding.cardDemo.setOnClickListener {
             // 原 MainActivity 演示中心入口

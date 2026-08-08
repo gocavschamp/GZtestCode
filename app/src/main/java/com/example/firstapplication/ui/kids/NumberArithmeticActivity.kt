@@ -36,6 +36,7 @@ class NumberArithmeticActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityNumberArithmeticBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        KidsStatusBar.immersive(this, binding.root)
         bestStreak = KidsProgressStore.getBestStreak(this)
 
         binding.chipLevel1.isChecked = true
