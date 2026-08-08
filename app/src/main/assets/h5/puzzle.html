@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>拼图小游戏</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(160deg, #A5D6A7 0%, #C8E6C9 45%, #FFF9C4 100%);
+    min-height: 100vh;
+    padding: 16px;
+    user-select: none;
+  }
+  .header { text-align: center; margin-bottom: 8px; }
+  .header h1 { font-size: 26px; color: #fff; text-shadow: 0 2px 6px rgba(0,0,0,.25); }
+  .bar {
+    display: flex; justify-content: center; align-items: center; gap: 16px;
+    background: rgba(255,255,255,.65); border-radius: 24px;
+    padding: 10px 18px; margin: 10px auto 14px; max-width: 340px;
+    font-size: 16px; color: #37474F; font-weight: bold;
+  }
+  .bar span { color: #2E7D32; }
+  .btn {
+    border: none; border-radius: 22px; padding: 10px 22px;
+    font-size: 16px; font-weight: bold; color: #fff;
+    background: linear-gradient(135deg, #81C784, #43A047);
+    box-shadow: 0 4px 10px rgba(67,160,71,.4); cursor: pointer;
+  }
+  .btn:active { transform: scale(.94); }
+  .tip {
+    text-align: center; margin: 6px auto 10px;
+    font-size: 14px; color: #2E7D32; font-weight: bold;
+  }
+  /* 参考图 */
+  .ref {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    width: 96px; margin: 0 auto;
+    background: rgba(255,255,255,.7);
+    border-radius: 10px; padding: 4px;
+  }
+  .ref div {
+    aspect-ratio: 1 / 1;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+  /* 拼图板 */
+  .puzzle {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    max-width: 340px;
+    margin: 12px auto 0;
+    padding: 10px;
+    background: rgba(255,255,255,.55);
+    border-radius: 22px;
+  }
+  .piece {
+    aspect-ratio: 1 / 1;
+    background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
+    border: 3px solid #66BB6A;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 48px;
+    cursor: pointer;
+    transition: transform .18s;
+    box-shadow: 0 3px 6px rgba(0,0,0,.15);
+  }
+  .piece:active { transform: scale(.92); }
+  .piece.empty { background: transparent; border-color: transparent; box-shadow: none; cursor: default; }
+  .piece.fixed { border-color: #FFA726; }
+  .msg {
+    text-align: center; margin-top: 14px;
+    font-size: 20px; font-weight: bold; color: #2E7D32;
+    min-height: 26px;
+  }
+  .msg.big { font-size: 24px; color: #E65100; animation: pop .5s; }
+  @keyframes pop {
+    0% { transform: scale(.5); }
+    60% { transform: scale(1.25); }
+    100% { transform: scale(1); }
+  }
+  .footer { text-align: center; margin-top: 12px; }
+</style>
+</head>
+<body>
+  <div class="header">
+    <h1>🧩 拼图乐园</h1>
+    <div class="bar">
+      <div>👣 <span id="moves">0</span> 步</div>
+      <div>🎯 拼回图案</div>
+    </div>
+  </div>
+
+  <div class="tip">🧐 照着上面的图案，把下面的碎片拼回原样吧！</div>
+  <div class="ref" id="ref"></div>
+
+  <div class="puzzle" id="puzzle"></div>
+  <div class="msg" id="msg"></div>
+  <div class="footer"><button class="btn" id="restart">🔄 重新打乱</button></div>
+
+<script>
+  var SIZE = 3;
+  var N = SIZE * SIZE;
+  // 完整图案：9 个动物 emoji
+  var FLAT = ['🐰','🐱','🐶','🐼','🐸','🦊','🐻','🐨','🐯'];
+  var board = [];   // 0 为空，1..8 对应 FLAT 下标 0..7
+  var blank = 0;    // 空格所在位置
+  var moves = 0;
+  var won = false;
+
+  function shuffleArray(a) {
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  function neighbors(i) {
+    var r = Math.floor(i / SIZE), c = i % SIZE;
+    var res = [];
+    if (r > 0) res.push(i - SIZE);
+    if (r < SIZE - 1) res.push(i + SIZE);
+    if (c > 0) res.push(i - 1);
+    if (c < SIZE - 1) res.push(i + 1);
+    return res;
+  }
+
+  // 从完成态随机滑动 200 次（保证有解）
+  function newGame() {
+    board = [];
+    for (var i = 0; i < N; i++) board.push((i + 1) % N); // [1,2,...,8,0]
+    blank = N - 1;
+    for (var s = 0; s < 200; s++) {
+      var nb = neighbors(blank);
+      var pick = nb[Math.floor(Math.random() * nb.length)];
+      var t = board[blank]; board[blank] = board[pick]; board[pick] = t;
+      blank = pick;
+    }
+    moves = 0;
+    won = false;
+    document.getElementById('moves').textContent = 0;
+    document.getElementById('msg').textContent = '';
+    document.getElementById('msg').className = 'msg';
+    renderRef();
+    render();
+  }
+
+  function renderRef() {
+    var ref = document.getElementById('ref');
+    ref.innerHTML = '';
+    FLAT.forEach(function (e) {
+      var d = document.createElement('div');
+      d.textContent = e;
+      ref.appendChild(d);
+    });
+  }
+
+  function render() {
+    var pz = document.getElementById('puzzle');
+    pz.innerHTML = '';
+    for (var i = 0; i < N; i++) {
+      var d = document.createElement('div');
+      d.className = 'piece' + (board[i] === 0 ? ' empty' : '');
+      if (board[i] !== 0) {
+        d.textContent = FLAT[board[i] - 1];
+        (function (idx) {
+          d.addEventListener('click', function () { tap(idx); });
+        })(i);
+      }
+      pz.appendChild(d);
+    }
+  }
+
+  function tap(i) {
+    if (won) return;
+    if (neighbors(blank).indexOf(i) === -1) return;
+    var t = board[blank]; board[blank] = board[i]; board[i] = t;
+    blank = i;
+    moves++;
+    document.getElementById('moves').textContent = moves;
+    render();
+    checkWin();
+  }
+
+  function checkWin() {
+    for (var i = 0; i < N; i++) {
+      if (board[i] !== (i + 1) % N) return;
+    }
+    won = true;
+    var msg = document.getElementById('msg');
+    msg.textContent = '🎉 太棒了！只用 ' + moves + ' 步就拼好了！';
+    msg.className = 'msg big';
+  }
+
+  document.getElementById('restart').addEventListener('click', newGame);
+
+  newGame();
+</script>
+</body>
+</html>

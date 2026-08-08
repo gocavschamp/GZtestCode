@@ -52,11 +52,12 @@ description: "FirstApplication 项目架构速查：模块划分、技术栈、A
 
 ```
 app/src/main/java/com/example/firstapplication/ui/kids/
-├── KidsHomeActivity.kt          # 幼儿教育首页（App 启动页 LAUNCHER，四张彩色卡片：数字/加减法/汉字/H5小游戏 + 演示中心入口，进度上限 数字50/汉字500）
+├── KidsHomeActivity.kt          # 幼儿教育首页（App 启动页 LAUNCHER，四张彩色卡片：数字/加减法/汉字/H5小游戏 + 演示中心入口，进度上限 数字50/汉字500；动画：太阳旋转/云朵漂移/星星飘落/气球上升/卡片滑入入场/点击回弹/进度条平滑滚动，onDestroy 时 isActive 停循环）
 ├── NumberLearningActivity.kt    # 数字乐园（认识数字 0-999 四级：3-5岁0-200/5-7岁0-500/7-9岁0-999/🎲随机0-999，含中文读法/朗读；找数字"听音选数"；数一数"多彩图标点数"16种图标）
 ├── NumberArithmeticActivity.kt  # 加减法（难度分级 ≤10 / ≤20 / ≤100，统计卡片：得分/连胜/最佳 + 10题一局进度条，出题朗读🔊按钮、10 题一局统计、连胜解锁）
 ├── ChineseWordActivity.kt       # 汉字乐园（TabLayout 五页：基础笔画/笔画演示/汉字识字500/仿写描红/每日一句，点击朗读并标记学会）
-├── KidsH5Activity.kt            # H5 小游戏容器（WebView 加载本地 assets/h5，两个游戏切换按钮）
+├── KidsH5Activity.kt            # H5 小游戏容器（WebView 加载本地 assets/h5，三个游戏切换按钮）
+├── KidsStatusBar.kt             # 沉浸式状态栏工具（透明状态栏 + 内容延伸到状态栏 + 根布局自动避让）
 ├── HanziLibrary.kt              # 汉字数据源：34 精细教学字 + 500 常用字（EXTENDED_HANZI）+ 8 基础笔画 + 44 条每日句子
 ├── StrokeAnimationView.kt       # 自定义 View：田字格笔画顺序动画（内置 34 个汉字 + 8 个基础笔画数据）
 ├── TracingView.kt               # 自定义 View：仿写描红，触摸笔迹，PNG 本地保存
@@ -68,8 +69,9 @@ app/src/main/java/com/example/firstapplication/ui/kids/
 
 ### 布局 & 资源
 
-- `res/layout/activity_kids_home.xml`（启动页，含四张进度卡片 + 演示中心入口）、`activity_number_learning.xml`（三模式切换：认识/找数字/数一数 + 四级难度chip）、`activity_number_arithmetic.xml`（统计卡片 + 进度条 + 朗读喇叭）、`activity_chinese_word.xml`（五页：基础笔画/笔画演示/识字网格/仿写/每日一句）、`activity_kids_h5.xml`（H5 游戏容器：两按钮 + WebView）、`item_kids_char_grid.xml`（识字网格 item，含 ✅ 学会标记）
-- `assets/h5/number_match.html`（数字翻牌记忆配对，纯 HTML/JS 本地小游戏）、`assets/h5/hanzi_link.html`（汉字连连看，经典 0/1/2 拐点连通判定，可绕外圈）
+- `res/layout/activity_kids_home.xml`（启动页，含四张进度卡片 + 演示中心入口）、`activity_number_learning.xml`（三模式切换：认识/找数字/数一数 + 四级难度chip）、`activity_number_arithmetic.xml`（统计卡片 + 进度条 + 朗读喇叭）、`activity_chinese_word.xml`（五页：基础笔画/笔画演示/识字网格/仿写/每日一句）、`activity_kids_h5.xml`（H5 游戏容器：三按钮 + WebView）、`item_kids_char_grid.xml`（识字网格 item，含 ✅ 学会标记）
+- `assets/h5/number_match.html`（数字翻牌记忆配对，纯 HTML/JS 本地小游戏）、`assets/h5/hanzi_link.html`（汉字连连看，经典 0/1/2 拐点连通判定，可绕外圈，提示时高亮闪烁标记待连字）、`assets/h5/puzzle.html`（3x3 emoji 滑动拼图，随机滑动保证有解，步数统计）
+- **沉浸式**：幼儿教育 5 个 Activity 使用 `Theme.Kids`（透明状态栏）+ `KidsStatusBar.immersive()`（内容延伸到状态栏，根布局顶部自动避开状态栏高度）
 - `res/drawable/bg_kids_*.xml`（渐变背景）、`bg_home_icon.xml`（圆形图标底）、`bg_speak_btn.xml`（喇叭按钮）、`bg_char_cell.xml`（汉字卡片格）
 - `res/values/colors.xml` 中 `kids_*` 前缀的儿童清新色板
 - 入口：**App 启动即 KidsHomeActivity**（Manifest LAUNCHER），内部卡片跳三个子页；`cardDemo` → ARouter `/module/main` 进演示中心（原 MainActivity）
@@ -84,7 +86,7 @@ app/src/main/java/com/example/firstapplication/ui/kids/
 - **动画**：纯原生 ValueAnimator/属性动画（数字弹跳、笔画 Path 绘制、描红实时笔迹、分数缩放）
 - **汉字笔画数据**：`StrokeAnimationView.StrokeData.charStrokes`，坐标为 0-100 归一化，新增汉字只需追加笔画点数组；基础笔画页复用同名"横/竖/撇/捺/点/提/横折/竖钩"数据
 - **仿写保存**：`TracingView.saveToLocal()` 输出 PNG 到 `filesDir/kids_tracing/`，保存时自动 markCharLearned
-- **趣味性**：数字乐园 3 种玩法（认识 0-999 四级难度 + 🎲随机 + 找数字 + 数一数 16 种图标）+ 加减法 10 题一局统计、连胜解锁更高难度、答对随机鼓励语 + TTS 播报；每日一句按时间取模定位、可切换并朗读；H5 本地小游戏（数字翻牌 / 汉字连连看，WebView 加载 assets）
+- **趣味性**：数字乐园 3 种玩法（认识 0-999 四级难度 + 🎲随机 + 找数字 + 数一数 16 种图标）+ 加减法 10 题一局统计、连胜解锁更高难度、答对随机鼓励语 + TTS 播报；每日一句按时间取模定位、可切换并朗读；H5 本地小游戏（数字翻牌 / 汉字连连看 / emoji 拼图，WebView 加载 assets）
 
 ### 后续扩展点
 

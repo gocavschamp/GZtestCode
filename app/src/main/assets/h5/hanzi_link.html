@@ -154,6 +154,7 @@
 
   function tap(r, c) {
     if (grid[r][c] === 0) return;
+    clearHint();
     if (selected) {
       if (selected.r === r && selected.c === c) {
         clearSelected(); render(); return;
@@ -254,6 +255,11 @@
   }
 
   function hasAnyMove() {
+    return findPair() !== null;
+  }
+
+  // 找到任意一对可连通的相同字，返回 {r,c} 坐标对
+  function findPair() {
     for (var r1 = 1; r1 <= ROWS; r1++)
       for (var c1 = 1; c1 <= COLS; c1++) {
         if (grid[r1][c1] === 0) continue;
@@ -261,28 +267,42 @@
           for (var c2 = 1; c2 <= COLS; c2++) {
             if (grid[r2][c2] === 0) continue;
             if (r1 === r2 && c1 === c2) continue;
-            if (grid[r1][c1] === grid[r2][c2] && canConnect(r1, c1, r2, c2)) return true;
+            if (grid[r1][c1] === grid[r2][c2] && canConnect(r1, c1, r2, c2))
+              return [{ r: r1, c: c1 }, { r: r2, c: c2 }];
           }
       }
-    return false;
+    return null;
+  }
+
+  // 提示高亮：闪烁标记需要连线的两个字，3 秒后自动消失
+  var hintTimer = null;
+  function clearHint() {
+    if (hintTimer) { clearTimeout(hintTimer); hintTimer = null; }
+    document.querySelectorAll('.cell.hint-highlight').forEach(function (el) {
+      el.classList.remove('hint-highlight');
+    });
+  }
+  function highlightPair(pair) {
+    clearHint();
+    document.querySelectorAll('.cell:not(.empty)').forEach(function (el) {
+      for (var i = 0; i < pair.length; i++) {
+        if (el.dataset.r == pair[i].r && el.dataset.c == pair[i].c) {
+          el.classList.add('hint-highlight');
+        }
+      }
+    });
+    hintTimer = setTimeout(clearHint, 3000);
   }
 
   // ---------- 按钮 ----------
   document.getElementById('hint').addEventListener('click', function () {
-    for (var r1 = 1; r1 <= ROWS; r1++)
-      for (var c1 = 1; c1 <= COLS; c1++) {
-        if (grid[r1][c1] === 0) continue;
-        for (var r2 = 1; r2 <= ROWS; r2++)
-          for (var c2 = 1; c2 <= COLS; c2++) {
-            if (grid[r2][c2] === 0) continue;
-            if (r1 === r2 && c1 === c2) continue;
-            if (grid[r1][c1] === grid[r2][c2] && canConnect(r1, c1, r2, c2)) {
-              document.getElementById('msg').textContent = '💡 试试 " ' + grid[r1][c1] + ' " 这一对';
-              return;
-            }
-          }
-      }
-    document.getElementById('msg').textContent = '😢 没有可消除的对了，点"重排"吧';
+    var pair = findPair();
+    if (!pair) {
+      document.getElementById('msg').textContent = '😢 没有可消除的对了，点"重排"吧';
+      return;
+    }
+    highlightPair(pair);
+    document.getElementById('msg').textContent = '💡 看！闪闪发光的就是要连的两个 " ' + grid[pair[0].r][pair[0].c] + ' " 字';
   });
 
   document.getElementById('reshuffle').addEventListener('click', function () {

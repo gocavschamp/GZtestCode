@@ -27,11 +27,11 @@
             android:id="@+id/btnGameNumber"
             android:layout_width="0dp"
             android:layout_height="48dp"
-            android:layout_marginEnd="6dp"
+            android:layout_marginEnd="4dp"
             android:layout_weight="1"
             android:text="🃏 数字翻牌"
             android:textColor="@color/white"
-            android:textSize="15sp"
+            android:textSize="13sp"
             app:backgroundTint="@color/kids_sky_blue_deep"
             app:cornerRadius="24dp" />
 
@@ -39,12 +39,24 @@
             android:id="@+id/btnGameHanzi"
             android:layout_width="0dp"
             android:layout_height="48dp"
-            android:layout_marginStart="6dp"
+            android:layout_marginHorizontal="4dp"
             android:layout_weight="1"
             android:text="🈶 汉字连连看"
             android:textColor="@color/white"
-            android:textSize="15sp"
+            android:textSize="13sp"
             app:backgroundTint="@color/kids_purple"
+            app:cornerRadius="24dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGamePuzzle"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="4dp"
+            android:layout_weight="1"
+            android:text="🧩 拼图"
+            android:textColor="@color/white"
+            android:textSize="13sp"
+            app:backgroundTint="@color/kids_grass"
             app:cornerRadius="24dp" />
     </LinearLayout>
 

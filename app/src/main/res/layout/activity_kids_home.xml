@@ -7,8 +7,21 @@
     android:fillViewport="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/contentRoot"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
+
+        <!-- 左上角太阳装饰（旋转动画） -->
+        <TextView
+            android:id="@+id/tvSun"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="16dp"
+            android:text="🌞"
+            android:textSize="48sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <!-- 顶部装饰云朵 -->
         <TextView
@@ -73,10 +86,10 @@
             android:clickable="true"
             android:focusable="true"
             android:foreground="?attr/selectableItemBackground"
-            app:cardBackgroundColor="#55FFFFFF"
+            app:cardBackgroundColor="#33000000"
             app:cardCornerRadius="28dp"
             app:cardElevation="6dp"
-            app:strokeColor="#AAFFFFFF"
+            app:strokeColor="#66FFFFFF"
             app:strokeWidth="1dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -85,17 +98,17 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="18dp">
+                android:background="@drawable/bg_card_blue"
+                android:padding="10dp">
 
                 <TextView
                     android:id="@+id/tvNumberEmoji"
                     android:layout_width="64dp"
                     android:layout_height="64dp"
-                    android:background="@drawable/bg_home_icon"
-                    android:backgroundTint="@color/kids_sky_blue_deep"
+                    android:background="@drawable/bg_icon_round"
                     android:gravity="center"
                     android:text="🔢"
-                    android:textSize="34sp"
+                    android:textSize="32sp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent" />
@@ -119,8 +132,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="14dp"
                     android:layout_marginTop="4dp"
-                    android:text="认识数字 0-30 · 会听会说"
-                    android:textColor="#EEFFFFFF"
+                    android:text="认识数字 0-999 · 找数字 · 数一数"
+                    android:textColor="#E6FFFFFF"
                     android:textSize="13sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@id/tvNumberEmoji"
@@ -146,7 +159,7 @@
                     android:layout_marginStart="14dp"
                     android:layout_marginTop="4dp"
                     android:text="认识数字: 0 个"
-                    android:textColor="#FFFFF59D"
+                    android:textColor="#CCFFFFFF"
                     android:textSize="12sp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -167,10 +180,10 @@
             android:clickable="true"
             android:focusable="true"
             android:foreground="?attr/selectableItemBackground"
-            app:cardBackgroundColor="#55FFFFFF"
+            app:cardBackgroundColor="#33000000"
             app:cardCornerRadius="28dp"
             app:cardElevation="6dp"
-            app:strokeColor="#AAFFFFFF"
+            app:strokeColor="#66FFFFFF"
             app:strokeWidth="1dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -179,17 +192,17 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="18dp">
+                android:background="@drawable/bg_card_green"
+                android:padding="10dp">
 
                 <TextView
                     android:id="@+id/tvArithmeticEmoji"
                     android:layout_width="64dp"
                     android:layout_height="64dp"
-                    android:background="@drawable/bg_home_icon"
-                    android:backgroundTint="@color/kids_grass"
+                    android:background="@drawable/bg_icon_round"
                     android:gravity="center"
                     android:text="🧮"
-                    android:textSize="34sp"
+                    android:textSize="32sp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent" />
@@ -214,7 +227,7 @@
                     android:layout_marginStart="14dp"
                     android:layout_marginTop="4dp"
                     android:text="简单 ≤10 · 进阶 ≤20 · 挑战 ≤100"
-                    android:textColor="#EEFFFFFF"
+                    android:textColor="#E6FFFFFF"
                     android:textSize="13sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@id/tvArithmeticEmoji"
@@ -240,7 +253,7 @@
                     android:layout_marginStart="14dp"
                     android:layout_marginTop="4dp"
                     android:text="最佳连胜: 0 · 已玩 0 局"
-                    android:textColor="#FFFFF59D"
+                    android:textColor="#CCFFFFFF"
                     android:textSize="12sp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -261,10 +274,10 @@
             android:clickable="true"
             android:focusable="true"
             android:foreground="?attr/selectableItemBackground"
-            app:cardBackgroundColor="#55FFFFFF"
+            app:cardBackgroundColor="#33000000"
             app:cardCornerRadius="28dp"
             app:cardElevation="6dp"
-            app:strokeColor="#AAFFFFFF"
+            app:strokeColor="#66FFFFFF"
             app:strokeWidth="1dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -273,17 +286,17 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="18dp">
+                android:background="@drawable/bg_card_pink"
+                android:padding="10dp">
 
                 <TextView
                     android:id="@+id/tvChineseEmoji"
                     android:layout_width="64dp"
                     android:layout_height="64dp"
-                    android:background="@drawable/bg_home_icon"
-                    android:backgroundTint="@color/kids_coral"
+                    android:background="@drawable/bg_icon_round"
                     android:gravity="center"
                     android:text="📖"
-                    android:textSize="34sp"
+                    android:textSize="32sp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent" />
@@ -307,8 +320,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="14dp"
                     android:layout_marginTop="4dp"
-                    android:text="笔画演示 · 汉字识字 · 仿写描红"
-                    android:textColor="#EEFFFFFF"
+                    android:text="笔画演示 · 识字500字 · 每日一句"
+                    android:textColor="#E6FFFFFF"
                     android:textSize="13sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@id/tvChineseEmoji"
@@ -333,8 +346,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="14dp"
                     android:layout_marginTop="4dp"
-                    android:text="已学汉字: 0 / 32 个"
-                    android:textColor="#FFFFF59D"
+                    android:text="已学汉字: 0 / 500 个"
+                    android:textColor="#CCFFFFFF"
                     android:textSize="12sp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -355,10 +368,10 @@
             android:clickable="true"
             android:focusable="true"
             android:foreground="?attr/selectableItemBackground"
-            app:cardBackgroundColor="#55FFFFFF"
+            app:cardBackgroundColor="#33000000"
             app:cardCornerRadius="28dp"
             app:cardElevation="6dp"
-            app:strokeColor="#AAFFFFFF"
+            app:strokeColor="#66FFFFFF"
             app:strokeWidth="1dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -367,17 +380,17 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="18dp">
+                android:background="@drawable/bg_card_purple"
+                android:padding="10dp">
 
                 <TextView
                     android:id="@+id/tvH5Emoji"
                     android:layout_width="64dp"
                     android:layout_height="64dp"
-                    android:background="@drawable/bg_home_icon"
-                    android:backgroundTint="@color/kids_purple"
+                    android:background="@drawable/bg_icon_round"
                     android:gravity="center"
                     android:text="🎮"
-                    android:textSize="34sp"
+                    android:textSize="32sp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent" />
@@ -401,8 +414,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="14dp"
                     android:layout_marginTop="4dp"
-                    android:text="数字翻牌 · 汉字连连看 快乐玩"
-                    android:textColor="#EEFFFFFF"
+                    android:text="数字翻牌 · 汉字连连看 · 拼图"
+                    android:textColor="#E6FFFFFF"
                     android:textSize="13sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@id/tvH5Emoji"
@@ -413,7 +426,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
                     android:text="点击进入 ›"
-                    android:textColor="#FFFFF59D"
+                    android:textColor="#E6FFFFFF"
                     android:textSize="12sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="@id/tvH5Desc"
@@ -432,7 +445,7 @@
             android:clickable="true"
             android:focusable="true"
             android:foreground="?attr/selectableItemBackground"
-            app:cardBackgroundColor="#33445566"
+            app:cardBackgroundColor="#33000000"
             app:cardCornerRadius="20dp"
             app:cardElevation="2dp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -442,6 +455,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@drawable/bg_card_teal"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:padding="14dp">
@@ -458,14 +472,14 @@
                     android:layout_marginStart="12dp"
                     android:layout_weight="1"
                     android:text="演示中心（特效组件展示）"
-                    android:textColor="#CCFFFFFF"
+                    android:textColor="#E6FFFFFF"
                     android:textSize="14sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="进入 ›"
-                    android:textColor="#88FFFFFF"
+                    android:textColor="#B3FFFFFF"
                     android:textSize="14sp"
                     android:textStyle="bold" />
             </LinearLayout>
