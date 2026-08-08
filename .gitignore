@@ -13,3 +13,5 @@
 .externalNativeBuild
 .cxx
 local.properties
+# 签名配置（含敏感密码，不进版本库）
+/keystore.properties

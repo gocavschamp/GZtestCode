@@ -4,6 +4,17 @@ plugins {
     alias(libs.plugins.kotlin.android)
 }
 
+import java.util.Properties
+import java.io.FileInputStream
+
+// 从根目录 keystore.properties 读取签名信息（该文件不进版本库）
+val keystoreProperties = Properties().apply {
+    val propsFile = rootProject.file("keystore.properties")
+    if (propsFile.exists()) {
+        FileInputStream(propsFile).use { load(it) }
+    }
+}
+
 android {
     namespace = "com.example.firstapplication"
     compileSdk = 36
@@ -20,6 +31,16 @@ android {
 
     }
 
+    // 签名配置（keystore 位于 app/kidgarden.jks，密码从根目录 keystore.properties 读取）
+    signingConfigs {
+        create("release") {
+            storeFile = file(keystoreProperties.getProperty("storeFile") ?: "kidgarden.jks")
+            storePassword = keystoreProperties.getProperty("storePassword") ?: "yu123456"
+            keyAlias = keystoreProperties.getProperty("keyAlias") ?: "kidgarden"
+            keyPassword = keystoreProperties.getProperty("keyPassword") ?: "yu123456"
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -27,6 +48,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {

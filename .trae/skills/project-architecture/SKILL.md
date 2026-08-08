@@ -32,6 +32,7 @@ description: "FirstApplication 项目架构速查：模块划分、技术栈、A
 - **数据存储**：Room 2.8.x（kapt，幼儿教育模块本地数据库）
 - **图片**：Glide + WebpDecoder
 - **工具**：Blankj utilcodex、LeakCanary
+- **签名**：release 签名配置在 `app/build.gradle.kts` 中从根目录 `keystore.properties`（`storeFile=kidgarden.jks`/`storePassword`/`keyAlias`/`keyPassword`，**不进版本库**，已在 `.gitignore` 排除）读取；keystore 位于 `app/kidgarden.jks`，alias=`kidgarden`
 - **minSdk 24 / targetSdk 36 / compileSdk 36 / Java 11**
 
 ## 3. 入口
