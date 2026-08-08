@@ -11,7 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="36dp"
         android:text="📖 汉字乐园"
         android:textColor="#FFFFFF"
         android:textSize="26sp"
@@ -21,12 +21,18 @@
         android:id="@+id/tabLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="12dp"
         android:background="@color/transparent"
         app:tabIndicatorColor="#FFFFFF"
         app:tabIndicatorHeight="4dp"
+        app:tabMode="scrollable"
         app:tabSelectedTextColor="#FFFFFF"
         app:tabTextColor="#CCFFFFFF">
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="基础笔画" />
 
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
@@ -42,12 +48,83 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="仿写描红" />
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="每日一句" />
     </com.google.android.material.tabs.TabLayout>
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
+
+        <!-- ============ 页面0：基础笔画 ============ -->
+        <LinearLayout
+            android:id="@+id/pageBasicStroke"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:visibility="gone">
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:id="@+id/basicStrokeList"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal" />
+            </HorizontalScrollView>
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="8dp"
+                android:layout_weight="1"
+                android:background="@color/white">
+
+                <com.example.firstapplication.ui.kids.StrokeAnimationView
+                    android:id="@+id/basicStrokeView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/tvStrokeName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="8dp"
+                android:text="横 héng"
+                android:textColor="@color/kids_text_deep"
+                android:textSize="26sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvStrokeExample"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="示例字: 一 二 三"
+                android:textColor="@color/kids_text"
+                android:textSize="16sp" />
+
+            <Button
+                android:id="@+id/btnSpeakStroke"
+                android:layout_width="wrap_content"
+                android:layout_height="52dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="8dp"
+                android:backgroundTint="@color/kids_sky_blue_deep"
+                android:text="🔊 听发音"
+                android:textColor="@color/white"
+                android:textSize="16sp" />
+        </LinearLayout>
 
         <!-- ============ 页面1：笔画演示 ============ -->
         <LinearLayout
@@ -94,18 +171,29 @@
                 android:textSize="16sp" />
         </LinearLayout>
 
-        <!-- ============ 页面2：汉字识字 ============ -->
+        <!-- ============ 页面2：汉字识字（500字网格） ============ -->
         <LinearLayout
             android:id="@+id/pageReading"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="16dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tvReadingHint"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="✨ 点击卡片朗读并标记学会 · 共 500 字"
+                android:textColor="#66FFFFFF"
+                android:textSize="13sp" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerReading"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                android:layout_marginTop="8dp" />
         </LinearLayout>
 
         <!-- ============ 页面3：仿写描红 ============ -->
@@ -114,7 +202,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="16dp"
+            android:visibility="gone">
 
             <HorizontalScrollView
                 android:layout_width="match_parent"
@@ -164,6 +253,77 @@
                     android:textColor="@color/white"
                     android:textSize="16sp" />
             </LinearLayout>
+        </LinearLayout>
+
+        <!-- ============ 页面4：每日一句 ============ -->
+        <LinearLayout
+            android:id="@+id/pageDaily"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:padding="20dp"
+            android:visibility="gone">
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardDaily"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_marginTop="8dp"
+                app:cardBackgroundColor="#E6FFFFFF"
+                app:cardCornerRadius="32dp"
+                app:cardElevation="8dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="24dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🌞 每日一句"
+                        android:textColor="@color/kids_orange"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvDailySentence"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="24dp"
+                        android:gravity="center"
+                        android:text="你好呀，今天开心吗？"
+                        android:textColor="@color/kids_text_deep"
+                        android:textSize="30sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btnSpeakDaily"
+                        android:layout_width="wrap_content"
+                        android:layout_height="56dp"
+                        android:layout_marginTop="28dp"
+                        android:backgroundTint="@color/kids_sky_blue_deep"
+                        android:text="🔊 听一听"
+                        android:textColor="@color/white"
+                        android:textSize="16sp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <Button
+                android:id="@+id/btnNextSentence"
+                android:layout_width="wrap_content"
+                android:layout_height="56dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="12dp"
+                android:backgroundTint="@color/kids_orange"
+                android:text="🔄 换一句"
+                android:textColor="@color/white"
+                android:textSize="16sp" />
+
         </LinearLayout>
     </FrameLayout>
 </LinearLayout>

@@ -216,23 +216,18 @@ class PagPlayerManager private constructor() {
             pagView.setRepeatCount(repeatCount)
             pagView.addListener(object : PAGView.PAGViewListener {
                 override fun onAnimationStart(p0: PAGView?) {
-                    TODO("Not yet implemented")
                 }
 
                 override fun onAnimationEnd(p0: PAGView?) {
-                    TODO("Not yet implemented")
                 }
 
                 override fun onAnimationCancel(p0: PAGView?) {
-                    TODO("Not yet implemented")
                 }
 
                 override fun onAnimationRepeat(p0: PAGView?) {
-                    TODO("Not yet implemented")
                 }
 
                 override fun onAnimationUpdate(p0: PAGView?) {
-                    TODO("Not yet implemented")
                 }
 
             })

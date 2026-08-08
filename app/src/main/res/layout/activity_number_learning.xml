@@ -1,177 +1,354 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_kids_number_learning">
+    android:background="@drawable/bg_kids_number_learning"
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/tvHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
-        android:text="🔢 数字认识"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="36dp"
+        android:text="🔢 数字乐园"
         android:textColor="#FFFFFF"
         android:textSize="26sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:textStyle="bold" />
 
-    <!-- 难度选择 -->
-    <com.google.android.material.chip.ChipGroup
-        android:id="@+id/chipGroupLevel"
-        android:layout_width="wrap_content"
+    <!-- 模式切换 -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        app:chipSpacingHorizontal="10dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvHeader">
+        android:layout_marginTop="12dp"
+        android:gravity="center"
+        android:orientation="horizontal">
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipLevel1"
-            style="@style/Widget.MaterialComponents.Chip.Choice"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="3-5岁 (0-5)"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnModeLearn"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="6dp"
+            android:layout_weight="1"
+            android:text="📖 认识数字"
+            android:textSize="14sp"
             android:textColor="@color/white"
-            app:chipBackgroundColor="@color/kids_orange"
-            app:chipStrokeColor="@color/white"
-            app:chipStrokeWidth="2dp" />
+            app:backgroundTint="@color/kids_orange"
+            app:cornerRadius="22dp" />
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipLevel2"
-            style="@style/Widget.MaterialComponents.Chip.Choice"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="5-7岁 (0-10)"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnModeFind"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="6dp"
+            android:layout_weight="1"
+            android:text="🎯 找数字"
+            android:textSize="14sp"
             android:textColor="@color/white"
-            app:chipBackgroundColor="@color/kids_sky_blue_deep"
-            app:chipStrokeColor="@color/white"
-            app:chipStrokeWidth="2dp" />
+            app:backgroundTint="#55FFFFFF"
+            app:cornerRadius="22dp" />
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipLevel3"
-            style="@style/Widget.MaterialComponents.Chip.Choice"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="7-9岁 (0-30)"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnModeCount"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:text="🍎 数一数"
+            android:textSize="14sp"
             android:textColor="@color/white"
-            app:chipBackgroundColor="@color/kids_purple"
-            app:chipStrokeColor="@color/white"
-            app:chipStrokeWidth="2dp" />
-    </com.google.android.material.chip.ChipGroup>
+            app:backgroundTint="#55FFFFFF"
+            app:cornerRadius="22dp" />
+    </LinearLayout>
 
-    <!-- 数字卡片 -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/cardNumber"
-        android:layout_width="0dp"
+    <FrameLayout
+        android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginTop="24dp"
-        app:cardBackgroundColor="@color/white"
-        app:cardCornerRadius="40dp"
-        app:cardElevation="10dp"
-        app:layout_constraintBottom_toTopOf="@id/btnPrev"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/chipGroupLevel">
+        android:layout_weight="1">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <!-- ============ 页面A：认识数字 ============ -->
+        <LinearLayout
+            android:id="@+id/pageLearn"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="16dp">
 
-            <TextView
-                android:id="@+id/btnSpeak"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_margin="12dp"
-                android:background="@drawable/bg_speak_btn"
-                android:gravity="center"
-                android:text="🔊"
-                android:textSize="24sp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <TextView
-                android:id="@+id/tvProgress"
-                android:layout_width="wrap_content"
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroupLevel"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
+                app:chipSpacingHorizontal="8dp"
+                app:singleSelection="true"
+                app:selectionRequired="false">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipLevel1"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="3-5岁 (0-5)"
+                    android:textColor="@color/white"
+                    app:chipBackgroundColor="@color/kids_sky_blue_deep"
+                    app:chipStrokeColor="@color/white"
+                    app:chipStrokeWidth="2dp" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipLevel2"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="5-7岁 (0-10)"
+                    android:textColor="@color/white"
+                    app:chipBackgroundColor="@color/kids_grass"
+                    app:chipStrokeColor="@color/white"
+                    app:chipStrokeWidth="2dp" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipLevel3"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="7-9岁 (0-50)"
+                    android:textColor="@color/white"
+                    app:chipBackgroundColor="@color/kids_purple"
+                    app:chipStrokeColor="@color/white"
+                    app:chipStrokeWidth="2dp" />
+            </com.google.android.material.chip.ChipGroup>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardNumber"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
                 android:layout_marginTop="16dp"
-                android:text="第 1 / 6 个"
-                android:textColor="#66A1887F"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                android:layout_weight="1"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="32dp"
+                app:cardElevation="6dp">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:id="@+id/btnSpeak"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_margin="12dp"
+                        android:background="@drawable/bg_speak_btn"
+                        android:gravity="center"
+                        android:text="🔊"
+                        android:textSize="24sp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/tvProgress"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="16dp"
+                        android:text="第 1 / 6 个"
+                        android:textColor="#66A1887F"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/tvNumber"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="1"
+                        android:textColor="@color/kids_orange"
+                        android:textSize="150sp"
+                        android:textStyle="bold"
+                        app:layout_constraintBottom_toTopOf="@id/tvCountName"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/tvCountName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="一"
+                        android:textColor="@color/kids_text"
+                        android:textSize="28sp"
+                        android:textStyle="bold"
+                        app:layout_constraintBottom_toTopOf="@id/dotsContainer"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent" />
+
+                    <LinearLayout
+                        android:id="@+id/dotsContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:gravity="center"
+                        android:orientation="horizontal"
+                        app:layout_constraintBottom_toBottomOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnPrev"
+                    android:layout_width="0dp"
+                    android:layout_height="52dp"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/kids_sky_blue_deep"
+                    android:text="◀ 上一个"
+                    android:textColor="@color/white"
+                    android:textSize="16sp" />
+
+                <Button
+                    android:id="@+id/btnNext"
+                    android:layout_width="0dp"
+                    android:layout_height="52dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/kids_orange"
+                    android:text="下一个 ▶"
+                    android:textColor="@color/white"
+                    android:textSize="16sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- ============ 页面B：找数字 / 数一数 ============ -->
+        <LinearLayout
+            android:id="@+id/pageGame"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:visibility="gone">
 
             <TextView
-                android:id="@+id/tvNumber"
-                android:layout_width="wrap_content"
+                android:id="@+id/tvGameTitle"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="1"
-                android:textColor="@color/kids_orange"
-                android:textSize="160sp"
-                android:textStyle="bold"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
-
-            <!-- 点数容器 -->
-            <LinearLayout
-                android:id="@+id/dotsContainer"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
                 android:gravity="center"
-                android:layout_marginBottom="16dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </com.google.android.material.card.MaterialCardView>
+                android:text="🎯 听一听，找出正确的数字吧！"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
-    <Button
-        android:id="@+id/btnPrev"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginBottom="24dp"
-        android:backgroundTint="@color/kids_orange"
-        android:text="◀"
-        android:textSize="22sp"
-        android:textColor="@color/white"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+            <TextView
+                android:id="@+id/tvGameScore"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="6dp"
+                android:text="⭐ 得分: 0"
+                android:textColor="#FFFFF59D"
+                android:textSize="15sp"
+                android:textStyle="bold" />
 
-    <Button
-        android:id="@+id/btnNext"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="24dp"
-        android:backgroundTint="@color/kids_cyan"
-        android:text="▶"
-        android:textSize="22sp"
-        android:textColor="@color/white"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardQuestion"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="16dp"
+                android:layout_weight="1"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="32dp"
+                app:cardElevation="6dp">
 
-    <TextView
-        android:id="@+id/tvCountName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="28dp"
-        android:text="一"
-        android:textColor="#FF8A65"
-        android:textSize="32sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+                    <TextView
+                        android:id="@+id/tvGameQuestion"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:text="?"
+                        android:textColor="@color/kids_text_deep"
+                        android:textSize="56sp"
+                        android:textStyle="bold" />
+                </FrameLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <LinearLayout
+                android:id="@+id/answerRow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnOpt1"
+                    android:layout_width="0dp"
+                    android:layout_height="64dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    android:text="1"
+                    android:textColor="@color/white"
+                    android:textSize="24sp"
+                    app:backgroundTint="@color/kids_sky_blue_deep"
+                    app:cornerRadius="20dp"
+                    app:elevation="3dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnOpt2"
+                    android:layout_width="0dp"
+                    android:layout_height="64dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    android:text="2"
+                    android:textColor="@color/white"
+                    android:textSize="24sp"
+                    app:backgroundTint="@color/kids_orange"
+                    app:cornerRadius="20dp"
+                    app:elevation="3dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnOpt3"
+                    android:layout_width="0dp"
+                    android:layout_height="64dp"
+                    android:layout_weight="1"
+                    android:text="3"
+                    android:textColor="@color/white"
+                    android:textSize="24sp"
+                    app:backgroundTint="@color/kids_grass"
+                    app:cornerRadius="20dp"
+                    app:elevation="3dp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvGameFeedback"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:gravity="center"
+                android:text=""
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btnGameNext"
+                android:layout_width="wrap_content"
+                android:layout_height="52dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="6dp"
+                android:backgroundTint="@color/kids_pink"
+                android:text="下一题 ➜"
+                android:textColor="@color/kids_text_deep"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+        </LinearLayout>
+    </FrameLayout>
+</LinearLayout>

@@ -326,7 +326,16 @@ class StrokeAnimationView @JvmOverloads constructor(
                 stroke(arrayOf(20f to 40f, 80f to 40f)),
                 stroke(arrayOf(20f to 65f, 80f to 65f)),
                 stroke(arrayOf(20f to 80f, 80f to 80f))
-            )
+            ),
+            // —— 基础笔画（基础笔画教学页用）——
+            "横" to listOf(stroke(arrayOf(15f to 50f, 85f to 50f))),
+            "竖" to listOf(stroke(arrayOf(50f to 15f, 50f to 85f))),
+            "撇" to listOf(stroke(arrayOf(60f to 15f, 30f to 85f))),
+            "捺" to listOf(stroke(arrayOf(40f to 15f, 70f to 85f))),
+            "点" to listOf(stroke(arrayOf(50f to 25f, 45f to 60f))),
+            "提" to listOf(stroke(arrayOf(20f to 70f, 80f to 30f))),
+            "横折" to listOf(stroke(arrayOf(15f to 50f, 70f to 50f, 70f to 75f))),
+            "竖钩" to listOf(stroke(arrayOf(50f to 15f, 50f to 70f, 62f to 65f)))
         )
     }
 }

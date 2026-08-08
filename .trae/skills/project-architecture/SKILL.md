@@ -52,11 +52,12 @@ description: "FirstApplication 项目架构速查：模块划分、技术栈、A
 
 ```
 app/src/main/java/com/example/firstapplication/ui/kids/
-├── KidsHomeActivity.kt          # 幼儿教育首页（App 启动页 LAUNCHER，三张彩色卡片 + 演示中心入口）
-├── NumberLearningActivity.kt    # 数字认识（难度分级 0-5 / 0-10 / 0-30，点数动画，切换数字语音朗读）
-├── NumberArithmeticActivity.kt  # 加减法（难度分级 ≤10 / ≤20 / ≤100，出题朗读、10 题一局统计、连胜解锁）
-├── ChineseWordActivity.kt       # 汉字模块（TabLayout 三页：笔画/识字/仿写，内置 34 字字库，点击朗读并标记学会）
-├── StrokeAnimationView.kt       # 自定义 View：田字格笔画顺序动画（内置 34 个汉字笔画数据）
+├── KidsHomeActivity.kt          # 幼儿教育首页（App 启动页 LAUNCHER，三张彩色卡片 + 演示中心入口，进度上限 数字50/汉字500）
+├── NumberLearningActivity.kt    # 数字乐园（认识 0-50 / 找数字"听音选数" / 数一数"苹果点数" 三种玩法，难度 0-5/0-10/0-50，切换数字语音朗读）
+├── NumberArithmeticActivity.kt  # 加减法（难度分级 ≤10 / ≤20 / ≤100，统计卡片：得分/连胜/最佳 + 10题一局进度条，出题朗读🔊按钮、10 题一局统计、连胜解锁）
+├── ChineseWordActivity.kt       # 汉字乐园（TabLayout 五页：基础笔画/笔画演示/汉字识字500/仿写描红/每日一句，点击朗读并标记学会）
+├── HanziLibrary.kt              # 汉字数据源：34 精细教学字 + 500 常用字（EXTENDED_HANZI）+ 8 基础笔画 + 44 条每日句子
+├── StrokeAnimationView.kt       # 自定义 View：田字格笔画顺序动画（内置 34 个汉字 + 8 个基础笔画数据）
 ├── TracingView.kt               # 自定义 View：仿写描红，触摸笔迹，PNG 本地保存
 ├── KidsProgressStore.kt         # Room 数据门面（同步 API + runBlocking 包装），含第一版 SharedPreferences 迁移
 ├── KidsTts.kt                   # 本地语音朗读（系统 TextToSpeech 中文引擎）
@@ -66,7 +67,7 @@ app/src/main/java/com/example/firstapplication/ui/kids/
 
 ### 布局 & 资源
 
-- `res/layout/activity_kids_home.xml`（启动页，含三张进度卡片 + 演示中心入口）、`activity_number_learning.xml`、`activity_number_arithmetic.xml`、`activity_chinese_word.xml`、`item_kids_char.xml`（含 🔊 朗读按钮）
+- `res/layout/activity_kids_home.xml`（启动页，含三张进度卡片 + 演示中心入口）、`activity_number_learning.xml`（三模式切换：认识/找数字/数一数）、`activity_number_arithmetic.xml`（统计卡片 + 进度条 + 朗读喇叭）、`activity_chinese_word.xml`（五页：基础笔画/笔画演示/识字网格/仿写/每日一句）、`item_kids_char_grid.xml`（识字网格 item，含 ✅ 学会标记）
 - `res/drawable/bg_kids_*.xml`（渐变背景）、`bg_home_icon.xml`（圆形图标底）、`bg_speak_btn.xml`（喇叭按钮）、`bg_char_cell.xml`（汉字卡片格）
 - `res/values/colors.xml` 中 `kids_*` 前缀的儿童清新色板
 - 入口：**App 启动即 KidsHomeActivity**（Manifest LAUNCHER），内部卡片跳三个子页；`cardDemo` → ARouter `/module/main` 进演示中心（原 MainActivity）
@@ -76,12 +77,12 @@ app/src/main/java/com/example/firstapplication/ui/kids/
 
 - **主入口**：KidsHomeActivity = LAUNCHER；MainActivity（`/module/main`）仅作为演示中心，通过首页底部卡片进入
 - **数据存储**：Room 数据库 `kids_learning.db`（Room 2.8.x，kapt），见 `db/`。`KidsProgressStore` 对外保持同步 API
-- **语音**：`KidsTts` 系统 TextToSpeech 中文引擎（本地播放）。数字页切换数字、加减法出题/答对、汉字卡片点击均触发朗读
+- **语音**：`KidsTts` 系统 TextToSpeech 中文引擎（本地播放）。数字页切换/出题、加减法出题/答对/🔊喇叭、汉字卡片点击、每日一句均触发朗读
 - **风格**：渐变背景 + emoji 装饰 + 圆角 MaterialCardView + LinearProgressIndicator 进度条，无网络图片离线运行
 - **动画**：纯原生 ValueAnimator/属性动画（数字弹跳、笔画 Path 绘制、描红实时笔迹、分数缩放）
-- **汉字笔画数据**：`StrokeAnimationView.StrokeData.charStrokes`，坐标为 0-100 归一化，新增汉字只需追加笔画点数组
+- **汉字笔画数据**：`StrokeAnimationView.StrokeData.charStrokes`，坐标为 0-100 归一化，新增汉字只需追加笔画点数组；基础笔画页复用同名"横/竖/撇/捺/点/提/横折/竖钩"数据
 - **仿写保存**：`TracingView.saveToLocal()` 输出 PNG 到 `filesDir/kids_tracing/`，保存时自动 markCharLearned
-- **趣味性**：加减法 10 题一局统计、连胜解锁更高难度、答对随机鼓励语 + TTS 播报
+- **趣味性**：数字乐园 3 种玩法（认识/找数字/数一数）+ 加减法 10 题一局统计、连胜解锁更高难度、答对随机鼓励语 + TTS 播报；每日一句按时间取模定位、可切换并朗读
 
 ### 后续扩展点
 

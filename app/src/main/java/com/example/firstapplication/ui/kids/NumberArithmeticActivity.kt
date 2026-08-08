@@ -28,6 +28,7 @@ class NumberArithmeticActivity : AppCompatActivity() {
 
     private var currentAnswer = 0
     private var answerOptions = intArrayOf(0, 0, 0)
+    private var currentQuestionText = ""
 
     private val praises = arrayOf("真棒！", "太厉害了！", "好聪明呀！", "太棒了！", "你真棒！")
 
@@ -38,7 +39,11 @@ class NumberArithmeticActivity : AppCompatActivity() {
         bestStreak = KidsProgressStore.getBestStreak(this)
 
         binding.chipLevel1.isChecked = true
-        binding.tvBest.text = "最佳: $bestStreak"
+        binding.tvBest.text = bestStreak.toString()
+
+        // 本局进度：10 题一局
+        binding.progressRound.max = 10
+        binding.progressRound.progress = 0
 
         binding.chipLevel1.setOnClickListener { switchLevel(1) }
         binding.chipLevel2.setOnClickListener { switchLevel(2) }
@@ -48,6 +53,7 @@ class NumberArithmeticActivity : AppCompatActivity() {
         binding.btnAns2.setOnClickListener { checkAnswer(binding.btnAns2.text.toString().toInt()) }
         binding.btnAns3.setOnClickListener { checkAnswer(binding.btnAns3.text.toString().toInt()) }
         binding.btnNext.setOnClickListener { nextQuestion() }
+        binding.btnSpeakQuestion.setOnClickListener { speakQuestion() }
 
         nextQuestion()
     }
@@ -78,6 +84,7 @@ class NumberArithmeticActivity : AppCompatActivity() {
         questionInRound++
 
         binding.tvQuestion.text = "$a ${if (isAdd) "+" else "-"} $b = ?"
+        currentQuestionText = "$a ${if (isAdd) "+" else "-"} $b"
         answerOptions = generateOptions(currentAnswer)
         binding.btnAns1.text = answerOptions[0].toString()
         binding.btnAns2.text = answerOptions[1].toString()
@@ -86,10 +93,10 @@ class NumberArithmeticActivity : AppCompatActivity() {
         binding.tvFeedback.text = ""
         binding.btnNext.visibility = android.view.View.GONE
         enableAnswers(true)
+        updateScoreBar()
 
         // 出题语音朗读（本地 TTS）
-        val opText = if (isAdd) "加" else "减"
-        KidsTts.speak("$a $opText $b 等于几？")
+        speakQuestion()
     }
 
     /** 生成不产生负数的操作数（低难度保证不进位/不借位，界面友好） */
@@ -178,10 +185,17 @@ class NumberArithmeticActivity : AppCompatActivity() {
         enableAnswers(false)
     }
 
+    /** 朗读当前题目（中文口语化） */
+    private fun speakQuestion() {
+        val spoken = currentQuestionText.replace("+", "加").replace("-", "减") + "等于几？"
+        KidsTts.speak(spoken)
+    }
+
     private fun updateScoreBar() {
-        binding.tvScore.text = "得分: $score"
-        binding.tvStreak.text = "连胜: $streak"
-        binding.tvBest.text = "最佳: $bestStreak"
+        binding.tvScore.text = score.toString()
+        binding.tvStreak.text = streak.toString()
+        binding.tvBest.text = bestStreak.toString()
+        binding.progressRound.progress = questionInRound.coerceAtMost(10)
     }
 
     private fun enableAnswers(enabled: Boolean) {

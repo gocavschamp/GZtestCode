@@ -1,26 +1,31 @@
 package com.example.firstapplication.ui.kids
 
-import android.content.Context
-import android.content.Intent
 import android.os.Bundle
-import android.view.animation.AccelerateInterpolator
-import android.view.animation.OvershootInterpolator
+import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import com.example.firstapplication.R
 import com.example.firstapplication.databinding.ActivityNumberLearningBinding
+import com.example.firstapplication.ui.kids.NumberLearningActivity.Companion.GAME_COUNT
+import com.example.firstapplication.ui.kids.NumberLearningActivity.Companion.GAME_FIND
+import kotlin.random.Random
 
 /**
- * 数字认识模块：按难度展示数字 + 对应点数，动画展示，适合 3-9 岁
- * 难度 1：0-5   难度 2：0-10   难度 3：0-20
+ * 数字乐园：认识数字（0-50）+ 找数字（听音选数）+ 数一数（点数）三种玩法
  */
 class NumberLearningActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityNumberLearningBinding
 
     private var currentLevel = 1
-    private var currentNumber = 0
     private var maxNumber = 5
+    private var currentNumber = 0
+
+    // 游戏状态
+    private var gameMode = GAME_FIND
+    private var gameScore = 0
+    private var gameAnswer = 0
 
     private val colors = intArrayOf(
         0xFFFFB74D.toInt(), 0xFFFF8A80.toInt(), 0xFFAED581.toInt(),
@@ -29,48 +34,55 @@ class NumberLearningActivity : AppCompatActivity() {
         0xFFBA68C8.toInt(), 0xFFA1887F.toInt()
     )
 
-    private val numberNames = arrayOf(
-        "零", "一", "二", "三", "四", "五",
-        "六", "七", "八", "九", "十",
-        "十一", "十二", "十三", "十四", "十五",
-        "十六", "十七", "十八", "十九", "二十",
-        "二十一", "二十二", "二十三", "二十四", "二十五",
-        "二十六", "二十七", "二十八", "二十九", "三十"
-    )
+    private val praises = arrayOf("真棒！", "太厉害了！", "好聪明呀！", "太棒了！", "你真棒！")
 
-    /** 连续答对鼓励语 */
-    private val praises = arrayOf("真棒！", "太厉害了！", "好聪明呀！", "加油！", "你真棒！")
+    /** 数字中文名 0-50 */
+    private val numberNames: Array<String> by lazy {
+        val digits = arrayOf("零", "一", "二", "三", "四", "五", "六", "七", "八", "九")
+        val tens = arrayOf("", "十", "二十", "三十", "四十", "五十")
+        Array(51) { n ->
+            when {
+                n <= 9 -> digits[n]
+                n == 10 -> "十"
+                n < 20 -> "十" + digits[n - 10]
+                n % 10 == 0 -> tens[n / 10]
+                else -> tens[n / 10] + digits[n % 10]
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityNumberLearningBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.chipLevel1.isChecked = true
-        setupLevelListeners()
+        setupLevelChips()
         setupNavListeners()
+        setupModeSwitch()
+        setupGameListeners()
         updateDisplay()
     }
 
-    private fun setupLevelListeners() {
+    // ==================== 认识数字 ====================
+
+    private fun setupLevelChips() {
+        binding.chipLevel1.isChecked = true
         binding.chipLevel1.setOnClickListener {
-            currentLevel = 1
-            maxNumber = 5
-            currentNumber = 0
-            updateDisplay()
+            switchLevel(1, 5)
         }
         binding.chipLevel2.setOnClickListener {
-            currentLevel = 2
-            maxNumber = 10
-            currentNumber = 0
-            updateDisplay()
+            switchLevel(2, 10)
         }
         binding.chipLevel3.setOnClickListener {
-            currentLevel = 3
-            maxNumber = 30
-            currentNumber = 0
-            updateDisplay()
+            switchLevel(3, 50)
         }
+    }
+
+    private fun switchLevel(level: Int, max: Int) {
+        currentLevel = level
+        maxNumber = max
+        currentNumber = 0
+        updateDisplay()
     }
 
     private fun setupNavListeners() {
@@ -107,61 +119,151 @@ class NumberLearningActivity : AppCompatActivity() {
         // 切换数字时语音朗读（本地 TTS）
         KidsTts.speak(numberNames[currentNumber])
         binding.tvNumber.animate()
-            .scaleX(1.15f).scaleY(1.15f)
-            .setDuration(120)
+            .scaleX(1.18f).scaleY(1.18f).setDuration(130)
             .withEndAction {
-                binding.tvNumber.animate()
-                    .scaleX(1f).scaleY(1f)
-                    .setDuration(150)
-                    .setInterpolator(OvershootInterpolator())
-                    .start()
+                binding.tvNumber.animate().scaleX(1f).scaleY(1f).setDuration(150).start()
+            }.start()
+        // 数量圆点
+        binding.dotsContainer.removeAllViews()
+        if (currentNumber <= 20) {
+            repeat(currentNumber) { index ->
+                val dot = TextView(this)
+                dot.text = "●"
+                dot.textSize = 12f
+                dot.setTextColor(colors[index % colors.size])
+                binding.dotsContainer.addView(dot)
             }
-            .start()
-        renderDots()
-        KidsProgressStore.setMaxNumberLearned(this, currentNumber)
+        } else {
+            val dot = TextView(this)
+            dot.text = "● × $currentNumber"
+            dot.textSize = 18f
+            dot.setTextColor(colors[currentNumber % colors.size])
+            binding.dotsContainer.addView(dot)
+        }
     }
 
-    private fun renderDots() {
-        binding.dotsContainer.removeAllViews()
-        val n = currentNumber
-        if (n == 0) {
-            val tv = TextView(this)
-            tv.text = "0"
-            tv.textSize = 40f
-            tv.setTextColor(colors[0])
-            binding.dotsContainer.addView(tv)
-            return
+    // ==================== 玩法切换 ====================
+
+    private fun setupModeSwitch() {
+        binding.btnModeLearn.setOnClickListener { switchMode(0) }
+        binding.btnModeFind.setOnClickListener {
+            switchMode(1)
+            startGame(GAME_FIND)
         }
-        // 最多展示 10 个点，用 emoji 圆点 + 数字辅助
-        val displayCount = if (n <= 10) n else 10
-        for (i in 0 until displayCount) {
-            val dot = TextView(this)
-            dot.text = "●"
-            dot.textSize = 18f
-            dot.setTextColor(colors[i % colors.size])
-            val lp = android.widget.LinearLayout.LayoutParams(
-                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
-                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-            lp.setMargins(4, 0, 4, 0)
-            binding.dotsContainer.addView(dot, lp)
+        binding.btnModeCount.setOnClickListener {
+            switchMode(1)
+            startGame(GAME_COUNT)
         }
-        if (n > 10) {
-            val tv = TextView(this)
-            tv.text = "+${n - 10}"
-            tv.textSize = 16f
-            tv.setTextColor(colors[n % colors.size])
-            binding.dotsContainer.addView(tv)
+    }
+
+    private fun switchMode(mode: Int) {
+        binding.pageLearn.isVisible = mode == 0
+        binding.pageGame.isVisible = mode == 1
+        val learn = mode == 0
+        binding.btnModeLearn.backgroundTintList = android.content.res.ColorStateList.valueOf(
+            if (learn) 0xFFFB8C00.toInt() else 0x55FFFFFF.toInt()
+        )
+        binding.btnModeFind.backgroundTintList = android.content.res.ColorStateList.valueOf(
+            if (!learn && gameMode == GAME_FIND) 0xFFFB8C00.toInt() else 0x55FFFFFF.toInt()
+        )
+        binding.btnModeCount.backgroundTintList = android.content.res.ColorStateList.valueOf(
+            if (!learn && gameMode == GAME_COUNT) 0xFFFB8C00.toInt() else 0x55FFFFFF.toInt()
+        )
+    }
+
+    // ==================== 找数字 / 数一数 ====================
+
+    private fun startGame(mode: Int) {
+        gameMode = mode
+        gameScore = 0
+        binding.tvGameScore.text = "⭐ 得分: 0"
+        binding.tvGameTitle.text = if (mode == GAME_FIND) {
+            "🎯 听一听，找出正确的数字吧！"
+        } else {
+            "🍎 数一数，一共有几个苹果？"
         }
-        binding.dotsContainer.animate().alpha(0.3f).setDuration(80).withEndAction {
-            binding.dotsContainer.animate().alpha(1f).setDuration(180)
-                .setInterpolator(AccelerateInterpolator()).start()
-        }.start()
+        nextGameQuestion()
+    }
+
+    private fun nextGameQuestion() {
+        val answer = if (gameMode == GAME_FIND) {
+            Random.nextInt(0, maxNumber + 1)
+        } else {
+            Random.nextInt(1, 11)
+        }
+        gameAnswer = answer
+
+        if (gameMode == GAME_FIND) {
+            binding.tvGameQuestion.text = "👂"
+            binding.tvGameQuestion.textSize = 90f
+            KidsTts.speak("请你找出数字，${numberNames[answer]}")
+        } else {
+            // 数一数：显示 answer 个苹果 emoji
+            binding.tvGameQuestion.text = buildString {
+                repeat(answer) { append("🍎") }
+            }
+            binding.tvGameQuestion.textSize = 44f
+            KidsTts.speak("数一数，一共有几个苹果？")
+        }
+
+        val options = generateGameOptions(answer)
+        binding.btnOpt1.text = options[0].toString()
+        binding.btnOpt2.text = options[1].toString()
+        binding.btnOpt3.text = options[2].toString()
+
+        binding.tvGameFeedback.text = ""
+        binding.btnGameNext.visibility = View.GONE
+        enableGameOptions(true)
+    }
+
+    private fun generateGameOptions(answer: Int): IntArray {
+        val maxVal = if (gameMode == GAME_FIND) maxNumber else 10
+        val options = mutableSetOf(answer)
+        while (options.size < 3) {
+            options.add(Random.nextInt(0, maxVal + 1))
+        }
+        return options.shuffled().toIntArray()
+    }
+
+    private fun setupGameListeners() {
+        binding.btnOpt1.setOnClickListener { checkGameAnswer(binding.btnOpt1.text.toString().toIntOrNull() ?: -1) }
+        binding.btnOpt2.setOnClickListener { checkGameAnswer(binding.btnOpt2.text.toString().toIntOrNull() ?: -1) }
+        binding.btnOpt3.setOnClickListener { checkGameAnswer(binding.btnOpt3.text.toString().toIntOrNull() ?: -1) }
+        binding.btnGameNext.setOnClickListener { nextGameQuestion() }
+    }
+
+    private fun checkGameAnswer(selected: Int) {
+        if (selected == gameAnswer) {
+            gameScore += 10
+            binding.tvGameScore.text = "⭐ 得分: $gameScore"
+            binding.tvGameFeedback.text = praises[Random.nextInt(praises.size)]
+            binding.tvGameFeedback.setTextColor(0xFF2E7D32.toInt())
+            KidsTts.speak("${praises[Random.nextInt(praises.size)]} 是 ${numberNames[gameAnswer]}")
+            binding.tvGameScore.animate().scaleX(1.25f).scaleY(1.25f).setDuration(120)
+                .withEndAction {
+                    binding.tvGameScore.animate().scaleX(1f).scaleY(1f).setDuration(150).start()
+                }.start()
+        } else {
+            binding.tvGameFeedback.text = "❌ 正确答案是 ${numberNames[gameAnswer]} ($gameAnswer)"
+            binding.tvGameFeedback.setTextColor(0xFFC62828.toInt())
+            KidsTts.speak("正确答案是 ${numberNames[gameAnswer]}")
+        }
+        binding.btnGameNext.visibility = View.VISIBLE
+        enableGameOptions(false)
+    }
+
+    private fun enableGameOptions(enable: Boolean) {
+        binding.btnOpt1.isEnabled = enable
+        binding.btnOpt2.isEnabled = enable
+        binding.btnOpt3.isEnabled = enable
     }
 
     companion object {
-        fun start(context: Context) {
-            context.startActivity(Intent(context, NumberLearningActivity::class.java))
+        const val GAME_FIND = 0
+        const val GAME_COUNT = 1
+
+        fun start(context: android.content.Context) {
+            context.startActivity(android.content.Intent(context, NumberLearningActivity::class.java))
         }
     }
 }

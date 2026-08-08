@@ -35,11 +35,11 @@ class KidsHomeActivity : AppCompatActivity() {
     }
 
     private fun refreshProgress() {
-        // 数字认识进度（默认上限 30）
+        // 数字认识进度（上限 50）
         val maxNumber = KidsProgressStore.getMaxNumberLearned(this)
-        binding.progressNumber.max = 30
+        binding.progressNumber.max = 50
         binding.progressNumber.progress = maxNumber
-        binding.tvNumberProgress.text = String.format("认识数字: %d / 30 个", maxNumber)
+        binding.tvNumberProgress.text = String.format("认识数字: %d / 50 个", maxNumber)
 
         // 加减法进度
         val bestStreak = KidsProgressStore.getBestStreak(this)
