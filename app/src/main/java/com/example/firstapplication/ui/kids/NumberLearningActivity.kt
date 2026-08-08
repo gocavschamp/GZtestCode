@@ -3,6 +3,7 @@ package com.example.firstapplication.ui.kids
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import com.example.firstapplication.R
@@ -87,6 +88,7 @@ class NumberLearningActivity : AppCompatActivity() {
         setupNavListeners()
         setupModeSwitch()
         setupGameListeners()
+        setupReset()
         updateDisplay()
     }
 
@@ -105,7 +107,12 @@ class NumberLearningActivity : AppCompatActivity() {
         currentLevel = level
         maxNumber = max
         isRandomMode = random
-        currentNumber = if (random) Random.nextInt(0, max + 1) else 0
+        currentNumber = if (random) {
+            Random.nextInt(0, max + 1)
+        } else {
+            // 每个级别从上一个级别结束的数字开始（本地记录位置，跨级别衔接、下次进入恢复）
+            KidsProgressStore.getLastNumberLearned(this).coerceIn(0, max)
+        }
         updateDisplay()
     }
 
@@ -114,18 +121,16 @@ class NumberLearningActivity : AppCompatActivity() {
             if (isRandomMode) {
                 currentNumber = Random.nextInt(0, maxNumber + 1)
                 updateDisplay()
-            } else if (currentNumber > 0) {
-                currentNumber--
-                updateDisplay()
+            } else {
+                goToNumber(currentNumber - 1)
             }
         }
         binding.btnNext.setOnClickListener {
             if (isRandomMode) {
                 currentNumber = Random.nextInt(0, maxNumber + 1)
                 updateDisplay()
-            } else if (currentNumber < maxNumber) {
-                currentNumber++
-                updateDisplay()
+            } else {
+                goToNumber(currentNumber + 1)
             }
         }
         // 点击数字卡片：随机模式换随机数，普通模式进入下一个数字
@@ -133,14 +138,42 @@ class NumberLearningActivity : AppCompatActivity() {
             if (isRandomMode) {
                 currentNumber = Random.nextInt(0, maxNumber + 1)
                 updateDisplay()
-            } else if (currentNumber < maxNumber) {
-                currentNumber++
-                updateDisplay()
+            } else {
+                goToNumber(currentNumber + 1)
             }
         }
         // 点击喇叭：朗读当前数字
         binding.btnSpeak.setOnClickListener {
             KidsTts.speak("${numberNames[currentNumber]}，$currentNumber")
+        }
+    }
+
+    /** 跳转到指定数字并本地记录位置（下次从这里继续） */
+    private fun goToNumber(target: Int) {
+        currentNumber = target.coerceIn(0, maxNumber)
+        KidsProgressStore.setLastNumberLearned(this, currentNumber)
+        val maxLearned = KidsProgressStore.getMaxNumberLearned(this)
+        if (currentNumber > maxLearned) {
+            KidsProgressStore.setMaxNumberLearned(this, currentNumber)
+        }
+        updateDisplay()
+    }
+
+    /** 重置按键：确认后从 0 重新开始 */
+    private fun setupReset() {
+        binding.btnResetNumber.setOnClickListener {
+            AlertDialog.Builder(this)
+                .setTitle("↺ 重置学习进度")
+                .setMessage("将从 0 重新开始认识数字，确定吗？")
+                .setPositiveButton("确定") { _, _ ->
+                    KidsProgressStore.setLastNumberLearned(this, 0)
+                    KidsProgressStore.setMaxNumberLearned(this, 0)
+                    currentNumber = 0
+                    updateDisplay()
+                    KidsTts.speak("重新开始，从零开始")
+                }
+                .setNegativeButton("取消", null)
+                .show()
         }
     }
 
@@ -158,6 +191,12 @@ class NumberLearningActivity : AppCompatActivity() {
             "🎲 随机数字 (0-$maxNumber)"
         } else {
             "第 ${currentNumber + 1} / ${maxNumber + 1} 个"
+        }
+        // 学习位置提示（普通模式记录进度，随机模式不记录）
+        binding.tvLearnedInfo.text = if (isRandomMode) {
+            "🎲 随机模式不记录进度"
+        } else {
+            "✨ 已学到 $currentNumber，下次从这里继续"
         }
         // 切换数字时语音朗读（本地 TTS）
         KidsTts.speak("${numberNames[currentNumber]}，$currentNumber")

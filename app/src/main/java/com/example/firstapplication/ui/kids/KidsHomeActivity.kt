@@ -56,10 +56,10 @@ class KidsHomeActivity : AppCompatActivity() {
     }
 
     private fun refreshProgress() {
-        // 数字认识进度（上限 50）
+        // 数字认识进度（上限 1000，对应 0-999）
         val maxNumber = KidsProgressStore.getMaxNumberLearned(this)
-        animateProgress(binding.progressNumber, maxNumber, 50)
-        binding.tvNumberProgress.text = String.format("认识数字: %d / 50 个", maxNumber)
+        animateProgress(binding.progressNumber, maxNumber, 1000)
+        binding.tvNumberProgress.text = String.format("认识数字: %d / 1000 个", maxNumber)
 
         // 加减法进度
         val bestStreak = KidsProgressStore.getBestStreak(this)
@@ -100,9 +100,9 @@ class KidsHomeActivity : AppCompatActivity() {
     /** 卡片点击回弹动画（按压缩小 → 弹起放大 → 恢复） */
     private fun bindCardClick(card: MaterialCardView, action: () -> Unit) {
         card.setOnClickListener {
-            card.animate().scaleX(0.94f).scaleY(0.94f).setDuration(80).withEndAction {
-                card.animate().scaleX(1.04f).scaleY(1.04f).setDuration(130).withEndAction {
-                    card.animate().scaleX(1f).scaleY(1f).setDuration(100).start()
+            card.animate().scaleX(0.94f).scaleY(0.94f).setDuration(50).withEndAction {
+                card.animate().scaleX(1.04f).scaleY(1.04f).setDuration(60).withEndAction {
+                    card.animate().scaleX(1f).scaleY(1f).setDuration(50).start()
                     action()
                 }.start()
             }.start()

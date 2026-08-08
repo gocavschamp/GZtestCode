@@ -53,7 +53,7 @@ description: "FirstApplication 项目架构速查：模块划分、技术栈、A
 ```
 app/src/main/java/com/example/firstapplication/ui/kids/
 ├── KidsHomeActivity.kt          # 幼儿教育首页（App 启动页 LAUNCHER，五张彩色卡片：数字/加减法/汉字/H5小游戏/古诗学堂 + 演示中心入口，进度上限 数字50/汉字500；动画：太阳旋转/云朵漂移/星星飘落/气球上升/卡片滑入入场/点击回弹/进度条平滑滚动，onDestroy 时 isActive 停循环）
-├── NumberLearningActivity.kt    # 数字乐园（认识数字 0-999 四级：3-5岁0-200/5-7岁0-500/7-9岁0-999/🎲随机0-999，含中文读法/朗读；找数字"听音选数"；数一数"多彩图标点数"16种图标）
+├── NumberLearningActivity.kt    # 数字乐园（认识数字 0-999 四级：3-5岁0-200/5-7岁0-500/7-9岁0-999/🎲随机0-999，含中文读法/朗读；认识数字进度本地记录：级别切换从上一级别结束数字继续、下次进入恢复、↺从0重置按钮；找数字"听音选数"；数一数"多彩图标点数"16种图标）
 ├── NumberArithmeticActivity.kt  # 加减法（难度分级 ≤10 / ≤20 / ≤100，统计卡片：得分/连胜/最佳 + 10题一局进度条，出题朗读🔊按钮、10 题一局统计、连胜解锁）
 ├── ChineseWordActivity.kt       # 汉字乐园（TabLayout 五页：基础笔画/笔画演示/汉字识字500/仿写描红/每日一句，点击朗读并标记学会）
 ├── KidsH5Activity.kt            # H5 小游戏容器（WebView 加载本地 assets/h5，三个游戏切换按钮）

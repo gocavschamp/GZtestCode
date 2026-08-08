@@ -27,6 +27,14 @@ object KidsProgressStore {
         runBlocking { db(context).progressDao().put(StudyProgressEntity(KEY_MAX_NUMBER, number)) }
     }
 
+    /** 认识数字当前浏览到的位置（下次进入从上一次的数字继续） */
+    fun getLastNumberLearned(context: Context): Int =
+        runBlocking { db(context).progressDao().getValue(KEY_LAST_NUMBER) ?: 0 }
+
+    fun setLastNumberLearned(context: Context, number: Int) {
+        runBlocking { db(context).progressDao().put(StudyProgressEntity(KEY_LAST_NUMBER, number)) }
+    }
+
     // ==================== 加减法 ====================
 
     /** 加减法最佳连续答对数 */
@@ -109,6 +117,7 @@ object KidsProgressStore {
 
     private const val PREFS_NAME = "kids_learning_progress"
     private const val KEY_MAX_NUMBER = "max_number_learned"
+    private const val KEY_LAST_NUMBER = "last_number_learned"
     private const val KEY_BEST_STREAK = "best_streak"
     private const val KEY_UNLOCKED_LEVEL = "unlocked_level"
     private const val KEY_LEARNED_CHARS = "learned_chars"

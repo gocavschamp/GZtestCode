@@ -116,16 +116,49 @@
                     app:chipStrokeWidth="2dp" />
 
                 <com.google.android.material.chip.Chip
-                    android:id="@+id/chipLevel4"
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="🎲 随机数字"
-                    android:textColor="@color/white"
-                    app:chipBackgroundColor="@color/kids_pink"
-                    app:chipStrokeColor="@color/white"
-                    app:chipStrokeWidth="2dp" />
+                android:id="@+id/chipLevel4"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🎲 随机数字"
+                android:textColor="@color/white"
+                app:chipBackgroundColor="@color/kids_pink"
+                app:chipStrokeColor="@color/white"
+                app:chipStrokeWidth="2dp" />
             </com.google.android.material.chip.ChipGroup>
+
+            <!-- 学习进度：显示已学到哪、可从 0 重置 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvLearnedInfo"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="✨ 已学到 0，下次从这里继续"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnResetNumber"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:minWidth="0dp"
+                    android:paddingHorizontal="14dp"
+                    android:text="↺ 从0开始"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    app:backgroundTint="@color/kids_coral"
+                    app:cornerRadius="18dp" />
+            </LinearLayout>
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardNumber"
