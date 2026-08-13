@@ -104,6 +104,7 @@
         <activity
             android:name=".ui.kids.KidsH5GameActivity"
             android:configChanges="keyboardHidden|orientation"
+            android:hardwareAccelerated="true"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Kids"/>
         <activity
