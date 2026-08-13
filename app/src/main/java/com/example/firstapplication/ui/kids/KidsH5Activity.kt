@@ -15,6 +15,7 @@ import com.example.firstapplication.databinding.ActivityKidsH5Binding
  * - 赛车（左右变道躲避来车）
  * - 跳跳闯关（横向跳跃过关）
  * - 我的世界（体素世界挖方块、盖房子）
+ * - 3D 象棋（古战场对弈，AI 四难度）
  */
 class KidsH5Activity : AppCompatActivity() {
 
@@ -33,6 +34,7 @@ class KidsH5Activity : AppCompatActivity() {
         binding.cardGameRacing.setOnClickListener { open(GAME_RACING, "赛车") }
         binding.cardGameJump.setOnClickListener { open(GAME_JUMP, "跳跳闯关") }
         binding.cardGameMinecraft.setOnClickListener { open(GAME_MC, "我的世界") }
+        binding.cardGameChess.setOnClickListener { open(GAME_CHESS, "3D 象棋") }
     }
 
     private fun open(file: String, title: String) {
@@ -47,6 +49,7 @@ class KidsH5Activity : AppCompatActivity() {
         private const val GAME_RACING = "car_racing.html"
         private const val GAME_JUMP = "jump_levels.html"
         private const val GAME_MC = "minecraft.html"
+        private const val GAME_CHESS = "chinese_chess.html"
 
         fun start(context: Context) {
             context.startActivity(Intent(context, KidsH5Activity::class.java))

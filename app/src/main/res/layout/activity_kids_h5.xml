@@ -347,10 +347,45 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <Space
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardGameChess"
             android:layout_width="0dp"
             android:layout_height="132dp"
             android:layout_marginHorizontal="5dp"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            app:cardBackgroundColor="@color/kids_bronze"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="3dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="⚔️"
+                    android:textSize="44sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="3D 象棋"
+                    android:textColor="@color/white"
+                    android:textSize="17sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="古战场对弈"
+                    android:textColor="#E6FFFFFF"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 </LinearLayout>

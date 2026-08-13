@@ -14,6 +14,9 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import com.example.firstapplication.databinding.ActivityKidsH5GameBinding
 
 /**
@@ -29,10 +32,9 @@ class KidsH5GameActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityKidsH5GameBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        KidsStatusBar.immersive(this, binding.root)
+        hideSystemBars()
 
         val file = intent.getStringExtra(EXTRA_GAME) ?: GAME_NUMBER
-        binding.tvTitle.text = intent.getStringExtra(EXTRA_TITLE) ?: "小游戏"
 
         binding.webGame.settings.javaScriptEnabled = true
         binding.webGame.settings.domStorageEnabled = true
@@ -81,7 +83,7 @@ class KidsH5GameActivity : AppCompatActivity() {
             }
         }
 
-        binding.btnBack.setOnClickListener { showExitConfirm() }
+        binding.btnExit.setOnClickListener { showExitConfirm() }
         binding.webGame.loadUrl("file:///android_asset/h5/$file")
     }
 
@@ -91,6 +93,15 @@ class KidsH5GameActivity : AppCompatActivity() {
         } else {
             showExitConfirm()
         }
+    }
+
+    /** 隐藏系统状态栏与导航栏，实现真正全屏 */
+    private fun hideSystemBars() {
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        val controller = WindowInsetsControllerCompat(window, window.decorView)
+        controller.hide(WindowInsetsCompat.Type.systemBars())
+        controller.systemBarsBehavior =
+            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
     }
 
     /** 退出确认弹窗：避免小朋友误触退出 */
