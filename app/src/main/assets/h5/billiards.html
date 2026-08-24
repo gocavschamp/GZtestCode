@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>台球</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{width:100%;height:100%;overflow:hidden;background:#14100c;font-family:'PingFang SC','Microsoft YaHei',sans-serif;}
+canvas{position:fixed;inset:0;touch-action:none;}
+#hud{position:fixed;left:0;right:0;top:0;min-height:56px;display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top,0px) + 12px) 14px 8px;background:linear-gradient(180deg,rgba(10,8,6,.92),rgba(10,8,6,0));color:#fff;z-index:5;pointer-events:none;font-size:14px;box-sizing:content-box;}
+#hud .p{display:flex;flex-direction:column;align-items:center;}
+#hud .nm{font-size:12px;color:#9d8c74;}
+#hud .lb{font-weight:bold;font-size:15px;}
+#hud .vs{font-size:12px;color:#c9a86a;}
+#hud .player .lb{color:#7ec8ff;}
+#hud .ai .lb{color:#ff8f6b;}
+#pocketBar{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:space-between;align-items:flex-end;padding:0 16px calc(env(safe-area-inset-bottom,0px) + 10px);z-index:6;pointer-events:none;}
+#pocketBar .pb{display:flex;flex-direction:column;align-items:center;gap:5px;max-width:44%;}
+#pocketBar .pbn{font-size:11px;color:#a08d70;text-shadow:0 1px 3px #000;}
+#pocketBar .pbl{display:flex;gap:3px;flex-wrap:wrap;justify-content:center;min-height:26px;}
+.mb{position:relative;width:26px;height:26px;border-radius:50%;display:block;border:1.5px solid rgba(0,0,0,.5);box-shadow:inset -2px -3px 5px rgba(0,0,0,.35),0 1px 3px rgba(0,0,0,.5);}
+.mb .band{position:absolute;left:0;right:0;top:8px;height:10px;background:#fff;opacity:.92;}
+.mb .no{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:15px;height:15px;border-radius:50%;background:#fff;color:#222;font-size:10px;font-weight:bold;text-align:center;line-height:15px;border:1px solid rgba(0,0,0,.25);box-shadow:0 1px 2px rgba(0,0,0,.4);}
+#msg{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 96px);transform:translateX(-50%);color:#ffe08a;font-size:15px;text-shadow:0 2px 6px rgba(0,0,0,.8);z-index:6;pointer-events:none;text-align:center;white-space:nowrap;}
+.overlay{position:fixed;inset:0;background:rgba(12,9,6,.88);display:flex;align-items:center;justify-content:center;z-index:10;}
+.card{background:linear-gradient(180deg,#2b2016,#1c150e);border:2px solid #6b4a26;border-radius:18px;padding:26px 30px;text-align:center;color:#fff;box-shadow:0 10px 40px rgba(0,0,0,.6);}
+.card h1{font-size:30px;margin-bottom:6px;letter-spacing:4px;color:#ffd98a;}
+.card .sub{color:#a08d70;font-size:13px;margin-bottom:20px;}
+.diff{display:flex;flex-direction:column;gap:12px;}
+.diff button{border:2px solid #6b4a26;background:#3a2a18;color:#ffe4b0;font-size:17px;padding:12px 40px;border-radius:12px;cursor:pointer;}
+.diff button:active{background:#54381f;transform:scale(.97);}
+.diff .tag{font-size:12px;color:#9d8c74;display:block;margin-top:3px;}
+.result h1{font-size:34px;}
+.result .btn{margin-top:18px;border:2px solid #c9a86a;background:#6b4a26;color:#fff;font-size:16px;padding:10px 26px;border-radius:12px;cursor:pointer;}
+#msgbox{position:fixed;left:50%;bottom:120px;transform:translateX(-50%);background:rgba(0,0,0,.55);color:#fff;padding:8px 18px;border-radius:20px;font-size:14px;z-index:6;opacity:0;transition:opacity .3s;pointer-events:none;}
+#aimtip{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 168px);transform:translateX(-50%);color:#ffe4b0;background:rgba(10,8,6,.6);padding:7px 16px;border-radius:18px;font-size:13px;z-index:7;pointer-events:none;text-align:center;white-space:nowrap;display:none;}
+#ctl{position:fixed;right:calc(env(safe-area-inset-right,0px) + 2px);top:50%;transform:translateY(-50%);display:none;flex-direction:column;align-items:center;gap:8px;z-index:7;}
+#powerWrap{position:relative;width:26px;height:230px;background:
+  linear-gradient(180deg,#2c2116,#17100a),
+  repeating-linear-gradient(0deg,transparent 0 19px,rgba(255,255,255,.14) 19px 20px);
+  border:2px solid #6b4a26;border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,.55);touch-action:none;overflow:hidden;}
+#powerFill{position:absolute;left:0;right:0;top:0;height:0%;background:linear-gradient(180deg,#8aff7a,#f0d23a 55%,#f07a3a);opacity:.5;}
+#cueStick{position:absolute;left:50%;transform:translateX(-50%);width:14px;height:9px;border-radius:5px;
+  background:radial-gradient(circle at 35% 30%,#fff3c4,#e0a43a);border:1px solid rgba(0,0,0,.45);
+  box-shadow:0 0 10px rgba(255,210,90,.8);}
+#powerLabel{position:absolute;top:-22px;left:50%;transform:translateX(-50%);color:#ffe08a;font-size:11px;font-weight:bold;text-shadow:0 1px 4px #000;white-space:nowrap;}
+#powerTick{position:absolute;left:0;right:0;height:2px;background:rgba(255,255,255,.18);}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div id="hud">
+  <div class="p player"><span class="nm" id="pNm">你</span><span class="lb" id="pLeft">7</span></div>
+  <div class="vs" id="turnLb">🎱</div>
+  <div class="p ai"><span class="lb" id="aL">7</span><span class="nm" id="aNm">对手</span></div>
+</div>
+<div id="pocketBar">
+  <div class="pb"><span class="pbn">你的落袋</span><div class="pbl" id="pBallsP"></div></div>
+  <div class="pb"><span class="pbn">对手落袋</span><div class="pbl" id="pBallsA"></div></div>
+</div>
+<div id="msg"></div>
+<div id="msgbox"></div>
+<div id="aimtip">👆 拖屏瞄准 → 右侧球杆滑力度，松手击球</div>
+<div id="ctl">
+  <div id="powerWrap">
+    <div id="powerFill"></div>
+    <div id="cueStick"></div>
+    <div id="powerLabel">50%</div>
+  </div>
+</div>
+
+<div class="overlay" id="menu">
+  <div class="card">
+    <h1>🎱 台球</h1>
+    <div class="sub">选择对手难度</div>
+    <div class="diff">
+      <button onclick="startGame(1)">入门 <span class="tag">打最近的球 慢慢来</span></button>
+      <button onclick="startGame(2)">普通 <span class="tag">会挑容易进的球</span></button>
+      <button onclick="startGame(3)">高手 <span class="tag">走位精准 直捣黄龙</span></button>
+    </div>
+  </div>
+</div>
+<div class="overlay" id="result" style="display:none;">
+  <div class="card result">
+    <h1 id="resTitle">🏆 你赢了！</h1>
+    <div class="sub" id="resSub"></div>
+    <button class="btn" onclick="location.reload()">再来一局</button>
+  </div>
+</div>
+
+<script>
+/* ================= 常量与状态 ================= */
+var W=500,H=1000;                 // 逻辑坐标：桌长竖放
+var TABLE={l:55,r:445,t:70,b:930,BR:16,PR:30};
+var POCKETS=[{x:55,y:70},{x:445,y:70},{x:55,y:930},{x:445,y:930},{x:55,y:500},{x:445,y:500}];
+var MAXV=28,F=0.965,WALL_E=0.86,BALL_E=0.94;
+
+var cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+var s=1,ox=0,oy=0,dpr=1;   // 画布缩放/偏移，球台在屏幕居中
+function resize(){
+  dpr=window.devicePixelRatio||1;
+  cv.width=innerWidth*dpr;cv.height=innerHeight*dpr;
+  cv.style.width=innerWidth+'px';cv.style.height=innerHeight+'px';
+  s=Math.min(innerWidth/W,innerHeight/H);
+  ox=(innerWidth-W*s)/2;oy=(innerHeight-H*s)/2;
+}
+resize();window.addEventListener('resize',resize);
+
+var COLORS={1:'#F2C40A',2:'#2060C8',3:'#D63B2F',4:'#7A2FA6',5:'#F07A1B',6:'#2E9E4F',7:'#8B3A12',8:'#181818'};
+var balls=[],white=null,moving=false,turn='player',aiLevel=1;
+var cuePull=0,cueT=0;   // 球杆回拉量（力度越大拉越远）与击球前冲时间戳
+var pRemain=7,aRemain=7,gameOver=false;
+var assigned=false,pGroup='solid',aGroup='stripe'; // 谁先进哪个花色归谁
+var particles=[],pocketFxs=[];                     // 火花粒子 + 进球光环特效
+var aimAngle=0,aimValid=false,power=0.5;
+var over=0,overCharging=false,overFlash=false;   // 满力后长按蓄力：最大力度 190%（28×190%≈53）
+var MAX_OVER=0.9,OVER_RATE=0.0006;               // 蓄力上限与增速（约 1.5 秒充满，防止力度离谱）
+var aiAimAngle=0,aiAimAngleSet=false;   // AI 击球球杆方向
+var pottedPlayer=[],pottedAI=[];        // 双方进洞的球（HUD 下方展示）
+var tableNoise=[];
+(function(){for(var i=0;i<420;i++)tableNoise.push({x:TABLE.l+Math.random()*(TABLE.r-TABLE.l),y:TABLE.t+Math.random()*(TABLE.b-TABLE.t)});})();
+
+function ball(id,x,y){return {id:id,x:x,y:y,vx:0,vy:0,stripe:id>=9,color:COLORS[id>=9?id-8:id],inPocket:false,spin:0,rot:0};}
+
+/* ================= 摆球 ================= */
+function setupBalls(){
+  balls=[];particles=[];pocketFxs=[];
+  for(var i=1;i<=15;i++)balls.push(ball(i,0,0));
+  white=ball(0,W/2,715);   // 白球在标准开球线（距底库 1/4 桌长）
+  balls.push(white);
+  // 三角形：底座在顶部、顶点朝下指向玩家白球；8 号球居中，实花交错
+  var rows=[[1],[9,2],[3,8,10],[4,11,5,12],[13,6,14,7,15]];
+  var r=TABLE.BR,cx=W/2,baseY=230,stepY=(2*r+1)*0.866;
+  for(var row=0;row<rows.length;row++){
+    var arr=rows[row];
+    var x0=cx-arr.length*(2*r+2)/2;
+    for(var j=0;j<arr.length;j++){
+      var b=byId(arr[j]);
+      b.x=x0+(j+0.5)*(2*r+2);
+      b.y=baseY+(rows.length-1-row)*stepY;
+      b.vx=b.vy=0;b.inPocket=false;
+    }
+  }
+}
+function byId(id){for(var i=0;i<balls.length;i++)if(balls[i].id===id)return balls[i];return null;}
+
+/* 从点(x,y)沿(dx,dy)到台面库边的距离（不含库边厚度） */
+function rayToCushion(x,y,dx,dy){
+  var tx=1e9,ty=1e9;
+  if(dx>0.0001)tx=(TABLE.r-2-x)/dx;else if(dx<-0.0001)tx=(TABLE.l+2-x)/dx;
+  if(dy>0.0001)ty=(TABLE.b-2-y)/dy;else if(dy<-0.0001)ty=(TABLE.t+2-y)/dy;
+  return Math.min(tx,ty);
+}
+
+/* ================= 音频 ================= */
+var ac=null;
+function audio(){
+  if(ac)return;
+  try{ac=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}
+}
+function sfx(type){
+  if(!ac)return;
+  try{
+    var o=ac.createOscillator(),g=ac.createGain();
+    o.connect(g);g.connect(ac.destination);
+    var t=ac.currentTime;
+    if(type==='hit'){o.type='triangle';o.frequency.setValueAtTime(170,t);o.frequency.exponentialRampToValueAtTime(55,t+0.15);g.gain.setValueAtTime(0.3,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.2);}
+    else if(type==='clack'){o.type='square';o.frequency.setValueAtTime(950,t);o.frequency.exponentialRampToValueAtTime(180,t+0.05);g.gain.setValueAtTime(0.12,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.06);}
+    else if(type==='cushion'){o.type='square';o.frequency.setValueAtTime(600,t);o.frequency.exponentialRampToValueAtTime(300,t+0.04);g.gain.setValueAtTime(0.08,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.05);}
+    else if(type==='pocket'){o.type='sine';o.frequency.setValueAtTime(520,t);o.frequency.exponentialRampToValueAtTime(130,t+0.28);g.gain.setValueAtTime(0.22,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.32);}
+    else if(type==='win'){var seq=[523,659,784,1047];for(var i=0;i<4;i++){var o2=ac.createOscillator(),g2=ac.createGain();o2.connect(g2);g2.connect(ac.destination);o2.type='sine';o2.frequency.value=seq[i];g2.gain.setValueAtTime(0.2,t+i*0.13);g2.gain.exponentialRampToValueAtTime(0.001,t+i*0.13+0.12);o2.start(t+i*0.13);o2.stop(t+i*0.13+0.15);}return;}
+    else if(type==='lose'){var sq=[440,349,262];for(var j=0;j<3;j++){var o3=ac.createOscillator(),g3=ac.createGain();o3.connect(g3);g3.connect(ac.destination);o3.type='sawtooth';o3.frequency.value=sq[j];g3.gain.setValueAtTime(0.12,t+j*0.2);g3.gain.exponentialRampToValueAtTime(0.001,t+j*0.2+0.18);o3.start(t+j*0.2);o3.stop(t+j*0.2+0.2);}return;}
+    o.start(t);o.stop(t+0.35);
+  }catch(e){}
+}
+
+/* ================= 物理 ================= */
+function step(){
+  if(!balls.length)return;
+  // 高速球拆分子步防止穿透：满力 28×1.9≈53px/帧 > 球径 32px，每子步最多移动 10px
+  var maxV=0;
+  for(var mi=0;mi<balls.length;mi++){
+    var mb=balls[mi];
+    if(mb.inPocket)continue;
+    var mv2=mb.vx*mb.vx+mb.vy*mb.vy;
+    if(mv2>maxV)maxV=mv2;
+  }
+  var sub=Math.max(1,Math.ceil(Math.sqrt(maxV)/10));
+  for(var si=0;si<sub;si++){
+    for(var i=0;i<balls.length;i++){
+      var b=balls[i];
+      if(b.inPocket)continue;
+      b.x+=b.vx/sub;b.y+=b.vy/sub;
+      // 库边
+      if(b.x-TABLE.BR<TABLE.l){b.x=TABLE.l+TABLE.BR;b.vx=-b.vx*WALL_E;if(Math.abs(b.vx)>1)sfx('cushion');}
+      else if(b.x+TABLE.BR>TABLE.r){b.x=TABLE.r-TABLE.BR;b.vx=-b.vx*WALL_E;if(Math.abs(b.vx)>1)sfx('cushion');}
+      if(b.y-TABLE.BR<TABLE.t){b.y=TABLE.t+TABLE.BR;b.vy=-b.vy*WALL_E;if(Math.abs(b.vy)>1)sfx('cushion');}
+      else if(b.y+TABLE.BR>TABLE.b){b.y=TABLE.b-TABLE.BR;b.vy=-b.vy*WALL_E;if(Math.abs(b.vy)>1)sfx('cushion');}
+      // 袋口吸入
+      for(var p=0;p<POCKETS.length;p++){
+        var pk=POCKETS[p],dx=b.x-pk.x,dy=b.y-pk.y,d2=dx*dx+dy*dy;
+        if(d2<TABLE.PR*TABLE.PR*0.72){pocketBall(b);break;}
+      }
+    }
+    collideBalls();
+  }
+  // 摩擦与滚动角度（每帧一次）
+  for(var f=0;f<balls.length;f++){
+    var fb=balls[f];
+    if(fb.inPocket)continue;
+    fb.rot+=Math.sqrt(fb.vx*fb.vx+fb.vy*fb.vy)/TABLE.BR*0.8;  // 滚动角度随速度累积
+    fb.vx*=F;fb.vy*=F;
+    if(Math.abs(fb.vx)<0.3)fb.vx=0;
+    if(Math.abs(fb.vy)<0.3)fb.vy=0;
+  }
+  // 粒子
+  for(var k=particles.length-1;k>=0;k--){
+    var pa=particles[k];pa.life-=0.03;pa.x+=pa.vx;pa.y+=pa.vy;pa.vy+=0.2;
+    if(pa.life<=0)particles.splice(k,1);
+  }
+  // 全部静止后结算
+  var rest=true;
+  for(var j=0;j<balls.length;j++){var bb=balls[j];if(!bb.inPocket&&(bb.vx||bb.vy)){rest=false;break;}}
+  if(rest&&moving){moving=false;afterShot();}
+}
+function collideBalls(){
+  for(var i=0;i<balls.length;i++){
+    var a=balls[i];if(a.inPocket)continue;
+    for(var j=i+1;j<balls.length;j++){
+      var b=balls[j];if(b.inPocket)continue;
+      var dx=b.x-a.x,dy=b.y-a.y,d=Math.sqrt(dx*dx+dy*dy),min=TABLE.BR*2;
+      if(d>0&&d<min){
+        var nx=dx/d,ny=dy/d;
+        var ov=(min-d)/2;
+        a.x-=nx*ov;a.y-=ny*ov;b.x+=nx*ov;b.y+=ny*ov;
+        var rvx=b.vx-a.vx,rvy=b.vy-a.vy;
+        var vn=rvx*nx+rvy*ny;
+        if(vn<0){
+          var imp=-vn*BALL_E;
+          var k=Math.abs(imp);
+          a.vx-=nx*imp;a.vy-=ny*imp;
+          b.vx+=nx*imp;b.vy+=ny*imp;
+          if(k>1.2){sfx('clack');addSpark((a.x+b.x)/2,(a.y+b.y)/2);}
+        }
+      }
+    }
+  }
+}
+function addSpark(x,y){
+  for(var i=0;i<5;i++){
+    var a=Math.random()*Math.PI*2,v=0.6+Math.random()*1.6;
+    particles.push({x:x,y:y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:1});
+  }
+}
+var pocketedThis=[];
+function pocketBall(b){
+  b.inPocket=true;b.vx=b.vy=0;
+  sfx('pocket');
+  pocketedThis.push(b);
+  addSpark(b.x,b.y);
+  pocketFxs.push({x:b.x,y:b.y,life:1});   // 进球光环特效
+  if(b.id===0){ // 白球落袋
+    setTimeout(function(){b.inPocket=false;b.x=W/2;b.y=715;b.vx=b.vy=0;},500);
+  }
+}
+
+/* ================= 回合与结算 ================= */
+function groupList(grp){return grp==='solid'?[1,2,3,4,5,6,7]:[9,10,11,12,13,14,15];}
+function myGroup(){ // 未定花色时瞄准全部非 8 号球
+  if(!assigned)return [1,2,3,4,5,6,7,9,10,11,12,13,14,15];
+  return groupList(turn==='player'?pGroup:aGroup);
+}
+function remainOf(grp){
+  var g=groupList(grp),n=0;
+  for(var i=0;i<balls.length;i++){var b=balls[i];if(!b.inPocket&&g.indexOf(b.id)>=0)n++;}
+  return n;
+}
+function afterShot(){
+  var pocketed=pocketedThis.slice();
+  pocketedThis=[];
+  var whiteIn=false,eight=false;
+  for(var i=0;i<pocketed.length;i++){
+    var b=pocketed[i];
+    if(b.id===0)whiteIn=true;
+    else if(b.id===8)eight=true;
+  }
+  // 花色分配：首个进袋的非 8 号球决定击球方花色
+  var assignNote='';
+  if(!assigned){
+    var first=null;
+    for(var a2=0;a2<pocketed.length;a2++){
+      var bb=pocketed[a2];
+      if(bb.id!==0&&bb.id!==8){first=bb;break;}
+    }
+    if(first){
+      assigned=true;
+      var solid=first.id<=7;
+      if(turn==='player'){pGroup=solid?'solid':'stripe';aGroup=solid?'stripe':'solid';}
+      else{aGroup=solid?'solid':'stripe';pGroup=solid?'stripe':'solid';}
+      assignNote=(turn==='player'?'你分到':'对手分到')+(solid?'实球':'花球')+'，';
+    }
+  }
+  pRemain=remainOf(pGroup);
+  aRemain=remainOf(aGroup);
+  // 记录双方进洞的球（白球与 8 号球不计入展示）
+  for(var k3=0;k3<pocketed.length;k3++){
+    var bb3=pocketed[k3];
+    if(bb3.id===0||bb3.id===8)continue;
+    if((bb3.id<=7?'solid':'stripe')===pGroup)pottedPlayer.push(bb3.id);
+    else pottedAI.push(bb3.id);
+  }
+  updateHud();
+  // 8 球判定
+  if(eight){
+    var shooter=turn;
+    var cleared=(shooter==='player')?pRemain===0:aRemain===0;
+    finish(cleared&&!whiteIn);
+    return;
+  }
+  // 本杆进己方花色球数量
+  var mg=groupList(turn==='player'?pGroup:aGroup),mine=0;
+  for(var k=0;k<pocketed.length;k++){
+    var bb2=pocketed[k];
+    if(bb2.id!==0&&bb2.id!==8&&mg.indexOf(bb2.id)>=0)mine++;
+  }
+  if(whiteIn){ // 白球落袋 → 换人
+    flash(assignNote+'白球落袋，轮到'+(turn==='player'?'对手':'你'));
+    switchTurn();
+  }else if(mine>0){ // 打进己方球 → 继续
+    flash(assignNote+(turn==='player'?'漂亮！打进 ':'对手打进 ')+mine+' 颗，继续');
+    if(turn==='player')showCtl();
+    else scheduleAI();   // AI 进球后继续调度下一杆（修复卡在思考状态）
+  }else{ // 没进己方球 → 换人
+    flash(assignNote+(turn==='player'?'该对手了':'该你了'));
+    switchTurn();
+  }
+}
+function switchTurn(){
+  turn=(turn==='player')?'ai':'player';
+  updateHud();
+  if(turn==='ai'){aiAimAngleSet=false;hideCtl();scheduleAI();}
+  else showCtl();
+}
+function finish(win){
+  gameOver=true;moving=false;hideCtl();
+  document.getElementById('result').style.display='flex';
+  document.getElementById('resTitle').textContent=win?'🏆 你赢了！':'😭 你输了';
+  document.getElementById('resSub').textContent=(win?'对手':'你')+'打进了 8 号球';
+  if(win)sfx('win');else sfx('lose');
+  flash('');
+}
+function updateHud(){
+  document.getElementById('pLeft').textContent=assigned?pRemain:'?';
+  document.getElementById('aL').textContent=assigned?aRemain:'?';
+  document.getElementById('pNm').textContent=assigned?(pGroup==='solid'?'你·实球':'你·花球'):'你';
+  document.getElementById('aNm').textContent=assigned?(aGroup==='solid'?'对手·实球':'对手·花球'):'对手';
+  var t=turn==='player'?'你出杆':'对手思考中';
+  document.getElementById('turnLb').textContent='🎱 '+(assigned?'':'(定花色) ')+t;
+  updatePotted();
+}
+function updatePotted(){
+  var ph='',ah='';
+  for(var i=0;i<pottedPlayer.length;i++)ph+=ballChip(pottedPlayer[i]);
+  for(var j=0;j<pottedAI.length;j++)ah+=ballChip(pottedAI[j]);
+  document.getElementById('pBallsP').innerHTML=ph;
+  document.getElementById('pBallsA').innerHTML=ah;
+}
+function ballChip(id){
+  var stripe=id>=9;
+  var c=COLORS[stripe?id-8:id];
+  var band=stripe?'<i class="band" style="background:'+c+'"></i>':'';
+  return '<i class="mb" style="background:'+(stripe?'#f4f6f8':'')+'">'+band+'<i class="no">'+id+'</i></i>';
+}
+function flash(t){
+  var m=document.getElementById('msg');
+  m.textContent=t;m.style.transition='none';m.style.opacity=1;
+  setTimeout(function(){m.style.transition='opacity .6s';m.style.opacity=0;},1400);
+}
+
+/* ================= 击球 ================= */
+function fireShot(nx,ny,power){
+  if(gameOver||moving||turn!=='player')return;
+  moving=true;cueT=performance.now();
+  white.vx=nx*MAXV*power;
+  white.vy=ny*MAXV*power;
+  sfx('hit');
+}
+function aiFire(nx,ny,power){
+  if(gameOver||moving||turn!=='ai')return;
+  moving=true;
+  white.vx=nx*MAXV*power;
+  white.vy=ny*MAXV*power;
+  sfx('hit');
+}
+
+/* ================= AI ================= */
+function scheduleAI(){
+  setTimeout(function(){
+    if(gameOver||turn!=='ai'||moving)return;
+    var shot=aiPick();
+    if(!shot){ // 没有可打目标 → 随便打一下白球（往自己球堆方向）
+      flash('对手调整球位');
+      var tgt=myGroup()[0],b=byId(tgt)||byId(8);
+      var d=Math.atan2(b.y-white.y,b.x-white.x);
+      aiAimAngle=d;aiAimAngleSet=true;
+      aiFire(Math.cos(d),Math.sin(d),0.45);
+      return;
+    }
+    // 记录 AI 球杆方向（思考期间桌面显示对方球杆，不显示瞄准线）
+    aiAimAngle=Math.atan2(shot.ny,shot.nx);aiAimAngleSet=true;
+    flash('对手瞄准中…');
+    setTimeout(function(){
+      if(gameOver)return;
+      aiFire(shot.nx,shot.ny,shot.power);
+    },620);
+  },800);
+}
+function onTable(group){
+  var g=[];
+  for(var i=0;i<balls.length;i++){var b=balls[i];if(!b.inPocket&&group.indexOf(b.id)>=0)g.push(b);}
+  return g;
+}
+function aiPick(){
+  var tgt=onTable(myGroup());
+  if(tgt.length===0)return null;
+  var best=null;
+  for(var ti=0;ti<tgt.length;ti++){
+    var t=tgt[ti];
+    for(var pi=0;pi<POCKETS.length;pi++){
+      var p=POCKETS[pi];
+      var ax=t.x-white.x,ay=t.y-white.y,al=Math.sqrt(ax*ax+ay*ay);
+      if(al<1)continue;
+      var tx=p.x-t.x,ty=p.y-t.y,tl=Math.sqrt(tx*tx+ty*ty);
+      if(tl<1)continue;
+      // 目标球飞出方向（正碰近似）vs 目标球→袋口
+      var dot=(ax*tx+ay*ty)/(al*tl);
+      if(dot<0.55)continue; // 角度太偏
+      var ang=Math.acos(Math.min(1,dot));
+      // 白球→目标球路径阻挡
+      var blocked=false;
+      for(var k=0;k<balls.length;k++){
+        var o=balls[k];
+        if(o===t||o===white||o.inPocket)continue;
+        var ox=t.x-white.x,oy=t.y-white.y,ol=Math.sqrt(ox*ox+oy*oy);
+        if(ol<1)continue;
+        var tpr=(ox*ax+oy*ay)/(ol*al);
+        if(tpr>0&&tpr<1){
+          var px=white.x+ax*tpr,py=white.y+ay*tpr;
+          var dd=Math.sqrt((px-o.x)*(px-o.x)+(py-o.y)*(py-o.y));
+          if(dd<TABLE.BR*2)blocked=true;
+        }
+      }
+      var dist=al/(W*0.7);
+      var score=(Math.cos(ang)*0.55+(1-dist)*0.3)-(blocked?0.45:0)+(t.id===8?-0.3:0);
+      if(!best||score>best.score)best={t:t,p:p,score:score,ax:ax,ay:ay,al:al,tx:tx,ty:ty,tl:tl,ang:ang,blocked:blocked};
+    }
+  }
+  if(!best)return null;
+  // 撞击方向
+  var dl=Math.sqrt(best.ax*best.ax+best.ay*best.ay);
+  var dir={x:best.ax/dl,y:best.ay/dl};
+  // 白球落点：目标球后方
+  var cueTarget={x:best.t.x-dir.x*(TABLE.BR*2+2),y:best.t.y-dir.y*(TABLE.BR*2+2)};
+  // 误差（难度）
+  var errDeg=(4-aiLevel)*2.2+(best.blocked?6:0);
+  var ang=(Math.random()*2-1)*errDeg*Math.PI/180;
+  var ca=Math.cos(ang),sa=Math.sin(ang);
+  var nd={x:dir.x*ca-dir.y*sa,y:dir.x*sa+dir.y*ca};
+  // 力度：距离相关 + 高难度更稳定
+  var power=Math.min(1,0.45+best.al/700);
+  return {nx:nd.x,ny:nd.y,power:power};
+}
+
+/* ================= 输入（瞄准手势 + 力度滑杆，松手自动击球） ================= */
+var aiming=false;
+var powerWrap=document.getElementById('powerWrap'),cueStick=document.getElementById('cueStick'),
+    powerFill=document.getElementById('powerFill'),powerLabel=document.getElementById('powerLabel'),
+    ctl=document.getElementById('ctl'),aimtip=document.getElementById('aimtip');
+
+function pos(e){
+  var r=cv.getBoundingClientRect();
+  var x=(e.clientX-ox)/s,y=(e.clientY-oy)/s;
+  return {x:x,y:y};
+}
+function showCtl(){
+  if(gameOver||moving)return;
+  ctl.style.display='flex';
+  aimtip.style.display='block';
+  if(turn==='player')aimtip.textContent='👆 拖屏瞄准 → 滑杆到底长按可蓄力，松手击球';
+  else aimtip.textContent='🤖 对手思考中…';
+  refreshPowerUI();
+}
+function hideCtl(){
+  ctl.style.display='none';
+  aimtip.style.display='none';
+}
+function refreshPowerUI(){
+  var eff=Math.min(1+MAX_OVER,power+over);
+  powerLabel.textContent=Math.round(eff*100)+'%';
+  powerFill.style.height=Math.min(100,eff*100)+'%';
+  cueStick.style.top=(8+Math.min(1,eff)*205)+'px';
+  if(over>0){
+    powerFill.style.opacity='0.85';
+    powerLabel.style.color=over>=MAX_OVER?'#ff7a6a':'#ffd98a';
+  }else{
+    powerFill.style.opacity='0.5';
+    powerLabel.style.color='#ffe08a';
+  }
+}
+function powerFromY(clientY){
+  var r=powerWrap.getBoundingClientRect();
+  var y=clientY-r.top;
+  power=Math.min(1,Math.max(0,y/r.height));
+  // 滑到满力后开始蓄力，离开满力区则重置
+  if(power<0.995){over=0;overCharging=false;overFlash=false;}
+  else if(!overCharging){overCharging=true;over=0;overFlash=false;}
+  refreshPowerUI();
+}
+powerWrap.addEventListener('touchstart',function(e){e.preventDefault();powerFromY(e.touches[0].clientY);},{passive:false});
+powerWrap.addEventListener('touchmove',function(e){e.preventDefault();powerFromY(e.touches[0].clientY);},{passive:false});
+powerWrap.addEventListener('touchend',function(e){e.preventDefault();doShoot();},{passive:false});
+powerWrap.addEventListener('mousedown',function(e){
+  e.preventDefault();powerFromY(e.clientY);
+  var mv=function(ev){powerFromY(ev.clientY);},
+      up=function(){window.removeEventListener('mousemove',mv);window.removeEventListener('mouseup',up);doShoot();};
+  window.addEventListener('mousemove',mv);window.addEventListener('mouseup',up);
+});
+
+function doShoot(){
+  if(gameOver||moving||turn!=='player'||white.inPocket)return;
+  if(!aimValid){flash('先拖动屏幕瞄准方向');return;}
+  if(power<0.05){flash('力度太小，向下滑动杆');return;}
+  hideCtl();
+  var eff=Math.min(1+MAX_OVER,power+over);
+  over=0;overCharging=false;overFlash=false;
+  fireShot(Math.cos(aimAngle),Math.sin(aimAngle),eff);
+}
+function updateAim(clientX,clientY){
+  var p=pos({clientX:clientX,clientY:clientY});
+  var dx=p.x-white.x,dy=p.y-white.y,d=Math.sqrt(dx*dx+dy*dy);
+  if(d>8){aimAngle=Math.atan2(dy,dx);aimValid=true;}
+}
+cv.addEventListener('touchstart',function(e){
+  e.preventDefault();audio();
+  if(gameOver||moving||turn!=='player'||white.inPocket)return;
+  aiming=true;updateAim(e.touches[0].clientX,e.touches[0].clientY);
+},{passive:false});
+cv.addEventListener('touchmove',function(e){
+  e.preventDefault();
+  if(!aiming)return;
+  updateAim(e.touches[0].clientX,e.touches[0].clientY);
+},{passive:false});
+cv.addEventListener('touchend',function(e){e.preventDefault();aiming=false;},{passive:false});
+cv.addEventListener('mousedown',function(e){
+  audio();
+  if(gameOver||moving||turn!=='player'||white.inPocket)return;
+  aiming=true;updateAim(e.clientX,e.clientY);
+});
+window.addEventListener('mousemove',function(e){if(aiming)updateAim(e.clientX,e.clientY);});
+window.addEventListener('mouseup',function(){aiming=false;});
+
+/* ================= 渲染 ================= */
+function render(){
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.fillStyle='#14100c';ctx.fillRect(0,0,innerWidth,innerHeight);
+  ctx.setTransform(dpr*s,0,0,dpr*s,ox*dpr,oy*dpr);
+  if(!white){ctx.setTransform(1,0,0,1,0,0);return;}
+  ctx.save();
+  ctx.beginPath();ctx.rect(TABLE.l-34,TABLE.t-34,TABLE.r-TABLE.l+68,TABLE.b-TABLE.t+68);ctx.clip();
+  // 木框（渐变 + 木纹）
+  var fg=ctx.createLinearGradient(0,TABLE.t-34,0,TABLE.t);
+  fg.addColorStop(0,'#7a4e22');fg.addColorStop(1,'#3a2410');
+  ctx.fillStyle=fg;
+  ctx.fillRect(TABLE.l-34,TABLE.t-34,TABLE.r-TABLE.l+68,TABLE.b-TABLE.t+68);
+  ctx.strokeStyle='rgba(0,0,0,0.12)';ctx.lineWidth=1;
+  for(var wi=0;wi<10;wi++){
+    var wy=TABLE.t-30+wi*(TABLE.b-TABLE.t+60)/10;
+    ctx.beginPath();ctx.moveTo(TABLE.l-30,wy);
+    ctx.bezierCurveTo(TABLE.l+60,wy+6,TABLE.r-60,wy-6,TABLE.r+30,wy);
+    ctx.stroke();
+  }
+  // 台呢
+  var g=ctx.createRadialGradient(W/2,H/2,40,W/2,H/2,540);
+  g.addColorStop(0,'#48a861');g.addColorStop(0.5,'#33804a');g.addColorStop(1,'#1e5230');
+  ctx.fillStyle=g;
+  ctx.fillRect(TABLE.l,TABLE.t,TABLE.r-TABLE.l,TABLE.b-TABLE.t);
+  // 台呢噪点
+  ctx.fillStyle='rgba(0,0,0,0.05)';
+  for(var nz=0;nz<tableNoise.length;nz++){
+    ctx.fillRect(tableNoise[nz].x,tableNoise[nz].y,1.5,1.5);
+  }
+  // 标记：中分虚线 + 中心点 + 白球起点圈
+  ctx.strokeStyle='rgba(255,255,255,0.14)';ctx.lineWidth=1;ctx.setLineDash([10,8]);
+  ctx.beginPath();ctx.moveTo(W/2,TABLE.t);ctx.lineTo(W/2,TABLE.b);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.strokeStyle='rgba(255,255,255,0.16)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(W/2,(TABLE.t+TABLE.b)/2,6,0,Math.PI*2);ctx.stroke();
+  ctx.beginPath();ctx.arc(W/2,715,9,0,Math.PI*2);ctx.stroke();
+  // 库边内衬阴影
+  ctx.strokeStyle='rgba(0,0,0,0.35)';ctx.lineWidth=3;
+  ctx.strokeRect(TABLE.l,TABLE.t,TABLE.r-TABLE.l,TABLE.b-TABLE.t);
+  ctx.strokeStyle='rgba(255,255,255,0.10)';ctx.lineWidth=2;
+  ctx.strokeRect(TABLE.l+2,TABLE.t+2,TABLE.r-TABLE.l-4,TABLE.b-TABLE.t-4);
+  // 袋口：球网 + 黑腔 + 金属环
+  for(var i=0;i<POCKETS.length;i++){
+    var pk=POCKETS[i];
+    ctx.beginPath();ctx.arc(pk.x,pk.y,TABLE.PR*0.92,0,Math.PI*2);
+    ctx.fillStyle='#0d0804';ctx.fill();
+    // 球网：放射线 + 同心环
+    ctx.save();
+    ctx.strokeStyle='rgba(170,140,95,0.4)';ctx.lineWidth=1;
+    for(var gi=0;gi<6;gi++){
+      var ga=gi*Math.PI/3+0.26;
+      ctx.beginPath();ctx.moveTo(pk.x,pk.y);
+      ctx.lineTo(pk.x+Math.cos(ga)*TABLE.PR*0.85,pk.y+Math.sin(ga)*TABLE.PR*0.85);
+      ctx.stroke();
+    }
+    for(var ri=1;ri<=3;ri++){
+      ctx.beginPath();ctx.arc(pk.x,pk.y,TABLE.PR*0.26*ri,0,Math.PI*2);ctx.stroke();
+    }
+    ctx.restore();
+    ctx.beginPath();ctx.arc(pk.x,pk.y,TABLE.PR*0.98,0,Math.PI*2);
+    ctx.strokeStyle='#c9a86a';ctx.lineWidth=3;ctx.stroke();
+    ctx.beginPath();ctx.arc(pk.x,pk.y,TABLE.PR*0.7,0,Math.PI*2);
+    ctx.strokeStyle='rgba(0,0,0,0.5)';ctx.lineWidth=1.5;ctx.stroke();
+  }
+  // 金属护角
+  ctx.fillStyle='#b8914e';
+  var corners=[[TABLE.l-24,TABLE.t-24],[TABLE.r+8,TABLE.t-24],[TABLE.l-24,TABLE.b+8],[TABLE.r+8,TABLE.b+8]];
+  for(var ci=0;ci<corners.length;ci++){
+    ctx.beginPath();ctx.arc(corners[ci][0],corners[ci][1],12,0,Math.PI*2);ctx.fill();
+  }
+  // 品牌小字
+  ctx.fillStyle='rgba(255,224,138,0.6)';
+  ctx.font='11px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('🎱 KIDS POOL',W/2,TABLE.b+17);
+  ctx.restore();
+  // 瞄准线（方向虚线 + 目标球高亮 + 碰撞方向虚线 + 白球方向箭头）
+  if(!moving&&turn==='player'&&!white.inPocket&&aimValid){
+    var nx=Math.cos(aimAngle),ny=Math.sin(aimAngle);
+    // 找第一颗被瞄准的球（球心投影在射线上且垂直偏差小）
+    var hit=null,hd=1e9,hdd=0;
+    for(var bi=0;bi<balls.length;bi++){
+      var bb=balls[bi];if(bb===white||bb.inPocket)continue;
+      var tp=(bb.x-white.x)*nx+(bb.y-white.y)*ny;
+      if(tp>0){
+        var px=white.x+nx*tp,py=white.y+ny*tp;
+        var dd=Math.sqrt((px-bb.x)*(px-bb.x)+(py-bb.y)*(py-bb.y));
+        if(dd<TABLE.BR*1.8&&tp<hd){hd=tp;hdd=dd;hit=bb;}
+      }
+    }
+    // 已确认花色后，瞄准对方球 → 红色虚线提醒（对方球非法目标）
+    var myG=assigned?groupList(turn==='player'?pGroup:aGroup):null;
+    var legal=!hit||!myG||myG.indexOf(hit.id)>=0;
+    var aimCol=legal?'rgba(255,255,255,0.75)':'rgba(255,90,80,0.8)';
+    ctx.save();
+    // 主瞄准虚线：有目标球时延伸到接触点前；无球时到库边（上限 230）
+    var L=rayToCushion(white.x,white.y,nx,ny);
+    if(hit)L=Math.min(L,Math.max(22,hd-TABLE.BR-2));
+    else L=Math.min(L,230);
+    ctx.strokeStyle=aimCol;ctx.lineWidth=2;ctx.setLineDash([6,6]);
+    ctx.beginPath();ctx.moveTo(white.x+nx*22,white.y+ny*22);
+    ctx.lineTo(white.x+nx*L,white.y+ny*L);ctx.stroke();
+    ctx.setLineDash([]);
+    if(hit){
+      // 被击球高亮
+      ctx.strokeStyle=legal?'#ffe08a':'#ff6a5a';ctx.lineWidth=2;
+      ctx.beginPath();ctx.arc(hit.x,hit.y,TABLE.BR+3,0,Math.PI*2);ctx.stroke();
+      // 碰撞方向虚线：被击球的行进方向（白球接触点指向球心）
+      var Lc=Math.max(0,hd-Math.sqrt(Math.max(0.0001,4*TABLE.BR*TABLE.BR-hdd*hdd)));
+      var dx2=hit.x-(white.x+nx*Lc),dy2=hit.y-(white.y+ny*Lc);
+      var dl2=Math.sqrt(dx2*dx2+dy2*dy2);
+      if(dl2<0.01){dx2=nx;dy2=ny;}else{dx2/=dl2;dy2/=dl2;}
+      var L2=Math.max(20,Math.min(150,rayToCushion(hit.x,hit.y,dx2,dy2)-TABLE.BR));
+      ctx.strokeStyle=aimCol;ctx.lineWidth=2;ctx.setLineDash([5,7]);
+      ctx.beginPath();ctx.moveTo(hit.x+dx2*TABLE.BR,hit.y+dy2*TABLE.BR);
+      ctx.lineTo(hit.x+dx2*(TABLE.BR+L2),hit.y+dy2*(TABLE.BR+L2));ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    // 白球方向指示箭头（尖端朝前，指向击球方向）
+    ctx.fillStyle='rgba(255,255,255,0.6)';
+    ctx.beginPath();ctx.moveTo(white.x+nx*30,white.y+ny*30);
+    ctx.lineTo(white.x+nx*24+ny*5,white.y+ny*24-nx*5);
+    ctx.lineTo(white.x+nx*24-ny*5,white.y+ny*24+nx*5);
+    ctx.closePath();ctx.fill();
+    ctx.restore();
+  }
+  // 击球球杆：玩家跟随瞄准方向并随力度回拉，击球瞬间前送；AI 只显示对方球杆（无瞄准线）
+  if(turn==='player'&&!white.inPocket){
+    if(!moving){
+      cuePull+=( (power+over)*22-cuePull)*0.25;   // 瞄准时平滑回拉（力度越大拉越远）
+      drawCue(aimAngle,true);
+    }else if(performance.now()-cueT<160){
+      cuePull=Math.max(-14,cuePull-9);            // 击球瞬间向前送出
+      drawCue(aimAngle,true);
+    }else{cuePull=0;}
+  }else if(!moving&&turn==='ai'&&aiAimAngleSet){
+    cuePull=0;
+    drawCue(aiAimAngle,false);
+  }else{cuePull=0;}
+  // 粒子
+  for(var pi=0;pi<particles.length;pi++){
+    var pa=particles[pi];
+    ctx.globalAlpha=Math.max(0,pa.life);
+    ctx.fillStyle='#ffe08a';
+    ctx.beginPath();ctx.arc(pa.x,pa.y,2.5,0,Math.PI*2);ctx.fill();
+  }
+  ctx.globalAlpha=1;
+  // 进球光环特效（扩散双环 + 闪光）
+  for(var fi=pocketFxs.length-1;fi>=0;fi--){
+    var fx=pocketFxs[fi];
+    fx.life-=0.032;
+    var fr=TABLE.PR*(1.2+(1-fx.life)*2.2);
+    ctx.globalAlpha=Math.max(0,fx.life);
+    ctx.strokeStyle='#ffe08a';ctx.lineWidth=3;
+    ctx.beginPath();ctx.arc(fx.x,fx.y,fr,0,Math.PI*2);ctx.stroke();
+    ctx.globalAlpha=Math.max(0,fx.life*0.85);
+    ctx.strokeStyle='#ffffff';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.arc(fx.x,fx.y,fr*0.6,0,Math.PI*2);ctx.stroke();
+    // 顶光一闪
+    ctx.fillStyle='#fff7d6';
+    ctx.beginPath();ctx.arc(fx.x,fx.y,4,0,Math.PI*2);ctx.fill();
+    if(fx.life<=0)pocketFxs.splice(fi,1);
+  }
+  ctx.globalAlpha=1;
+  // 球
+  for(var i2=0;i2<balls.length;i2++){
+    var b=balls[i2];
+    if(b.inPocket)continue;
+    var r=TABLE.BR;
+    var rg=ctx.createRadialGradient(b.x-r*0.35,b.y-r*0.35,r*0.15,b.x,b.y,r);
+    if(b.id===0){
+      rg.addColorStop(0,'#ffffff');rg.addColorStop(1,'#cfd6dd');
+    }else if(b.stripe){
+      // 花球（大球）：白色球体，与全彩实球（小球）形成鲜明对比
+      rg.addColorStop(0,'#ffffff');rg.addColorStop(1,'#d7dde3');
+    }else{
+      rg.addColorStop(0,'#ffffff');rg.addColorStop(0.35,b.color);
+      rg.addColorStop(1,shade(b.color));
+    }
+    ctx.beginPath();ctx.arc(b.x,b.y,r,0,Math.PI*2);
+    ctx.fillStyle=rg;ctx.fill();
+    ctx.lineWidth=1.2;ctx.strokeStyle='rgba(0,0,0,0.5)';ctx.stroke();
+    if(b.id!==0){
+      if(b.stripe){
+        // 加宽中段彩带，让大球/小球一眼可辨
+        ctx.fillStyle=b.color;
+        ctx.fillRect(b.x-r,b.y-r*0.45,r*2,r*0.9);
+        ctx.strokeStyle='rgba(0,0,0,0.35)';
+        ctx.lineWidth=1;
+        ctx.strokeRect(b.x-r,b.y-r*0.45,r*2,r*0.9);
+      }
+      // 号码圈与数字随球滚动同步旋转
+      ctx.save();
+      ctx.translate(b.x,b.y);
+      ctx.rotate(b.rot);
+      ctx.font='bold 9px sans-serif';
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.beginPath();ctx.arc(0,0,r*0.42,0,Math.PI*2);
+      ctx.fillStyle='#fff';ctx.fill();
+      ctx.strokeStyle='rgba(0,0,0,0.25)';ctx.lineWidth=1;ctx.stroke();
+      ctx.fillStyle='#222';
+      ctx.fillText(b.id,0,0.5);
+      ctx.restore();
+    }
+    // 滚动效果：一对旋转标记圆点（随滚动方向累积旋转）+ 快速滚动残影
+    var sp=Math.sqrt(b.vx*b.vx+b.vy*b.vy);
+    ctx.fillStyle=b.id===0?'rgba(140,155,170,0.7)':'rgba(20,20,20,0.5)';
+    for(var rd=0;rd<2;rd++){
+      var ra=b.rot+rd*Math.PI;
+      ctx.beginPath();
+      ctx.arc(b.x+Math.cos(ra)*r*0.66,b.y+Math.sin(ra)*r*0.66,2.4,0,Math.PI*2);
+      ctx.fill();
+    }
+    if(sp>1.5){
+      var mvx=b.vx/sp,mvy=b.vy/sp;
+      ctx.strokeStyle='rgba(255,255,255,'+(0.15+Math.min(0.35,sp/MAXV*0.45))+')';
+      ctx.lineWidth=1.5;
+      for(var ms=0;ms<3;ms++){
+        var md=-(8+ms*8);
+        ctx.beginPath();
+        ctx.moveTo(b.x+mvx*md,b.y+mvy*md);
+        ctx.lineTo(b.x+mvx*(md-4),b.y+mvy*(md-4));
+        ctx.stroke();
+      }
+    }
+  }
+  // 白球高光
+  ctx.beginPath();ctx.arc(white.x,white.y,TABLE.BR,0,Math.PI*2);
+  ctx.strokeStyle='rgba(255,255,255,0.5)';ctx.lineWidth=1;ctx.stroke();
+}
+function shade(hex){
+  var n=parseInt(hex.slice(1),16),r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+  r=Math.round(r*0.55);g=Math.round(g*0.55);b=Math.round(b*0.55);
+  return 'rgb('+r+','+g+','+b+')';
+}
+function drawCue(ang,isPlayer){
+  var nx=Math.cos(ang),ny=Math.sin(ang);
+  // 球杆长度：碰到最近球前停下（避免穿过球堆）；玩家加长，蓄力回拉幅度随力度
+  var L=isPlayer?170:100,best=L;
+  for(var i=0;i<balls.length;i++){
+    var o=balls[i];
+    if(o===white||o.inPocket)continue;
+    // 检查杆身方向（白球背后，-n）上的球，避免球杆穿过球堆
+    var t=-(o.x-white.x)*nx-(o.y-white.y)*ny;
+    if(t>0&&t<best){
+      var hx=white.x-nx*t,hy=white.y-ny*t;
+      var d=Math.sqrt((hx-o.x)*(hx-o.x)+(hy-o.y)*(hy-o.y));
+      if(d<TABLE.BR*1.5)best=t-TABLE.BR-4;
+    }
+  }
+  L=Math.max(18,best);
+  var pull=isPlayer?cuePull:0;   // 力度回拉：越大越往后，击球时快速前送
+  var tipX=white.x+nx*(TABLE.BR+3)-nx*pull,tipY=white.y+ny*(TABLE.BR+3)-ny*pull;
+  var tailX=tipX-nx*L,tailY=tipY-ny*L;
+  // 限制在桌面内，避免白球贴边时球杆戳出桌沿
+  tailX=Math.max(TABLE.l+3,Math.min(TABLE.r-3,tailX));
+  tailY=Math.max(TABLE.t+3,Math.min(TABLE.b-3,tailY));
+  ctx.save();
+  ctx.lineCap='round';
+  // 杆身：从皮头（浅）到尾端（深）渐变
+  var lg=ctx.createLinearGradient(tipX,tipY,tailX,tailY);
+  if(isPlayer){lg.addColorStop(0,'#f7ecd2');lg.addColorStop(0.1,'#e8c98a');lg.addColorStop(0.4,'#b98a4e');lg.addColorStop(1,'#3a2410');}
+  else{lg.addColorStop(0,'#e8d8c0');lg.addColorStop(0.1,'#d8b27a');lg.addColorStop(0.4,'#96603a');lg.addColorStop(1,'#241608');}
+  ctx.strokeStyle=lg;ctx.lineWidth=isPlayer?6:4.6;
+  ctx.beginPath();ctx.moveTo(tipX,tipY);ctx.lineTo(tailX,tailY);ctx.stroke();
+  // 皮头
+  ctx.strokeStyle=isPlayer?'#d7e9f2':'#c2ccd2';ctx.lineWidth=isPlayer?3.4:2.8;
+  ctx.beginPath();ctx.moveTo(tipX,tipY);ctx.lineTo(tipX-nx*7,tipY-ny*7);ctx.stroke();
+  ctx.restore();
+}
+
+/* ================= 启动与主循环 ================= */
+function startGame(lv){
+  audio();
+  aiLevel=lv;
+  document.getElementById('menu').style.display='none';
+  setupBalls();
+  turn='player';
+  pRemain=7;aRemain=7;gameOver=false;aimValid=false;power=0.5;
+  over=0;overCharging=false;overFlash=false;
+  pottedPlayer.length=0;pottedAI.length=0;
+  aimAngle=-Math.PI/2; // 初始球杆朝向球堆（对侧）
+  aiAimAngleSet=false;
+  assigned=false;pGroup='solid';aGroup='stripe';
+  updateHud();
+  showCtl();
+  flash('拖屏瞄准 → 滑杆到底长按蓄力，松手击球（先进球定花色）');
+}
+var last=0;
+function loop(t){
+  requestAnimationFrame(loop);
+  var dt=t-last;last=t;
+  if(dt>50)dt=50;
+  // 满力蓄力：长按期间力度在 100% 基础上继续累积，封顶 +35%
+  if(overCharging&&turn==='player'&&!moving&&!gameOver){
+    over=Math.min(MAX_OVER,over+dt*OVER_RATE);
+    if(over>=MAX_OVER&&!overFlash){overFlash=true;flash('已达最大力度');}
+    refreshPowerUI();
+  }
+  step();
+  render();
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
