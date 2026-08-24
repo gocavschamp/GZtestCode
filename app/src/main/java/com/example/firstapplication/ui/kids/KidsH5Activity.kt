@@ -35,6 +35,7 @@ class KidsH5Activity : AppCompatActivity() {
         binding.cardGameJump.setOnClickListener { open(GAME_JUMP, "跳跳闯关") }
         binding.cardGameMinecraft.setOnClickListener { open(GAME_MC, "我的世界") }
         binding.cardGameChess.setOnClickListener { open(GAME_CHESS, "3D 象棋") }
+        binding.cardGameBilliards.setOnClickListener { open(GAME_BILLIARDS, "台球") }
     }
 
     private fun open(file: String, title: String) {
@@ -50,6 +51,7 @@ class KidsH5Activity : AppCompatActivity() {
         private const val GAME_JUMP = "jump_levels.html"
         private const val GAME_MC = "minecraft.html"
         private const val GAME_CHESS = "chinese_chess.html"
+        private const val GAME_BILLIARDS = "billiards.html"
 
         fun start(context: Context) {
             context.startActivity(Intent(context, KidsH5Activity::class.java))

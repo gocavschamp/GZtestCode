@@ -24,4 +24,13 @@
         android:textSize="15sp"
         app:backgroundTint="#80000000"
         app:cornerRadius="22dp" />
+
+    <!-- 方案B：象棋吃子过场 SVGA 覆盖层，默认隐藏；不可点击，触摸穿透到 WebView -->
+    <com.opensource.svgaplayer.SVGAImageView
+        android:id="@+id/svgaCutscene"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="false"
+        android:focusable="false"
+        android:visibility="gone" />
 </FrameLayout>
