@@ -28,6 +28,7 @@ import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.example.baseapi.floatview.FloatViewRouter
 import com.example.firstapplication.R
 import com.example.firstapplication.databinding.ActivityMainBinding
+import com.example.firstapplication.ui.redpacket.RedPacketRainActivity
 import com.ethanhua.skeleton.Skeleton
 import com.ethanhua.skeleton.SkeletonScreen
 import com.ywm.baselibray.utils.CountryFlagUtil
@@ -265,6 +266,9 @@ class MainActivity : AppCompatActivity() {
             ARouter.getInstance()
                 .build("/module/countdown") // 构建跳转
                 .navigation()
+        }
+        binding.redPacketRain.setOnClickListener {
+            startActivity(Intent(this, RedPacketRainActivity::class.java))
         }
         binding.kidsHome.setOnClickListener {
             ARouter.getInstance()

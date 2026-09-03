@@ -153,6 +153,13 @@
                 android:layout_height="40dp"
                 android:text="countdown" />
             <Button
+                android:id="@+id/redPacketRain"
+                android:layout_width="100dp"
+                android:layout_height="40dp"
+                android:background="#E53935"
+                android:text="红包雨"
+                android:textColor="@color/white" />
+            <Button
                 android:id="@+id/kidsHome"
                 android:layout_width="100dp"
                 android:layout_height="40dp"

@@ -719,6 +719,42 @@ function burst(x,y,z,color,n){
   }
 }
 
+/* ================= 走子指示特效（起点环 + 终点光柱） ================= */
+var moveFx=[];
+function clearMoveFx(){
+  moveFx.forEach(function(fx){
+    fx.items.forEach(function(m){scene.remove(m);m.geometry.dispose();m.material.dispose();});
+  });
+  moveFx=[];
+}
+/* mv: {fr:{r,c},to:{r,c}}；side: 走子方，红=金色、黑=亮蓝，一眼区分是谁在动 */
+function showMoveFx(mv,side){
+  clearMoveFx();
+  var color=side===RED?0xFFD54F:0x4FC3FF;
+  var items=[];
+  // 起点格圆环（来源）
+  var ring=new THREE.Mesh(new THREE.RingGeometry(0.42,0.52,32),
+    new THREE.MeshBasicMaterial({color:color,transparent:true,opacity:0.9,side:THREE.DoubleSide}));
+  ring.userData.op=0.9;
+  ring.rotation.x=-Math.PI/2;ring.position.set(wx(mv.fr.c),0.44,wz(mv.fr.r));scene.add(ring);items.push(ring);
+  // 终点格圆盘
+  var disc=new THREE.Mesh(new THREE.CircleGeometry(0.48,32),
+    new THREE.MeshBasicMaterial({color:color,transparent:true,opacity:0.45}));
+  disc.userData.op=0.45;
+  disc.rotation.x=-Math.PI/2;disc.position.set(wx(mv.to.c),0.44,wz(mv.to.r));scene.add(disc);items.push(disc);
+  // 终点垂直光束（最醒目）
+  var beam=new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.1,1.7,12),
+    new THREE.MeshBasicMaterial({color:color,transparent:true,opacity:0.5,blending:THREE.AdditiveBlending,depthWrite:false}));
+  beam.userData.op=0.5;
+  beam.position.set(wx(mv.to.c),1.05,wz(mv.to.r));scene.add(beam);items.push(beam);
+  // 光束顶端发光球
+  var ball=new THREE.Mesh(new THREE.SphereGeometry(0.09,12,10),
+    new THREE.MeshBasicMaterial({color:color,transparent:true,opacity:0.9,blending:THREE.AdditiveBlending,depthWrite:false}));
+  ball.userData.op=0.9;
+  ball.position.set(wx(mv.to.c),1.95,wz(mv.to.r));scene.add(ball);items.push(ball);
+  moveFx.push({items:items,t:0,dur:1.35});
+}
+
 /* ================= 吃子过场动画（角色特写，类似 SVGA 转场） ================= */
 var cs=null;
 function initCutscene(){
@@ -856,6 +892,7 @@ function updateCutscene(dt){
 /* ================= 走子逻辑 ================= */
 function doHumanMove(mv){
   busy=true;
+  showMoveFx(mv,humanSide);
   var grp=pieceAt(mv.fr.r,mv.fr.c).group;
   var wasCapture=board[mv.to.r][mv.to.c]?true:false;
   var capPiece=board[mv.to.r][mv.to.c];
@@ -913,6 +950,7 @@ function afterHumanMove(mv){
 
 function doAiMove(mv){
   busy=true;
+  showMoveFx(mv,aiSide);
   var grp=pieceAt(mv.fr.r,mv.fr.c).group;
   var capPiece=board[mv.to.r][mv.to.c];
   var wasCapture=capPiece?true:false;
@@ -1022,6 +1060,7 @@ dbg('棋盘与棋子构建 OK');
 function startGame(){
   audio();
   resetBoard();
+  clearMoveFx();
   // 重建棋子
   pieces.forEach(function(p){scene.remove(p.group);});
   buildAllPieces();
@@ -1085,6 +1124,19 @@ function frame(t){
     if(p.life<=0){scene.remove(p.m);particles.splice(j,1);continue;}
     p.m.position.add(p.v.clone().multiplyScalar(dt));
     p.v.y-=9*dt;
+  }
+  // 走子指示特效（淡入淡出后自动清除）
+  for(var fxi=moveFx.length-1;fxi>=0;fxi--){
+    var fx=moveFx[fxi];
+    fx.t+=dt;
+    var fade=1;
+    if(fx.t<0.12)fade=fx.t/0.12;
+    else if(fx.t>fx.dur-0.4)fade=Math.max(0,(fx.dur-fx.t)/0.4);
+    fx.items.forEach(function(m){m.material.opacity=m.userData.op*fade;});
+    if(fx.t>=fx.dur){
+      fx.items.forEach(function(m){scene.remove(m);m.geometry.dispose();m.material.dispose();});
+      moveFx.splice(fxi,1);
+    }
   }
   // 河流波纹 + 旗帜飘动 + 火把摇曳
   if(riverTex)riverTex.offset.x+=dt*0.15;

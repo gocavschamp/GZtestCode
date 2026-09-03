@@ -66,7 +66,14 @@
         <activity android:name=".ui.AnimSimpleDemoActivity" android:screenOrientation="fullSensor"/>
         <activity android:name=".ui.ScaleDemoActivity" android:screenOrientation="portrait"/>
         <activity android:name=".ui.DialogDemoActivity" android:screenOrientation="portrait"/>
-        <activity android:name=".ui.ScoreViewActivity" android:screenOrientation="portrait"/>
+        <activity
+            android:name=".ui.ScoreViewActivity"
+            android:configChanges="keyboardHidden|orientation"
+            android:screenOrientation="portrait"/>
+        <activity
+            android:name=".ui.redpacket.RedPacketRainActivity"
+            android:configChanges="keyboardHidden|orientation"
+            android:screenOrientation="portrait"/>
         <!-- 幼儿教育模块（App 主入口） -->
         <activity
             android:name=".ui.kids.KidsHomeActivity"
